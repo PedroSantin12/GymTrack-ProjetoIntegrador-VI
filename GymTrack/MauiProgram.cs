@@ -38,6 +38,7 @@ public static class MauiProgram
         builder.Services.AddTransient<ExerciseEditPage>();
         builder.Services.AddTransient<WorkoutEditPage>();
         builder.Services.AddTransient<ExercisePickerPage>();
+        builder.Services.AddTransient<WorkoutSessionPage>();
         builder.Services.AddTransient<AboutPage>();
 
         builder.Services.AddTransient<DashboardViewModel>();
@@ -48,6 +49,7 @@ public static class MauiProgram
         builder.Services.AddTransient<ExerciseEditViewModel>();
         builder.Services.AddTransient<WorkoutEditViewModel>();
         builder.Services.AddTransient<ExercisePickerViewModel>();
+        builder.Services.AddTransient<WorkoutSessionViewModel>();
         builder.Services.AddTransient<AboutViewModel>();
 
         builder.Services.AddSingleton<GymTrackDatabase>();
@@ -56,6 +58,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ISessionDao, SessionDao>();
         builder.Services.AddSingleton<INotificationService, NotificationService>();
         builder.Services.AddSingleton<IDialogService, DialogService>();
+        builder.Services.AddSingleton(TimeProvider.System);
 
 #if DEBUG
         builder.Logging.AddDebug();

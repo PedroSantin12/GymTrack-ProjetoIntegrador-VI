@@ -18,6 +18,19 @@ public sealed class SessionDao(GymTrackDatabase database) : ISessionDao
         return await connection.FindAsync<WorkoutSession>(id);
     }
 
+    public async Task<WorkoutSession?> GetActiveAsync()
+    {
+        var connection = await database.GetConnectionAsync();
+        return await connection.FindWithQueryAsync<WorkoutSession>(
+            """
+            SELECT *
+            FROM WorkoutSession
+            WHERE FinishedAt IS NULL
+            ORDER BY StartedAt DESC
+            LIMIT 1
+            """);
+    }
+
     public async Task<IReadOnlyList<SetRecord>> GetSetsAsync(int sessionId)
     {
         var connection = await database.GetConnectionAsync();
@@ -26,6 +39,37 @@ public sealed class SessionDao(GymTrackDatabase database) : ISessionDao
             .OrderBy(setRecord => setRecord.ExerciseId)
             .ThenBy(setRecord => setRecord.SetNumber)
             .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<SetRecord>> GetPreviousSetsAsync(
+        int workoutId,
+        int exerciseId,
+        int excludedSessionId)
+    {
+        var connection = await database.GetConnectionAsync();
+        return await connection.QueryAsync<SetRecord>(
+            """
+            SELECT sr.*
+            FROM SetRecord sr
+            WHERE sr.ExerciseId = ?
+              AND sr.SessionId = (
+                  SELECT ws.Id
+                  FROM WorkoutSession ws
+                  INNER JOIN SetRecord previousSet
+                      ON previousSet.SessionId = ws.Id
+                     AND previousSet.ExerciseId = ?
+                  WHERE ws.WorkoutId = ?
+                    AND ws.Id <> ?
+                    AND ws.FinishedAt IS NOT NULL
+                  ORDER BY ws.StartedAt DESC
+                  LIMIT 1
+              )
+            ORDER BY sr.SetNumber
+            """,
+            exerciseId,
+            exerciseId,
+            workoutId,
+            excludedSessionId);
     }
 
     public async Task<int> InsertAsync(WorkoutSession session)
@@ -44,6 +88,13 @@ public sealed class SessionDao(GymTrackDatabase database) : ISessionDao
     {
         ArgumentNullException.ThrowIfNull(session);
 
+        if (session.FinishedAt < session.StartedAt)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(session.FinishedAt),
+                "O término da sessão não pode ocorrer antes do início.");
+        }
+
         var connection = await database.GetConnectionAsync();
         return await connection.UpdateAsync(session);
     }
@@ -51,6 +102,27 @@ public sealed class SessionDao(GymTrackDatabase database) : ISessionDao
     public async Task<int> SaveSetAsync(SetRecord setRecord)
     {
         ArgumentNullException.ThrowIfNull(setRecord);
+
+        if (setRecord.SetNumber <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(setRecord.SetNumber),
+                "O número da série deve ser positivo.");
+        }
+
+        if (setRecord.Reps <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(setRecord.Reps),
+                "A quantidade de repetições deve ser positiva.");
+        }
+
+        if (!double.IsFinite(setRecord.LoadKg) || setRecord.LoadKg < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(setRecord.LoadKg),
+                "A carga deve ser um número não negativo.");
+        }
 
         var connection = await database.GetConnectionAsync();
         var affectedRows = 0;

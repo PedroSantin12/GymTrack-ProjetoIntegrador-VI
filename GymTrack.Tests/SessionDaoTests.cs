@@ -67,4 +67,63 @@ public sealed class SessionDaoTests
                 LoadKg = 20
             }));
     }
+
+    [Fact]
+    public async Task ActiveSessionAndPreviousPerformance_CanBeLoaded()
+    {
+        await using var context = await TestDatabase.CreateAsync();
+        IExerciseDao exerciseDao = new ExerciseDao(context.Database);
+        IWorkoutDao workoutDao = new WorkoutDao(context.Database);
+        ISessionDao sessionDao = new SessionDao(context.Database);
+        var exercise = new Exercise { Name = "Remada", MuscleGroup = "Costas" };
+        await exerciseDao.InsertAsync(exercise);
+        var workout = new Workout { Name = "Superior" };
+        await workoutDao.SaveAsync(workout, []);
+        var previous = new WorkoutSession
+        {
+            WorkoutId = workout.Id,
+            StartedAt = new DateTime(2026, 8, 20, 18, 0, 0, DateTimeKind.Utc),
+            FinishedAt = new DateTime(2026, 8, 20, 19, 0, 0, DateTimeKind.Utc)
+        };
+        await sessionDao.InsertAsync(previous);
+        await sessionDao.SaveSetAsync(new SetRecord
+        {
+            SessionId = previous.Id,
+            ExerciseId = exercise.Id,
+            SetNumber = 1,
+            Reps = 12,
+            LoadKg = 35
+        });
+        var active = new WorkoutSession
+        {
+            WorkoutId = workout.Id,
+            StartedAt = new DateTime(2026, 9, 4, 18, 0, 0, DateTimeKind.Utc)
+        };
+        await sessionDao.InsertAsync(active);
+
+        var loadedActive = await sessionDao.GetActiveAsync();
+        var previousSets = await sessionDao.GetPreviousSetsAsync(
+            workout.Id,
+            exercise.Id,
+            active.Id);
+
+        Assert.Equal(active.Id, loadedActive?.Id);
+        var previousSet = Assert.Single(previousSets);
+        Assert.Equal(12, previousSet.Reps);
+        Assert.Equal(35, previousSet.LoadKg);
+    }
+
+    [Fact]
+    public async Task SaveSetAsync_RejectsInvalidNumbers()
+    {
+        await using var context = await TestDatabase.CreateAsync();
+        ISessionDao sessionDao = new SessionDao(context.Database);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            sessionDao.SaveSetAsync(new SetRecord { SetNumber = 0, Reps = 10, LoadKg = 1 }));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            sessionDao.SaveSetAsync(new SetRecord { SetNumber = 1, Reps = 0, LoadKg = 1 }));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            sessionDao.SaveSetAsync(new SetRecord { SetNumber = 1, Reps = 10, LoadKg = double.NaN }));
+    }
 }

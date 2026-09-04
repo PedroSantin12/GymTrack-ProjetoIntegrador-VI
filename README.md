@@ -31,8 +31,11 @@ dotnet test M:\GymTrack.Tests\GymTrack.Tests.csproj
 - O editor de treino permite rascunhos, seleção pesquisável de exercícios ativos, séries, repetições, carga opcional, remoção e reordenação.
 - A composição completa do treino é salva em uma transação e reaberta preservando ordem e valores planejados.
 - Treinos sem exercícios não podem iniciar; treinos com histórico não podem ser excluídos.
+- A execução do treino abre em tela modal focada, com cronômetro, progresso, volume e valores planejados pré-preenchidos.
+- Cada série usa edição direta de carga/repetições, conclusão persistida, feedback Toast e opção de adicionar/remover série não concluída.
+- Sessões em andamento podem ser retomadas; sair exige confirmação e finalizar grava `FinishedAt` após confirmação e resumo.
 - Operações concluídas e falhas recuperáveis usam feedback não bloqueante com Toast.
 - Cores, espaçamentos, estilos, ícone e splash do GymTrack ficam centralizados em `Resources`.
 - A persistência possui cinco tabelas SQLite, inicialização assíncrona, índices, chaves estrangeiras e DAOs explícitos.
 
-As fases 0 a 4 da especificação estão implementadas. As próximas funcionalidades serão adicionadas na ordem definida pelo documento-mestre.
+As fases 0 a 5 da especificação estão implementadas. As próximas funcionalidades serão adicionadas na ordem definida pelo documento-mestre.

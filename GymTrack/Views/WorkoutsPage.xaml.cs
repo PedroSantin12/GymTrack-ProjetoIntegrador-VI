@@ -24,6 +24,7 @@ public partial class WorkoutsPage : ContentPage
 
         viewModel.EditorRequested += OnEditorRequested;
         viewModel.ManageExercisesRequested += OnManageExercisesRequested;
+        viewModel.StartRequested += OnStartRequested;
     }
 
     protected override async void OnAppearing()
@@ -77,6 +78,36 @@ public partial class WorkoutsPage : ContentPage
         {
             _logger.LogError(exception, "Falha ao abrir o gerenciamento de exercícios.");
             _viewModel.StatusMessage = "Não foi possível abrir os exercícios.";
+        }
+        finally
+        {
+            _isNavigating = false;
+        }
+    }
+
+    private async void OnStartRequested(
+        object? sender,
+        WorkoutStartRequestedEventArgs e)
+    {
+        if (_isNavigating)
+        {
+            return;
+        }
+
+        _isNavigating = true;
+
+        try
+        {
+            var sessionPage = _services.GetRequiredService<WorkoutSessionPage>();
+            if (await sessionPage.InitializeAsync(e.WorkoutId))
+            {
+                await Navigation.PushModalAsync(sessionPage);
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Falha ao iniciar a sessão de treino.");
+            _viewModel.StatusMessage = "Não foi possível iniciar o treino.";
         }
         finally
         {

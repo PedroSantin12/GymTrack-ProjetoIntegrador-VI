@@ -8,7 +8,14 @@ public interface ISessionDao
 
     Task<WorkoutSession?> GetByIdAsync(int id);
 
+    Task<WorkoutSession?> GetActiveAsync();
+
     Task<IReadOnlyList<SetRecord>> GetSetsAsync(int sessionId);
+
+    Task<IReadOnlyList<SetRecord>> GetPreviousSetsAsync(
+        int workoutId,
+        int exerciseId,
+        int excludedSessionId);
 
     Task<int> InsertAsync(WorkoutSession session);
 
