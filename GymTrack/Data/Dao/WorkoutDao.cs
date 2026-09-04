@@ -13,6 +13,27 @@ public sealed class WorkoutDao(GymTrackDatabase database) : IWorkoutDao
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<WorkoutSummary>> GetSummariesAsync()
+    {
+        var connection = await database.GetConnectionAsync();
+        return await connection.QueryAsync<WorkoutSummary>(
+            """
+            SELECT
+                w.Id,
+                w.Name,
+                w.Description,
+                w.CreatedAt,
+                w.UpdatedAt,
+                CAST(COUNT(DISTINCT we.Id) AS INTEGER) AS ExerciseCount,
+                MAX(ws.StartedAt) AS LastSessionAt
+            FROM Workout w
+            LEFT JOIN WorkoutExercise we ON we.WorkoutId = w.Id
+            LEFT JOIN WorkoutSession ws ON ws.WorkoutId = w.Id
+            GROUP BY w.Id, w.Name, w.Description, w.CreatedAt, w.UpdatedAt
+            ORDER BY w.UpdatedAt DESC
+            """);
+    }
+
     public async Task<Workout?> GetByIdAsync(int id)
     {
         var connection = await database.GetConnectionAsync();
@@ -154,7 +175,8 @@ public sealed class WorkoutDao(GymTrackDatabase database) : IWorkoutDao
                     "A quantidade de repetições deve ficar entre 1 e 100.");
             }
 
-            if (item.PlannedLoad < 0)
+            if (item.PlannedLoad is double plannedLoad &&
+                (!double.IsFinite(plannedLoad) || plannedLoad < 0))
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(item.PlannedLoad),

@@ -11,9 +11,12 @@ public partial class BaseViewModel : ObservableObject
     private string title = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
     private string? statusMessage;
 
     public bool IsNotBusy => !IsBusy;
+
+    public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
 
     partial void OnIsBusyChanged(bool value)
     {

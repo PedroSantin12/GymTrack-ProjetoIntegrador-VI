@@ -6,6 +6,8 @@ public interface IWorkoutDao
 {
     Task<IReadOnlyList<Workout>> GetAllAsync();
 
+    Task<IReadOnlyList<WorkoutSummary>> GetSummariesAsync();
+
     Task<Workout?> GetByIdAsync(int id);
 
     Task<IReadOnlyList<WorkoutExercise>> GetExercisesAsync(int workoutId);

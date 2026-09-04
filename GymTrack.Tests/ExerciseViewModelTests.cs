@@ -287,6 +287,17 @@ public sealed class ExerciseViewModelTests
 
         public List<ActionRequest> ActionRequests { get; } = [];
 
+        public List<AlertRequest> AlertRequests { get; } = [];
+
+        public Task AlertAsync(
+            string title,
+            string message,
+            string button)
+        {
+            AlertRequests.Add(new AlertRequest(title, message, button));
+            return Task.CompletedTask;
+        }
+
         public Task<string?> ChooseActionAsync(
             string title,
             string cancel,
@@ -317,6 +328,11 @@ public sealed class ExerciseViewModelTests
         string Title,
         string Cancel,
         IReadOnlyList<string> Actions);
+
+    private sealed record AlertRequest(
+        string Title,
+        string Message,
+        string Button);
 
     private sealed class FakeNotificationService : INotificationService
     {

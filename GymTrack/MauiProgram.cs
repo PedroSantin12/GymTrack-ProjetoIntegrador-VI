@@ -36,6 +36,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<ProgressPage>();
         builder.Services.AddTransient<ExercisesPage>();
         builder.Services.AddTransient<ExerciseEditPage>();
+        builder.Services.AddTransient<WorkoutEditPage>();
+        builder.Services.AddTransient<ExercisePickerPage>();
         builder.Services.AddTransient<AboutPage>();
 
         builder.Services.AddTransient<DashboardViewModel>();
@@ -44,6 +46,8 @@ public static class MauiProgram
         builder.Services.AddTransient<ProgressViewModel>();
         builder.Services.AddTransient<ExercisesViewModel>();
         builder.Services.AddTransient<ExerciseEditViewModel>();
+        builder.Services.AddTransient<WorkoutEditViewModel>();
+        builder.Services.AddTransient<ExercisePickerViewModel>();
         builder.Services.AddTransient<AboutViewModel>();
 
         builder.Services.AddSingleton<GymTrackDatabase>();

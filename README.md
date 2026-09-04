@@ -27,8 +27,12 @@ dotnet test M:\GymTrack.Tests\GymTrack.Tests.csproj
 - A tela de exercícios possui busca em tempo real com debounce, filtro por grupo muscular e opção de exibir arquivados.
 - O formulário valida os campos, evita duplicatas e persiste o estado ativo definido pelo `CheckBox`.
 - Exclusões exigem confirmação; exercícios vinculados são arquivados para preservar o histórico.
+- A tela de treinos lista quantidade de exercícios, última execução e mantém a ação Iniciar visível.
+- O editor de treino permite rascunhos, seleção pesquisável de exercícios ativos, séries, repetições, carga opcional, remoção e reordenação.
+- A composição completa do treino é salva em uma transação e reaberta preservando ordem e valores planejados.
+- Treinos sem exercícios não podem iniciar; treinos com histórico não podem ser excluídos.
 - Operações concluídas e falhas recuperáveis usam feedback não bloqueante com Toast.
 - Cores, espaçamentos, estilos, ícone e splash do GymTrack ficam centralizados em `Resources`.
 - A persistência possui cinco tabelas SQLite, inicialização assíncrona, índices, chaves estrangeiras e DAOs explícitos.
 
-As fases 0 a 3 da especificação estão implementadas. As próximas funcionalidades serão adicionadas na ordem definida pelo documento-mestre.
+As fases 0 a 4 da especificação estão implementadas. As próximas funcionalidades serão adicionadas na ordem definida pelo documento-mestre.

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="GymTrack.Views.WorkoutEditPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
+    x:DataType="viewModels:WorkoutEditViewModel"
+    Title="{Binding Title}">
+
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout Padding="{StaticResource PagePadding}"
+                                 Spacing="{StaticResource Spacing16}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding Title}"
+                           Style="{StaticResource PageTitle}" />
+                    <Label Text="Defina os exercícios na ordem em que serão executados."
+                           Style="{StaticResource SecondaryText}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Nome"
+                           Style="{StaticResource CaptionText}" />
+                    <Border Padding="8,0">
+                        <Entry Placeholder="Ex.: Treino A"
+                               MaxLength="60"
+                               ReturnType="Next"
+                               Text="{Binding Name, Mode=TwoWay}" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Descrição"
+                           Style="{StaticResource CaptionText}" />
+                    <Border Padding="8">
+                        <Editor Placeholder="Objetivo ou observações opcionais"
+                                AutoSize="TextChanges"
+                                MaxLength="500"
+                                MaximumHeightRequest="140"
+                                Text="{Binding Description, Mode=TwoWay}" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Exercícios"
+                           Style="{StaticResource SectionTitle}" />
+
+                    <Label Text="Nenhum exercício adicionado. Você pode salvar este treino como rascunho."
+                           Style="{StaticResource SecondaryText}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label"
+                                         Binding="{Binding HasExercises}"
+                                         Value="True">
+                                <Setter Property="IsVisible" Value="False" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+
+                    <VerticalStackLayout Spacing="10"
+                                         BindableLayout.ItemsSource="{Binding Exercises}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:WorkoutExerciseItemViewModel">
+                                <Border Padding="14">
+                                    <VerticalStackLayout Spacing="12">
+                                        <Grid ColumnDefinitions="*,Auto"
+                                              ColumnSpacing="8">
+                                            <VerticalStackLayout Spacing="2">
+                                                <Label Text="{Binding PositionText}"
+                                                       Style="{StaticResource SectionTitle}" />
+                                                <Label Text="{Binding MuscleGroup}"
+                                                       Style="{StaticResource SecondaryText}" />
+                                            </VerticalStackLayout>
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding StateText}"
+                                                   TextColor="{StaticResource Danger}"
+                                                   Style="{StaticResource CaptionText}"
+                                                   VerticalOptions="Center">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label"
+                                                                 Binding="{Binding IsActive}"
+                                                                 Value="True">
+                                                        <Setter Property="IsVisible" Value="False" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </Grid>
+
+                                        <Grid ColumnDefinitions="Auto,*,Auto"
+                                              ColumnSpacing="10">
+                                            <Label Text="Séries planejadas"
+                                                   Style="{StaticResource CaptionText}"
+                                                   VerticalTextAlignment="Center" />
+                                            <Stepper Grid.Column="1"
+                                                     Minimum="1"
+                                                     Maximum="20"
+                                                     Increment="1"
+                                                     Value="{Binding PlannedSets, Mode=TwoWay}" />
+                                            <Label Grid.Column="2"
+                                                   Text="{Binding PlannedSets, StringFormat='{}{0:0}'}"
+                                                   FontFamily="OpenSansSemibold"
+                                                   MinimumWidthRequest="28"
+                                                   HorizontalTextAlignment="Center"
+                                                   VerticalTextAlignment="Center" />
+                                        </Grid>
+
+                                        <Grid ColumnDefinitions="*,*"
+                                              ColumnSpacing="10">
+                                            <VerticalStackLayout Spacing="4">
+                                                <Label Text="Repetições"
+                                                       Style="{StaticResource CaptionText}" />
+                                                <Border Padding="8,0">
+                                                    <Entry Placeholder="10"
+                                                           Keyboard="Numeric"
+                                                           MaxLength="3"
+                                                           Text="{Binding PlannedReps, Mode=TwoWay}" />
+                                                </Border>
+                                            </VerticalStackLayout>
+
+                                            <VerticalStackLayout Grid.Column="1"
+                                                                 Spacing="4">
+                                                <Label Text="Carga (kg, opcional)"
+                                                       Style="{StaticResource CaptionText}" />
+                                                <Border Padding="8,0">
+                                                    <Entry Placeholder="0"
+                                                           Keyboard="Numeric"
+                                                           MaxLength="8"
+                                                           Text="{Binding PlannedLoad, Mode=TwoWay}" />
+                                                </Border>
+                                            </VerticalStackLayout>
+                                        </Grid>
+
+                                        <Grid ColumnDefinitions="*,*,Auto"
+                                              ColumnSpacing="8">
+                                            <Button Text="Subir"
+                                                    Style="{StaticResource SecondaryButton}"
+                                                    Command="{Binding MoveUpCommand}"
+                                                    IsEnabled="{Binding CanMoveUp}" />
+                                            <Button Grid.Column="1"
+                                                    Text="Descer"
+                                                    Style="{StaticResource SecondaryButton}"
+                                                    Command="{Binding MoveDownCommand}"
+                                                    IsEnabled="{Binding CanMoveDown}" />
+                                            <Button Grid.Column="2"
+                                                    Text="Remover"
+                                                    Style="{StaticResource SecondaryButton}"
+                                                    TextColor="{StaticResource Danger}"
+                                                    Command="{Binding RemoveCommand}" />
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Button Text="Adicionar exercício"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding RequestAddExerciseCommand}"
+                            IsEnabled="{Binding IsNotBusy}" />
+                </VerticalStackLayout>
+
+                <BoxView HeightRequest="4"
+                         Opacity="0" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Border Grid.Row="1"
+                StrokeShape="Rectangle"
+                Padding="16,10">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="{Binding ValidationMessage}"
+                       IsVisible="{Binding HasValidationMessage}"
+                       TextColor="{StaticResource Danger}" />
+                <Grid ColumnDefinitions="Auto,*,*"
+                      ColumnSpacing="8">
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       VerticalOptions="Center" />
+                    <Button Grid.Column="1"
+                            Text="Cancelar"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding CloseCommand}" />
+                    <Button Grid.Column="2"
+                            Text="Salvar treino"
+                            Command="{Binding SaveCommand}"
+                            IsEnabled="{Binding CanSave}" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

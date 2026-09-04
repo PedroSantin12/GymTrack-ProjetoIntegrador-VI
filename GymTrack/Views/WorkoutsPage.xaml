@@ -5,43 +5,100 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
     x:DataType="viewModels:WorkoutsViewModel"
-    Title="{Binding Title}">
+    Title="Treinos">
 
     <Grid Padding="{StaticResource PagePadding}"
-          RowDefinitions="Auto,*"
-          RowSpacing="{StaticResource Spacing16}">
-        <Grid ColumnDefinitions="*,Auto"
-              ColumnSpacing="{StaticResource Spacing12}">
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Treinos"
-                       Style="{StaticResource PageTitle}" />
-                <Label Text="Organize modelos para executar na academia."
-                       Style="{StaticResource SecondaryText}" />
-            </VerticalStackLayout>
+          RowDefinitions="Auto,Auto,*,Auto"
+          RowSpacing="{StaticResource Spacing12}">
+        <VerticalStackLayout Spacing="4">
+            <Label Text="Treinos"
+                   Style="{StaticResource PageTitle}" />
+            <Label Text="Monte seus treinos e deixe tudo pronto para a academia."
+                   Style="{StaticResource SecondaryText}" />
+        </VerticalStackLayout>
+
+        <Grid Grid.Row="1"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="{StaticResource Spacing8}">
+            <Button Text="Gerenciar exercícios"
+                    Style="{StaticResource SecondaryButton}"
+                    Command="{Binding ManageExercisesCommand}"
+                    IsEnabled="{Binding IsNotBusy}" />
             <Button Grid.Column="1"
-                    Text="Adicionar"
-                    IsEnabled="False"
-                    VerticalOptions="Center" />
+                    Text="Novo treino"
+                    Command="{Binding AddWorkoutCommand}"
+                    IsEnabled="{Binding IsNotBusy}" />
         </Grid>
 
-        <CollectionView Grid.Row="1"
-                        ItemsSource="{Binding Workouts}">
-            <CollectionView.EmptyView>
-                <VerticalStackLayout Spacing="8"
-                                     HorizontalOptions="Center"
-                                     VerticalOptions="Center"
-                                     MaximumWidthRequest="320">
-                    <Label Text="Nenhum treino criado"
-                           Style="{StaticResource SectionTitle}"
-                           HorizontalTextAlignment="Center" />
-                    <Label Text="A composição dos treinos será implementada após a camada de dados."
-                           Style="{StaticResource SecondaryText}"
-                           HorizontalTextAlignment="Center" />
-                    <Label Text="Use o menu lateral para abrir Exercícios."
-                           Style="{StaticResource CaptionText}"
-                           HorizontalTextAlignment="Center" />
-                </VerticalStackLayout>
-            </CollectionView.EmptyView>
-        </CollectionView>
+        <RefreshView Grid.Row="2"
+                     Command="{Binding LoadCommand}"
+                     IsRefreshing="{Binding IsBusy, Mode=OneWay}">
+            <CollectionView ItemsSource="{Binding Workouts}"
+                            SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Spacing="10"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         MaximumWidthRequest="320">
+                        <Label Text="Nenhum treino criado"
+                               Style="{StaticResource SectionTitle}"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Crie seu primeiro treino e adicione os exercícios na ordem desejada."
+                               Style="{StaticResource SecondaryText}"
+                               HorizontalTextAlignment="Center" />
+                        <Button Text="Criar treino"
+                                Command="{Binding AddWorkoutCommand}"
+                                HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:WorkoutListItemViewModel">
+                        <Border Margin="0,0,0,10"
+                                Padding="16,14">
+                            <Grid RowDefinitions="Auto,Auto"
+                                  ColumnDefinitions="*,Auto"
+                                  RowSpacing="10"
+                                  ColumnSpacing="10">
+                                <VerticalStackLayout Spacing="3">
+                                    <VerticalStackLayout.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding EditCommand}" />
+                                    </VerticalStackLayout.GestureRecognizers>
+
+                                    <Label Text="{Binding Name}"
+                                           Style="{StaticResource SectionTitle}" />
+                                    <Label Text="{Binding ExerciseCountText}"
+                                           Style="{StaticResource SecondaryText}" />
+                                    <Label Text="{Binding LastSessionText}"
+                                           Style="{StaticResource CaptionText}" />
+                                </VerticalStackLayout>
+
+                                <Button Grid.Column="1"
+                                        Text="Ações"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding ActionsCommand}" />
+
+                                <Button Grid.Row="1"
+                                        Grid.ColumnSpan="2"
+                                        Text="Iniciar treino"
+                                        Command="{Binding StartCommand}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <Grid Grid.Row="3"
+              ColumnDefinitions="Auto,*"
+              ColumnSpacing="8">
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}" />
+            <Label Grid.Column="1"
+                   Text="{Binding StatusMessage}"
+                   TextColor="{StaticResource Danger}"
+                   VerticalTextAlignment="Center"
+                   HorizontalTextAlignment="Center" />
+        </Grid>
     </Grid>
 </ContentPage>
