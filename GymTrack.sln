@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GymTrack", "GymTrack\GymTrack.csproj", "{7A9EBE48-4745-4824-8212-B791BB25526F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GymTrack.Tests", "GymTrack.Tests\GymTrack.Tests.csproj", "{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{7A9EBE48-4745-4824-8212-B791BB25526F}.Release|x64.Build.0 = Release|Any CPU
 		{7A9EBE48-4745-4824-8212-B791BB25526F}.Release|x86.ActiveCfg = Release|Any CPU
 		{7A9EBE48-4745-4824-8212-B791BB25526F}.Release|x86.Build.0 = Release|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Debug|x64.Build.0 = Debug|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Debug|x86.Build.0 = Debug|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Release|x64.ActiveCfg = Release|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Release|x64.Build.0 = Release|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Release|x86.ActiveCfg = Release|Any CPU
+		{7DDC8FF7-6EEA-44CF-A608-02AFD08FC649}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -14,7 +14,8 @@ Para compilar no terminal:
 
 ```powershell
 ./Abrir-GymTrack.cmd
-dotnet build M:\GymTrack.sln -f net10.0-android
+dotnet build M:\GymTrack\GymTrack.csproj -f net10.0-android
+dotnet test M:\GymTrack.Tests\GymTrack.Tests.csproj
 ```
 
 ## Estrutura inicial
@@ -24,5 +25,6 @@ dotnet build M:\GymTrack.sln -f net10.0-android
 - O menu lateral fornece acesso a Exercícios e Sobre.
 - O cadastro de exercício já demonstra navegação modal real com `PushModalAsync` e `PopModalAsync`.
 - Cores, espaçamentos, estilos, ícone e splash do GymTrack ficam centralizados em `Resources`.
+- A persistência possui cinco tabelas SQLite, inicialização assíncrona, índices, chaves estrangeiras e DAOs explícitos.
 
 As funcionalidades de persistência e CRUD são implementadas incrementalmente conforme as fases da especificação do projeto.
