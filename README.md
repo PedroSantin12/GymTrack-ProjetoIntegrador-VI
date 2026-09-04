@@ -18,13 +18,17 @@ dotnet build M:\GymTrack\GymTrack.csproj -f net10.0-android
 dotnet test M:\GymTrack.Tests\GymTrack.Tests.csproj
 ```
 
-## Estrutura inicial
+## Estrutura e funcionalidades implementadas
 
 - `MainFlyoutPage` é a raiz do aplicativo.
 - `MainTabbedPage` contém quatro abas, cada uma hospedada em sua própria `NavigationPage`: Início, Treinos, Histórico e Evolução.
 - O menu lateral fornece acesso a Exercícios e Sobre.
-- O cadastro de exercício já demonstra navegação modal real com `PushModalAsync` e `PopModalAsync`.
+- O CRUD de exercícios usa navegação modal real com `PushModalAsync` e `PopModalAsync`.
+- A tela de exercícios possui busca em tempo real com debounce, filtro por grupo muscular e opção de exibir arquivados.
+- O formulário valida os campos, evita duplicatas e persiste o estado ativo definido pelo `CheckBox`.
+- Exclusões exigem confirmação; exercícios vinculados são arquivados para preservar o histórico.
+- Operações concluídas e falhas recuperáveis usam feedback não bloqueante com Toast.
 - Cores, espaçamentos, estilos, ícone e splash do GymTrack ficam centralizados em `Resources`.
 - A persistência possui cinco tabelas SQLite, inicialização assíncrona, índices, chaves estrangeiras e DAOs explícitos.
 
-As funcionalidades de persistência e CRUD são implementadas incrementalmente conforme as fases da especificação do projeto.
+As fases 0 a 3 da especificação estão implementadas. As próximas funcionalidades serão adicionadas na ordem definida pelo documento-mestre.

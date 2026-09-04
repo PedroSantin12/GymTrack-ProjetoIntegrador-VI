@@ -11,9 +11,9 @@
         <VerticalStackLayout Padding="{StaticResource PagePadding}"
                              Spacing="{StaticResource Spacing16}">
             <VerticalStackLayout Spacing="4">
-                <Label Text="Novo exercício"
+                <Label Text="{Binding Title}"
                        Style="{StaticResource PageTitle}" />
-                <Label Text="Fluxo modal da estrutura inicial. O salvamento será conectado ao SQLite na fase de CRUD."
+                <Label Text="Informe os dados do exercício. Nome e grupo muscular são obrigatórios."
                        Style="{StaticResource SecondaryText}" />
             </VerticalStackLayout>
 
@@ -23,6 +23,7 @@
                 <Border Padding="8,0">
                     <Entry Placeholder="Ex.: Supino reto"
                            MaxLength="80"
+                           ReturnType="Next"
                            Text="{Binding Name, Mode=TwoWay}" />
                 </Border>
             </VerticalStackLayout>
@@ -43,6 +44,7 @@
                 <Border Padding="8">
                     <Editor Placeholder="Detalhes opcionais"
                             AutoSize="TextChanges"
+                            MaxLength="500"
                             MaximumHeightRequest="160"
                             Text="{Binding Notes, Mode=TwoWay}" />
                 </Border>
@@ -56,8 +58,16 @@
                        VerticalTextAlignment="Center" />
             </Grid>
 
+            <Label Text="{Binding ValidationMessage}"
+                   IsVisible="{Binding HasValidationMessage}"
+                   TextColor="{StaticResource Danger}" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}" />
+
             <Button Text="Salvar exercício"
-                    IsEnabled="False" />
+                    Command="{Binding SaveCommand}"
+                    IsEnabled="{Binding IsNotBusy}" />
             <Button Text="Cancelar"
                     Style="{StaticResource SecondaryButton}"
                     Command="{Binding CloseCommand}" />

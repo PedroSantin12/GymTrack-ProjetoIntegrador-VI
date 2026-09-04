@@ -7,38 +7,101 @@
     x:DataType="viewModels:ExercisesViewModel"
     Title="{Binding Title}">
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Novo"
+                     Command="{Binding AddExerciseCommand}" />
+    </ContentPage.ToolbarItems>
+
     <Grid Padding="{StaticResource PagePadding}"
-          RowDefinitions="Auto,Auto,*"
+          RowDefinitions="Auto,Auto,Auto,*,Auto"
           RowSpacing="{StaticResource Spacing12}">
-        <Grid ColumnDefinitions="*,Auto"
+        <SearchBar Placeholder="Buscar por nome"
+                   Text="{Binding SearchText, Mode=TwoWay}" />
+
+        <Grid Grid.Row="1"
+              ColumnDefinitions="*,Auto"
               ColumnSpacing="{StaticResource Spacing8}">
-            <SearchBar Placeholder="Buscar exercício"
-                       Text="{Binding SearchText, Mode=TwoWay}" />
+            <Picker Title="Grupo muscular"
+                    ItemsSource="{Binding MuscleGroups}"
+                    SelectedItem="{Binding SelectedMuscleGroup, Mode=TwoWay}" />
             <Button Grid.Column="1"
-                    Text="Novo"
-                    Command="{Binding AddExerciseCommand}" />
+                    Text="Limpar"
+                    Style="{StaticResource SecondaryButton}"
+                    Command="{Binding ClearFiltersCommand}" />
         </Grid>
 
-        <Picker Grid.Row="1"
-                Title="Grupo muscular"
-                ItemsSource="{Binding MuscleGroups}"
-                SelectedItem="{Binding SelectedMuscleGroup, Mode=TwoWay}" />
+        <Grid Grid.Row="2"
+              ColumnDefinitions="Auto,*"
+              ColumnSpacing="{StaticResource Spacing8}">
+            <CheckBox IsChecked="{Binding ShowInactive, Mode=TwoWay}" />
+            <Label Grid.Column="1"
+                   Text="Mostrar arquivados"
+                   VerticalTextAlignment="Center" />
+        </Grid>
 
-        <CollectionView Grid.Row="2"
-                        ItemsSource="{Binding Exercises}">
-            <CollectionView.EmptyView>
-                <VerticalStackLayout Spacing="8"
-                                     HorizontalOptions="Center"
-                                     VerticalOptions="Center"
-                                     MaximumWidthRequest="320">
-                    <Label Text="Nenhum exercício cadastrado"
-                           Style="{StaticResource SectionTitle}"
-                           HorizontalTextAlignment="Center" />
-                    <Label Text="Use Novo para conferir o fluxo modal desta etapa."
-                           Style="{StaticResource SecondaryText}"
-                           HorizontalTextAlignment="Center" />
-                </VerticalStackLayout>
-            </CollectionView.EmptyView>
-        </CollectionView>
+        <RefreshView Grid.Row="3"
+                     Command="{Binding LoadCommand}"
+                     IsRefreshing="{Binding IsBusy, Mode=OneWay}">
+            <CollectionView ItemsSource="{Binding Exercises}"
+                            SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Spacing="8"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         MaximumWidthRequest="320">
+                        <Label Text="Nenhum exercício encontrado"
+                               Style="{StaticResource SectionTitle}"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Cadastre um exercício ou ajuste a busca e o filtro."
+                               Style="{StaticResource SecondaryText}"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:ExerciseListItemViewModel">
+                        <Border Margin="0,0,0,8"
+                                Padding="16,12">
+                            <Grid ColumnDefinitions="*,Auto"
+                                  ColumnSpacing="12">
+                                <VerticalStackLayout Spacing="2">
+                                    <VerticalStackLayout.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding EditCommand}" />
+                                    </VerticalStackLayout.GestureRecognizers>
+
+                                    <Label Text="{Binding Name}"
+                                           Style="{StaticResource SectionTitle}" />
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="{Binding MuscleGroup}"
+                                               Style="{StaticResource SecondaryText}" />
+                                        <Label Text="{Binding StateText}"
+                                               Style="{StaticResource CaptionText}">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label"
+                                                             Binding="{Binding IsActive}"
+                                                             Value="False">
+                                                    <Setter Property="TextColor"
+                                                            Value="{StaticResource Danger}" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+
+                                <Button Grid.Column="1"
+                                        Text="Ações"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding ActionsCommand}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <Label Grid.Row="4"
+               Text="{Binding StatusMessage}"
+               TextColor="{StaticResource Danger}"
+               HorizontalTextAlignment="Center" />
     </Grid>
 </ContentPage>

@@ -1,6 +1,7 @@
 using CommunityToolkit.Maui;
 using GymTrack.Data;
 using GymTrack.Data.Dao;
+using GymTrack.Services;
 using GymTrack.ViewModels;
 using GymTrack.Views;
 using LiveChartsCore.SkiaSharpView.Maui;
@@ -49,6 +50,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<IExerciseDao, ExerciseDao>();
         builder.Services.AddSingleton<IWorkoutDao, WorkoutDao>();
         builder.Services.AddSingleton<ISessionDao, SessionDao>();
+        builder.Services.AddSingleton<INotificationService, NotificationService>();
+        builder.Services.AddSingleton<IDialogService, DialogService>();
 
 #if DEBUG
         builder.Logging.AddDebug();

@@ -26,6 +26,7 @@ public sealed class ExerciseDaoTests
         Assert.Equal("Barra livre", inserted.Notes);
         Assert.True(inserted.IsActive);
         Assert.True(await dao.ExistsAsync("supino reto", "peito"));
+        Assert.False(await dao.ExistsAsync("Supino Reto", "Peito", exercise.Id));
 
         exercise.Notes = "Pegada média";
         Assert.Equal(1, await dao.UpdateAsync(exercise));
@@ -33,6 +34,7 @@ public sealed class ExerciseDaoTests
         var search = await dao.SearchAsync("PINO", "Peito");
         Assert.Single(search);
         Assert.Equal("Pegada média", search[0].Notes);
+        Assert.Empty(await dao.SearchAsync("PINO", "Costas"));
 
         Assert.Equal(1, await dao.ArchiveAsync(exercise.Id));
         Assert.Empty(await dao.GetAllAsync());
