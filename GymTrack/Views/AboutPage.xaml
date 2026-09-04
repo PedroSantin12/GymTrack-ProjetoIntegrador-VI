@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="GymTrack.Views.AboutPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
+    x:DataType="viewModels:AboutViewModel"
+    Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="{StaticResource PagePadding}"
+                             Spacing="{StaticResource Spacing24}">
+            <Image Source="gymtrack_logo.svg"
+                   HeightRequest="72"
+                   HorizontalOptions="Start"
+                   Aspect="AspectFit"
+                   SemanticProperties.Description="Logotipo GymTrack" />
+
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Sobre o GymTrack"
+                       Style="{StaticResource PageTitle}" />
+                <Label Text="Aplicativo mobile offline-first para organizar treinos de musculação, registrar sessões e acompanhar evolução."
+                       Style="{StaticResource SecondaryText}" />
+            </VerticalStackLayout>
+
+            <Border>
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Projeto acadêmico"
+                           Style="{StaticResource SectionTitle}" />
+                    <Label Text="Desenvolvido por Lucas Marcelo Nagel e Pedro Santin."
+                           Style="{StaticResource SecondaryText}" />
+                    <Label Text="Tecnologias: .NET MAUI, C#, XAML, MVVM e SQLite."
+                           Style="{StaticResource SecondaryText}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

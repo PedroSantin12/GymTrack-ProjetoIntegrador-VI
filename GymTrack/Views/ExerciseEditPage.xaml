@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="GymTrack.Views.ExerciseEditPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
+    x:DataType="viewModels:ExerciseEditViewModel"
+    Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="{StaticResource PagePadding}"
+                             Spacing="{StaticResource Spacing16}">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Novo exercício"
+                       Style="{StaticResource PageTitle}" />
+                <Label Text="Fluxo modal da estrutura inicial. O salvamento será conectado ao SQLite na fase de CRUD."
+                       Style="{StaticResource SecondaryText}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Nome"
+                       Style="{StaticResource CaptionText}" />
+                <Border Padding="8,0">
+                    <Entry Placeholder="Ex.: Supino reto"
+                           MaxLength="80"
+                           Text="{Binding Name, Mode=TwoWay}" />
+                </Border>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Grupo muscular"
+                       Style="{StaticResource CaptionText}" />
+                <Border Padding="8,0">
+                    <Picker Title="Selecione um grupo"
+                            ItemsSource="{Binding MuscleGroups}"
+                            SelectedItem="{Binding SelectedMuscleGroup, Mode=TwoWay}" />
+                </Border>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Observações"
+                       Style="{StaticResource CaptionText}" />
+                <Border Padding="8">
+                    <Editor Placeholder="Detalhes opcionais"
+                            AutoSize="TextChanges"
+                            MaximumHeightRequest="160"
+                            Text="{Binding Notes, Mode=TwoWay}" />
+                </Border>
+            </VerticalStackLayout>
+
+            <Grid ColumnDefinitions="Auto,*"
+                  ColumnSpacing="8">
+                <CheckBox IsChecked="{Binding IsActive, Mode=TwoWay}" />
+                <Label Grid.Column="1"
+                       Text="Exercício ativo"
+                       VerticalTextAlignment="Center" />
+            </Grid>
+
+            <Button Text="Salvar exercício"
+                    IsEnabled="False" />
+            <Button Text="Cancelar"
+                    Style="{StaticResource SecondaryButton}"
+                    Command="{Binding CloseCommand}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

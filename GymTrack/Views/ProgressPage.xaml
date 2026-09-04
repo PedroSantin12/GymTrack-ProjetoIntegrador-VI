@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="GymTrack.Views.ProgressPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
+    x:DataType="viewModels:ProgressViewModel"
+    Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="{StaticResource PagePadding}"
+                             Spacing="{StaticResource Spacing24}">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Evolução"
+                       Style="{StaticResource PageTitle}" />
+                <Label Text="Acompanhe carga e volume por exercício."
+                       Style="{StaticResource SecondaryText}" />
+            </VerticalStackLayout>
+
+            <Border>
+                <VerticalStackLayout Spacing="{StaticResource Spacing12}">
+                    <Label Text="Exercício"
+                           Style="{StaticResource CaptionText}" />
+                    <Picker Title="Registre exercícios para selecionar"
+                            IsEnabled="False" />
+                </VerticalStackLayout>
+            </Border>
+
+            <VerticalStackLayout Spacing="{StaticResource Spacing8}">
+                <Label Text="Métrica"
+                       Style="{StaticResource SectionTitle}" />
+                <HorizontalStackLayout Spacing="{StaticResource Spacing16}">
+                    <RadioButton Content="Maior carga"
+                                 GroupName="ProgressMetric"
+                                 IsChecked="{Binding IsMaxLoadSelected, Mode=TwoWay}" />
+                    <RadioButton Content="Volume"
+                                 GroupName="ProgressMetric"
+                                 IsChecked="{Binding IsVolumeSelected, Mode=TwoWay}" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <Border MinimumHeightRequest="240">
+                <VerticalStackLayout Spacing="8"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center">
+                    <Label Text="Sem dados para o gráfico"
+                           Style="{StaticResource SectionTitle}"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Registre ao menos duas sessões deste exercício para visualizar a evolução."
+                           Style="{StaticResource SecondaryText}"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

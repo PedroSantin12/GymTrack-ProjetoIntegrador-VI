@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT' and '$(LOCALAPPDATA)' != ''">
+    <BaseIntermediateOutputPath>$(LOCALAPPDATA)\GymTrackBuild\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(LOCALAPPDATA)\GymTrackBuild\bin\$(MSBuildProjectName)\</BaseOutputPath>
+  </PropertyGroup>
+</Project>

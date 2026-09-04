@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="GymTrack.Views.FlyoutMenuPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Menu">
+
+    <Grid Padding="{StaticResource PagePadding}"
+          RowDefinitions="Auto,*"
+          RowSpacing="24">
+        <VerticalStackLayout Spacing="8">
+            <Image Source="gymtrack_logo.svg"
+                   HeightRequest="52"
+                   HorizontalOptions="Start"
+                   Aspect="AspectFit"
+                   SemanticProperties.Description="Logotipo GymTrack" />
+            <Label Text="Seu treino, organizado."
+                   Style="{StaticResource SecondaryText}" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="1" Spacing="8">
+            <Button Text="Início"
+                    Style="{StaticResource SecondaryButton}"
+                    Clicked="OnHomeClicked" />
+            <Button Text="Treinos"
+                    Style="{StaticResource SecondaryButton}"
+                    Clicked="OnWorkoutsClicked" />
+            <Button Text="Exercícios"
+                    Style="{StaticResource SecondaryButton}"
+                    Clicked="OnExercisesClicked" />
+            <Button Text="Sobre"
+                    Style="{StaticResource SecondaryButton}"
+                    Clicked="OnAboutClicked" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

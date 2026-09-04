@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="GymTrack.Views.WorkoutsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
+    x:DataType="viewModels:WorkoutsViewModel"
+    Title="{Binding Title}">
+
+    <Grid Padding="{StaticResource PagePadding}"
+          RowDefinitions="Auto,*"
+          RowSpacing="{StaticResource Spacing16}">
+        <Grid ColumnDefinitions="*,Auto"
+              ColumnSpacing="{StaticResource Spacing12}">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Treinos"
+                       Style="{StaticResource PageTitle}" />
+                <Label Text="Organize modelos para executar na academia."
+                       Style="{StaticResource SecondaryText}" />
+            </VerticalStackLayout>
+            <Button Grid.Column="1"
+                    Text="Adicionar"
+                    IsEnabled="False"
+                    VerticalOptions="Center" />
+        </Grid>
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Workouts}">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Spacing="8"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     MaximumWidthRequest="320">
+                    <Label Text="Nenhum treino criado"
+                           Style="{StaticResource SectionTitle}"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="A composição dos treinos será implementada após a camada de dados."
+                           Style="{StaticResource SecondaryText}"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Use o menu lateral para abrir Exercícios."
+                           Style="{StaticResource CaptionText}"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+        </CollectionView>
+    </Grid>
+</ContentPage>

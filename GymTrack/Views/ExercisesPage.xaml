@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="GymTrack.Views.ExercisesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
+    x:DataType="viewModels:ExercisesViewModel"
+    Title="{Binding Title}">
+
+    <Grid Padding="{StaticResource PagePadding}"
+          RowDefinitions="Auto,Auto,*"
+          RowSpacing="{StaticResource Spacing12}">
+        <Grid ColumnDefinitions="*,Auto"
+              ColumnSpacing="{StaticResource Spacing8}">
+            <SearchBar Placeholder="Buscar exercício"
+                       Text="{Binding SearchText, Mode=TwoWay}" />
+            <Button Grid.Column="1"
+                    Text="Novo"
+                    Command="{Binding AddExerciseCommand}" />
+        </Grid>
+
+        <Picker Grid.Row="1"
+                Title="Grupo muscular"
+                ItemsSource="{Binding MuscleGroups}"
+                SelectedItem="{Binding SelectedMuscleGroup, Mode=TwoWay}" />
+
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Exercises}">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Spacing="8"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     MaximumWidthRequest="320">
+                    <Label Text="Nenhum exercício cadastrado"
+                           Style="{StaticResource SectionTitle}"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Use Novo para conferir o fluxo modal desta etapa."
+                           Style="{StaticResource SecondaryText}"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+        </CollectionView>
+    </Grid>
+</ContentPage>

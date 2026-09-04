@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Color x:Key="BrandAccent">#23C6A5</Color>
+    <Color x:Key="BrandAccentPressed">#1BA487</Color>
+
+    <Color x:Key="DarkBackground">#0E1116</Color>
+    <Color x:Key="DarkSurface">#171C23</Color>
+    <Color x:Key="DarkSurfaceElevated">#20262F</Color>
+    <Color x:Key="DarkBorder">#2C3440</Color>
+    <Color x:Key="DarkTextPrimary">#F4F7F8</Color>
+    <Color x:Key="DarkTextSecondary">#A7B0BA</Color>
+
+    <Color x:Key="LightBackground">#F5F7F8</Color>
+    <Color x:Key="LightSurface">#FFFFFF</Color>
+    <Color x:Key="LightSurfaceElevated">#EAF0F1</Color>
+    <Color x:Key="LightBorder">#D4DDE1</Color>
+    <Color x:Key="LightTextPrimary">#111820</Color>
+    <Color x:Key="LightTextSecondary">#5D6973</Color>
+
+    <Color x:Key="Danger">#FF6B6B</Color>
+    <Color x:Key="Disabled">#78838C</Color>
+    <Color x:Key="White">#FFFFFF</Color>
+    <Color x:Key="Black">#000000</Color>
+</ResourceDictionary>

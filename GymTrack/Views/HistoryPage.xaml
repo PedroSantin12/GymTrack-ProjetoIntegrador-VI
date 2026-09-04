@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="GymTrack.Views.HistoryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
+    x:DataType="viewModels:HistoryViewModel"
+    Title="{Binding Title}">
+
+    <Grid Padding="{StaticResource PagePadding}"
+          RowDefinitions="Auto,*"
+          RowSpacing="{StaticResource Spacing16}">
+        <VerticalStackLayout Spacing="4">
+            <Label Text="Histórico"
+                   Style="{StaticResource PageTitle}" />
+            <Label Text="Sessões concluídas em ordem cronológica."
+                   Style="{StaticResource SecondaryText}" />
+        </VerticalStackLayout>
+
+        <Grid Grid.Row="1">
+            <ListView ItemsSource="{Binding Sessions}"
+                      HasUnevenRows="True" />
+            <VerticalStackLayout Spacing="8"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center"
+                                 MaximumWidthRequest="320"
+                                 InputTransparent="True">
+                <Label Text="Nenhuma sessão registrada"
+                       Style="{StaticResource SectionTitle}"
+                       HorizontalTextAlignment="Center" />
+                <Label Text="Quando você finalizar um treino, ele aparecerá nesta lista."
+                       Style="{StaticResource SecondaryText}"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="GymTrack.Views.DashboardPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
+    x:DataType="viewModels:DashboardViewModel"
+    Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="{StaticResource PagePadding}"
+                             Spacing="{StaticResource Spacing24}">
+            <VerticalStackLayout Spacing="{StaticResource Spacing8}">
+                <Image Source="gymtrack_logo.svg"
+                       HeightRequest="64"
+                       HorizontalOptions="Start"
+                       Aspect="AspectFit"
+                       SemanticProperties.Description="Logotipo GymTrack" />
+                <Label Text="Treinos simples. Progresso visível."
+                       Style="{StaticResource SecondaryText}" />
+            </VerticalStackLayout>
+
+            <Border>
+                <Grid RowDefinitions="Auto,Auto,Auto"
+                      RowSpacing="{StaticResource Spacing12}">
+                    <Label Text="Treino de hoje"
+                           Style="{StaticResource SectionTitle}" />
+                    <Label Grid.Row="1"
+                           Text="Nenhum treino cadastrado. Crie um treino para começar."
+                           Style="{StaticResource SecondaryText}" />
+                    <Button Grid.Row="2"
+                            Text="Escolher um treino"
+                            IsEnabled="False" />
+                </Grid>
+            </Border>
+
+            <VerticalStackLayout Spacing="{StaticResource Spacing12}">
+                <Label Text="Resumo"
+                       Style="{StaticResource SectionTitle}" />
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="{StaticResource Spacing12}">
+                    <Border Grid.Column="0" Padding="12">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="0"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="22" />
+                            <Label Text="sessões nesta semana"
+                                   Style="{StaticResource CaptionText}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1" Padding="12">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="0 kg"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="22" />
+                            <Label Text="volume semanal"
+                                   Style="{StaticResource CaptionText}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="{StaticResource Spacing8}">
+                <Label Text="Recentes"
+                       Style="{StaticResource SectionTitle}" />
+                <Label Text="Suas sessões concluídas aparecerão aqui."
+                       Style="{StaticResource SecondaryText}" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
