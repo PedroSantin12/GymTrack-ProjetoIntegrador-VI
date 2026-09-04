@@ -34,8 +34,22 @@ dotnet test M:\GymTrack.Tests\GymTrack.Tests.csproj
 - A execução do treino abre em tela modal focada, com cronômetro, progresso, volume e valores planejados pré-preenchidos.
 - Cada série usa edição direta de carga/repetições, conclusão persistida, feedback Toast e opção de adicionar/remover série não concluída.
 - Sessões em andamento podem ser retomadas; sair exige confirmação e finalizar grava `FinishedAt` após confirmação e resumo.
+- O Histórico usa `ListView` explicitamente, ordena sessões da mais recente para a mais antiga e filtra por treino, período predefinido ou intervalo de datas.
+- O detalhe da sessão apresenta exercícios, séries, duração e volume reais, com atalho para Evolução.
+- A tela Evolução usa `RadioButton` exclusivo para alternar entre maior carga e volume e renderiza dados persistidos com LiveCharts.
+- O Dashboard permite iniciar um treino, mostra o último treino, resumo semanal e sessões recentes.
 - Operações concluídas e falhas recuperáveis usam feedback não bloqueante com Toast.
 - Cores, espaçamentos, estilos, ícone e splash do GymTrack ficam centralizados em `Resources`.
 - A persistência possui cinco tabelas SQLite, inicialização assíncrona, índices, chaves estrangeiras e DAOs explícitos.
 
-As fases 0 a 5 da especificação estão implementadas. As próximas funcionalidades serão adicionadas na ordem definida pelo documento-mestre.
+As fases 0 a 9 da especificação estão implementadas e validadas no Android.
+
+## Roteiro rápido de demonstração
+
+1. Abra o Dashboard e inicie um treino cadastrado.
+2. Conclua ao menos uma série e finalize a sessão.
+3. Abra o Histórico, aplique os filtros e toque na sessão para ver os detalhes.
+4. Use **Ver evolução** e alterne entre **Maior carga** e **Volume**.
+5. Pelo menu lateral, abra Exercícios e Sobre.
+
+Para o gráfico demonstrar variação temporal, registre o mesmo exercício em pelo menos duas sessões concluídas.

@@ -17,6 +17,15 @@ public interface ISessionDao
         int exerciseId,
         int excludedSessionId);
 
+    Task<IReadOnlyList<SessionSummary>> GetSummariesAsync(
+        int? workoutId = null,
+        DateTime? startedFrom = null,
+        DateTime? startedUntil = null) =>
+        Task.FromResult<IReadOnlyList<SessionSummary>>([]);
+
+    Task<IReadOnlyList<SessionSetDetail>> GetSetDetailsAsync(int sessionId) =>
+        Task.FromResult<IReadOnlyList<SessionSetDetail>>([]);
+
     Task<int> InsertAsync(WorkoutSession session);
 
     Task<int> UpdateAsync(WorkoutSession session);

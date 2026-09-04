@@ -3,6 +3,7 @@
     x:Class="GymTrack.Views.ProgressPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
     xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
     x:DataType="viewModels:ProgressViewModel"
     Title="{Binding Title}">
@@ -22,7 +23,9 @@
                     <Label Text="Exercício"
                            Style="{StaticResource CaptionText}" />
                     <Picker Title="Registre exercícios para selecionar"
-                            IsEnabled="False" />
+                            ItemDisplayBinding="{Binding Name}"
+                            ItemsSource="{Binding Exercises}"
+                            SelectedItem="{Binding SelectedExercise, Mode=TwoWay}" />
                 </VerticalStackLayout>
             </Border>
 
@@ -39,18 +42,61 @@
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
-            <Border MinimumHeightRequest="240">
-                <VerticalStackLayout Spacing="8"
-                                     HorizontalOptions="Center"
-                                     VerticalOptions="Center">
-                    <Label Text="Sem dados para o gráfico"
-                           Style="{StaticResource SectionTitle}"
-                           HorizontalTextAlignment="Center" />
-                    <Label Text="Registre ao menos duas sessões deste exercício para visualizar a evolução."
-                           Style="{StaticResource SecondaryText}"
-                           HorizontalTextAlignment="Center" />
-                </VerticalStackLayout>
+            <Border MinimumHeightRequest="280">
+                <Grid>
+                    <lvc:CartesianChart Series="{Binding Series}"
+                                        XAxes="{Binding XAxes}"
+                                        YAxes="{Binding YAxes}"
+                                        HeightRequest="280"
+                                        IsVisible="{Binding HasChart}"
+                                        LegendPosition="Hidden"
+                                        ZoomMode="None" />
+                    <VerticalStackLayout Spacing="8"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         IsVisible="{Binding IsEmpty}">
+                        <Label Text="Sem dados para o gráfico"
+                               Style="{StaticResource SectionTitle}"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Registre ao menos duas sessões deste exercício para visualizar a evolução."
+                               Style="{StaticResource SecondaryText}"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                </Grid>
             </Border>
+
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                <Border>
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Melhor carga" Style="{StaticResource CaptionText}" />
+                        <Label Text="{Binding BestLoadText}" FontAttributes="Bold" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="1">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Última carga" Style="{StaticResource CaptionText}" />
+                        <Label Text="{Binding LastLoadText}" FontAttributes="Bold" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Row="1">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Sessões" Style="{StaticResource CaptionText}" />
+                        <Label Text="{Binding SessionCountText}" FontAttributes="Bold" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Row="1" Grid.Column="1">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Variação" Style="{StaticResource CaptionText}" />
+                        <Label Text="{Binding VariationText}" FontAttributes="Bold" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+            <Label Text="{Binding StatusMessage}"
+                   IsVisible="{Binding HasStatusMessage}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

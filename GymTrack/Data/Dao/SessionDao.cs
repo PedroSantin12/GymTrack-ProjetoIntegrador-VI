@@ -72,6 +72,76 @@ public sealed class SessionDao(GymTrackDatabase database) : ISessionDao
             excludedSessionId);
     }
 
+    public async Task<IReadOnlyList<SessionSummary>> GetSummariesAsync(
+        int? workoutId = null,
+        DateTime? startedFrom = null,
+        DateTime? startedUntil = null)
+    {
+        var connection = await database.GetConnectionAsync();
+        var conditions = new List<string> { "ws.FinishedAt IS NOT NULL" };
+        var arguments = new List<object>();
+
+        if (workoutId is not null)
+        {
+            conditions.Add("ws.WorkoutId = ?");
+            arguments.Add(workoutId.Value);
+        }
+
+        if (startedFrom is not null)
+        {
+            conditions.Add("ws.StartedAt >= ?");
+            arguments.Add(startedFrom.Value);
+        }
+
+        if (startedUntil is not null)
+        {
+            conditions.Add("ws.StartedAt < ?");
+            arguments.Add(startedUntil.Value);
+        }
+
+        var sql = $$"""
+            SELECT ws.Id,
+                   ws.WorkoutId,
+                   w.Name AS WorkoutName,
+                   ws.StartedAt,
+                   ws.FinishedAt,
+                   COUNT(sr.Id) AS SetCount,
+                   COALESCE(SUM(sr.Reps * sr.LoadKg), 0) AS TotalVolume
+            FROM WorkoutSession ws
+            INNER JOIN Workout w ON w.Id = ws.WorkoutId
+            LEFT JOIN SetRecord sr ON sr.SessionId = ws.Id
+            WHERE {{string.Join(" AND ", conditions)}}
+            GROUP BY ws.Id, ws.WorkoutId, w.Name, ws.StartedAt, ws.FinishedAt
+            ORDER BY ws.StartedAt DESC
+            """;
+
+        return await connection.QueryAsync<SessionSummary>(sql, [.. arguments]);
+    }
+
+    public async Task<IReadOnlyList<SessionSetDetail>> GetSetDetailsAsync(int sessionId)
+    {
+        var connection = await database.GetConnectionAsync();
+        return await connection.QueryAsync<SessionSetDetail>(
+            """
+            SELECT sr.ExerciseId,
+                   e.Name AS ExerciseName,
+                   e.MuscleGroup,
+                   COALESCE(we.OrderIndex, 2147483647) AS ExerciseOrder,
+                   sr.SetNumber,
+                   sr.Reps,
+                   sr.LoadKg
+            FROM SetRecord sr
+            INNER JOIN Exercise e ON e.Id = sr.ExerciseId
+            INNER JOIN WorkoutSession ws ON ws.Id = sr.SessionId
+            LEFT JOIN WorkoutExercise we
+                   ON we.WorkoutId = ws.WorkoutId
+                  AND we.ExerciseId = sr.ExerciseId
+            WHERE sr.SessionId = ?
+            ORDER BY ExerciseOrder, sr.SetNumber
+            """,
+            sessionId);
+    }
+
     public async Task<int> InsertAsync(WorkoutSession session)
     {
         ArgumentNullException.ThrowIfNull(session);

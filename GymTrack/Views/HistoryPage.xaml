@@ -3,12 +3,13 @@
     x:Class="GymTrack.Views.HistoryPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
     x:DataType="viewModels:HistoryViewModel"
     Title="{Binding Title}">
 
     <Grid Padding="{StaticResource PagePadding}"
-          RowDefinitions="Auto,*"
+          RowDefinitions="Auto,Auto,Auto,Auto,*"
           RowSpacing="{StaticResource Spacing16}">
         <VerticalStackLayout Spacing="4">
             <Label Text="Histórico"
@@ -17,13 +18,78 @@
                    Style="{StaticResource SecondaryText}" />
         </VerticalStackLayout>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="12">
+            <Border Padding="8,0">
+                <Picker Title="Treino"
+                        ItemsSource="{Binding Workouts}"
+                        SelectedItem="{Binding SelectedWorkout}" />
+            </Border>
+            <Border Grid.Column="1" Padding="8,0">
+                <Picker Title="Período"
+                        ItemsSource="{Binding Periods}"
+                        SelectedItem="{Binding SelectedPeriod}" />
+            </Border>
+        </Grid>
+
+        <Grid Grid.Row="2"
+              ColumnDefinitions="*,*"
+              ColumnSpacing="12"
+              IsVisible="{Binding IsCustomPeriod}">
+            <VerticalStackLayout Spacing="3">
+                <Label Text="Data inicial" Style="{StaticResource CaptionText}" />
+                <DatePicker Date="{Binding StartDate}" MaximumDate="{x:Static sys:DateTime.Today}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Column="1" Spacing="3">
+                <Label Text="Data final" Style="{StaticResource CaptionText}" />
+                <DatePicker Date="{Binding EndDate}" MaximumDate="{x:Static sys:DateTime.Today}" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <Button Grid.Row="3"
+                Text="Aplicar filtros"
+                Command="{Binding LoadCommand}" />
+
+        <Grid Grid.Row="4">
             <ListView ItemsSource="{Binding Sessions}"
-                      HasUnevenRows="True" />
+                      SelectedItem="{Binding SelectedSession, Mode=TwoWay}"
+                      HasUnevenRows="True"
+                      IsVisible="{Binding HasSessions}"
+                      SelectionMode="Single">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:HistorySessionItemViewModel">
+                        <ViewCell>
+                            <Grid Padding="4,14"
+                                  RowDefinitions="Auto,Auto,Auto"
+                                  ColumnDefinitions="*,Auto"
+                                  RowSpacing="5">
+                                <Label Text="{Binding WorkoutName}"
+                                       Style="{StaticResource SectionTitle}" />
+                                <Label Grid.Column="1"
+                                       Text="›"
+                                       FontSize="28"
+                                       VerticalOptions="Center"
+                                       Grid.RowSpan="3" />
+                                <Label Grid.Row="1"
+                                       Text="{Binding DateText}"
+                                       Style="{StaticResource SecondaryText}" />
+                                <HorizontalStackLayout Grid.Row="2" Spacing="14">
+                                    <Label Text="{Binding DurationText}"
+                                           Style="{StaticResource CaptionText}" />
+                                    <Label Text="{Binding SetCountText}"
+                                           Style="{StaticResource CaptionText}" />
+                                    <Label Text="{Binding VolumeText, StringFormat='Volume: {0}'}"
+                                           Style="{StaticResource CaptionText}" />
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
             <VerticalStackLayout Spacing="8"
                                  HorizontalOptions="Center"
                                  VerticalOptions="Center"
                                  MaximumWidthRequest="320"
+                                 IsVisible="{Binding IsEmpty}"
                                  InputTransparent="True">
                 <Label Text="Nenhuma sessão registrada"
                        Style="{StaticResource SectionTitle}"
@@ -32,6 +98,10 @@
                        Style="{StaticResource SecondaryText}"
                        HorizontalTextAlignment="Center" />
             </VerticalStackLayout>
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
         </Grid>
     </Grid>
 </ContentPage>

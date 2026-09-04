@@ -126,4 +126,63 @@ public sealed class SessionDaoTests
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
             sessionDao.SaveSetAsync(new SetRecord { SetNumber = 1, Reps = 10, LoadKg = double.NaN }));
     }
+
+    [Fact]
+    public async Task HistorySummaries_AreFilteredOrderedAndCalculateVolume()
+    {
+        await using var context = await TestDatabase.CreateAsync();
+        IExerciseDao exerciseDao = new ExerciseDao(context.Database);
+        IWorkoutDao workoutDao = new WorkoutDao(context.Database);
+        ISessionDao sessionDao = new SessionDao(context.Database);
+        var exercise = new Exercise { Name = "Supino", MuscleGroup = "Peito" };
+        await exerciseDao.InsertAsync(exercise);
+        var workout = new Workout { Name = "Empurrar" };
+        await workoutDao.SaveAsync(workout,
+        [
+            new WorkoutExercise
+            {
+                ExerciseId = exercise.Id,
+                OrderIndex = 0,
+                PlannedSets = 3,
+                PlannedReps = 10
+            }
+        ]);
+        var older = new WorkoutSession
+        {
+            WorkoutId = workout.Id,
+            StartedAt = new DateTime(2026, 8, 1, 10, 0, 0, DateTimeKind.Utc),
+            FinishedAt = new DateTime(2026, 8, 1, 10, 30, 0, DateTimeKind.Utc)
+        };
+        var newer = new WorkoutSession
+        {
+            WorkoutId = workout.Id,
+            StartedAt = new DateTime(2026, 9, 1, 10, 0, 0, DateTimeKind.Utc),
+            FinishedAt = new DateTime(2026, 9, 1, 10, 45, 0, DateTimeKind.Utc)
+        };
+        await sessionDao.InsertAsync(older);
+        await sessionDao.InsertAsync(newer);
+        await sessionDao.SaveSetAsync(new SetRecord
+        {
+            SessionId = newer.Id,
+            ExerciseId = exercise.Id,
+            SetNumber = 1,
+            Reps = 10,
+            LoadKg = 50
+        });
+
+        var all = await sessionDao.GetSummariesAsync();
+        var filtered = await sessionDao.GetSummariesAsync(
+            workout.Id,
+            new DateTime(2026, 8, 15, 0, 0, 0, DateTimeKind.Utc));
+        var details = await sessionDao.GetSetDetailsAsync(newer.Id);
+
+        Assert.Equal([newer.Id, older.Id], all.Select(item => item.Id));
+        var summary = Assert.Single(filtered);
+        Assert.Equal("Empurrar", summary.WorkoutName);
+        Assert.Equal(500, summary.TotalVolume);
+        var detail = Assert.Single(details);
+        Assert.Equal("Supino", detail.ExerciseName);
+        Assert.Equal(10, detail.Reps);
+        Assert.Equal(50, detail.LoadKg);
+    }
 }

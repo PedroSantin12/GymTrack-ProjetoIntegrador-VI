@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="GymTrack.Views.HistoryDetailPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
+    x:DataType="viewModels:HistoryDetailViewModel"
+    Title="Detalhe">
+
+    <Grid Padding="{StaticResource PagePadding}" RowDefinitions="*,Auto" RowSpacing="12">
+        <ScrollView>
+            <VerticalStackLayout Spacing="16">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding WorkoutName}" Style="{StaticResource PageTitle}" />
+                    <Label Text="{Binding DateText}" Style="{StaticResource SecondaryText}" />
+                </VerticalStackLayout>
+
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <Border>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Duração" Style="{StaticResource CaptionText}" />
+                            <Label Text="{Binding DurationText}" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Séries" Style="{StaticResource CaptionText}" />
+                            <Label Text="{Binding SetCountText}" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="2">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Volume" Style="{StaticResource CaptionText}" />
+                            <Label Text="{Binding VolumeText}" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <Label Text="Exercícios executados" Style="{StaticResource SectionTitle}" />
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Exercises}" Spacing="12">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:HistoryExerciseGroupViewModel">
+                            <Border>
+                                <VerticalStackLayout Spacing="10">
+                                    <Label Text="{Binding ExerciseName}" Style="{StaticResource SectionTitle}" />
+                                    <Label Text="{Binding MuscleGroup}" Style="{StaticResource CaptionText}" />
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="8">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="viewModels:HistorySetItemViewModel">
+                                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                                    <Label Text="{Binding NumberText}" />
+                                                    <Label Grid.Column="1" Text="{Binding PerformanceText}" />
+                                                    <Label Grid.Column="2" Text="{Binding VolumeText}" Style="{StaticResource CaptionText}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+                <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Button Grid.Row="1"
+                Text="Ver evolução"
+                Command="{Binding ViewProgressCommand}" />
+    </Grid>
+</ContentPage>

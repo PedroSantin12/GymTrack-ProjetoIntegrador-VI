@@ -4,6 +4,8 @@ public partial class MainTabbedPage : TabbedPage
 {
     private readonly NavigationPage _dashboardNavigation;
     private readonly NavigationPage _workoutsNavigation;
+    private readonly NavigationPage _historyNavigation;
+    private readonly NavigationPage _progressNavigation;
 
     public MainTabbedPage(
         DashboardPage dashboardPage,
@@ -18,8 +20,10 @@ public partial class MainTabbedPage : TabbedPage
 
         Children.Add(_dashboardNavigation);
         Children.Add(_workoutsNavigation);
-        Children.Add(CreateNavigationPage(historyPage, "Histórico"));
-        Children.Add(CreateNavigationPage(progressPage, "Evolução"));
+        _historyNavigation = CreateNavigationPage(historyPage, "Histórico");
+        Children.Add(_historyNavigation);
+        _progressNavigation = CreateNavigationPage(progressPage, "Evolução");
+        Children.Add(_progressNavigation);
     }
 
     public NavigationPage CurrentNavigation =>
@@ -35,6 +39,18 @@ public partial class MainTabbedPage : TabbedPage
     {
         CurrentPage = _workoutsNavigation;
         return _workoutsNavigation;
+    }
+
+    public NavigationPage SelectProgress()
+    {
+        CurrentPage = _progressNavigation;
+        return _progressNavigation;
+    }
+
+    public NavigationPage SelectHistory()
+    {
+        CurrentPage = _historyNavigation;
+        return _historyNavigation;
     }
 
     private static NavigationPage CreateNavigationPage(Page rootPage, string title)

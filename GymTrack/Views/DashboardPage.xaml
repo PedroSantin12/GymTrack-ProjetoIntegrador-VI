@@ -16,23 +16,38 @@
                        HorizontalOptions="Start"
                        Aspect="AspectFit"
                        SemanticProperties.Description="Logotipo GymTrack" />
-                <Label Text="Treinos simples. Progresso visível."
+                <Label Text="Olá. Organize seu treino e acompanhe sua evolução."
                        Style="{StaticResource SecondaryText}" />
             </VerticalStackLayout>
 
             <Border>
                 <Grid RowDefinitions="Auto,Auto,Auto"
                       RowSpacing="{StaticResource Spacing12}">
-                    <Label Text="Treino de hoje"
+                    <Label Text="Iniciar treino"
                            Style="{StaticResource SectionTitle}" />
-                    <Label Grid.Row="1"
-                           Text="Nenhum treino cadastrado. Crie um treino para começar."
-                           Style="{StaticResource SecondaryText}" />
+                    <Picker Grid.Row="1"
+                            Title="Escolha um treino"
+                            ItemsSource="{Binding Workouts}"
+                            SelectedItem="{Binding SelectedWorkout, Mode=TwoWay}"
+                            IsVisible="{Binding HasWorkouts}" />
+                    <VerticalStackLayout Grid.Row="1" Spacing="8" IsVisible="{Binding HasNoWorkouts}">
+                        <Label Text="Crie seu primeiro treino para começar."
+                               Style="{StaticResource SecondaryText}" />
+                        <Button Text="Criar treino"
+                                Command="{Binding OpenWorkoutsCommand}" />
+                    </VerticalStackLayout>
                     <Button Grid.Row="2"
-                            Text="Escolher um treino"
-                            IsEnabled="False" />
+                            Text="Iniciar treino"
+                            Command="{Binding StartWorkoutCommand}"
+                            IsVisible="{Binding HasWorkouts}" />
                 </Grid>
             </Border>
+
+            <VerticalStackLayout Spacing="{StaticResource Spacing8}">
+                <Label Text="Último treino" Style="{StaticResource SectionTitle}" />
+                <Label Text="{Binding LastWorkoutName}" FontAttributes="Bold" />
+                <Label Text="{Binding LastWorkoutDetails}" Style="{StaticResource SecondaryText}" />
+            </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="{StaticResource Spacing12}">
                 <Label Text="Resumo"
@@ -41,7 +56,7 @@
                       ColumnSpacing="{StaticResource Spacing12}">
                     <Border Grid.Column="0" Padding="12">
                         <VerticalStackLayout Spacing="4">
-                            <Label Text="0"
+                            <Label Text="{Binding WeeklySessionsText}"
                                    FontFamily="OpenSansSemibold"
                                    FontSize="22" />
                             <Label Text="sessões nesta semana"
@@ -50,7 +65,7 @@
                     </Border>
                     <Border Grid.Column="1" Padding="12">
                         <VerticalStackLayout Spacing="4">
-                            <Label Text="0 kg"
+                            <Label Text="{Binding WeeklyVolumeText}"
                                    FontFamily="OpenSansSemibold"
                                    FontSize="22" />
                             <Label Text="volume semanal"
@@ -63,9 +78,27 @@
             <VerticalStackLayout Spacing="{StaticResource Spacing8}">
                 <Label Text="Recentes"
                        Style="{StaticResource SectionTitle}" />
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentSessions}" Spacing="10" IsVisible="{Binding HasRecentSessions}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:HistorySessionItemViewModel">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="3">
+                                <Label Text="{Binding WorkoutName}" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding VolumeText}" Style="{StaticResource CaptionText}" />
+                                <Label Grid.Row="1" Text="{Binding DateText}" Style="{StaticResource CaptionText}" />
+                            </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
                 <Label Text="Suas sessões concluídas aparecerão aqui."
+                       IsVisible="{Binding HasNoRecentSessions}"
                        Style="{StaticResource SecondaryText}" />
+                <Button Text="Ver histórico"
+                        Style="{StaticResource SecondaryButton}"
+                        Command="{Binding OpenHistoryCommand}"
+                        IsVisible="{Binding HasRecentSessions}" />
             </VerticalStackLayout>
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
