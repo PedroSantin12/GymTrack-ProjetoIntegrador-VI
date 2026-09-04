@@ -1,17 +1,13 @@
 @echo off
 setlocal
 
-set "GYMTRACK_DRIVE=M:"
+set "SOLUCAO=%~dp0GymTrack.sln"
 
-if exist "%GYMTRACK_DRIVE%\GymTrack.sln" goto open_solution
-
-subst %GYMTRACK_DRIVE% "%~dp0" >nul
-if errorlevel 1 (
-    echo Nao foi possivel criar o caminho temporario %GYMTRACK_DRIVE%.
-    echo Verifique se essa letra de unidade ja esta em uso.
+if not exist "%SOLUCAO%" (
+    echo Nao foi possivel encontrar GymTrack.sln em:
+    echo %~dp0
     pause
     exit /b 1
 )
 
-:open_solution
-start "" "%GYMTRACK_DRIVE%\GymTrack.sln"
+start "" "%SOLUCAO%"
