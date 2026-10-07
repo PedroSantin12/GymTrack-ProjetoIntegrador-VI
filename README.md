@@ -28,6 +28,7 @@ dotnet test M:\GymTrack.Tests\GymTrack.Tests.csproj
 - O formulário valida os campos, evita duplicatas e persiste o estado ativo definido pelo `CheckBox`.
 - Exclusões exigem confirmação; exercícios vinculados são arquivados para preservar o histórico.
 - A tela de treinos lista quantidade de exercícios, última execução e mantém a ação Iniciar visível.
+- A lista de treinos também permite busca por nome em tempo real, sem diferenciar acentos e maiúsculas.
 - O editor de treino permite rascunhos, seleção pesquisável de exercícios ativos, séries, repetições, carga opcional, remoção e reordenação.
 - A composição completa do treino é salva em uma transação e reaberta preservando ordem e valores planejados.
 - Treinos sem exercícios não podem iniciar; treinos com histórico não podem ser excluídos.
@@ -42,7 +43,7 @@ dotnet test M:\GymTrack.Tests\GymTrack.Tests.csproj
 - Cores, espaçamentos, estilos, ícone e splash do GymTrack ficam centralizados em `Resources`.
 - A persistência possui cinco tabelas SQLite, inicialização assíncrona, índices, chaves estrangeiras e DAOs explícitos.
 
-As fases 0 a 9 da especificação estão implementadas e validadas no Android.
+As fases 0 a 9 da especificação estão implementadas. O fluxo principal foi validado anteriormente em emulador Android. Após as correções desta revisão, a versão atual passou nos testes automatizados e na compilação Android; ainda falta uma nova execução no emulador.
 
 ## Roteiro rápido de demonstração
 

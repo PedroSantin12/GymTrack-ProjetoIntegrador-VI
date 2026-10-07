@@ -94,7 +94,7 @@ public partial class HistoryViewModel : BaseViewModel
     private HistorySessionItemViewModel? selectedSession;
 
     public bool HasSessions => Sessions.Count > 0;
-    public bool IsEmpty => !IsBusy && !HasSessions;
+    public bool IsEmpty => !IsBusy && !HasSessions && !HasStatusMessage;
     public bool IsCustomPeriod => SelectedPeriod?.IsCustom == true;
 
     partial void OnSelectedPeriodChanged(PeriodFilterOption? value) =>
@@ -120,17 +120,22 @@ public partial class HistoryViewModel : BaseViewModel
 
         try
         {
-            if (Workouts.Count == 0)
+            var selectedWorkoutId = SelectedWorkout?.Id;
+            var workouts = await _workoutDao.GetAllAsync();
+            if (request != Volatile.Read(ref _latestLoadRequest))
             {
-                var workouts = await _workoutDao.GetAllAsync();
-                Workouts.Add(new(null, "Todos os treinos"));
-                foreach (var workout in workouts.OrderBy(workout => workout.Name))
-                {
-                    Workouts.Add(new(workout.Id, workout.Name));
-                }
-
-                SelectedWorkout = Workouts[0];
+                return;
             }
+
+            Workouts.Clear();
+            Workouts.Add(new(null, "Todos os treinos"));
+            foreach (var workout in workouts.OrderBy(workout => workout.Name))
+            {
+                Workouts.Add(new(workout.Id, workout.Name));
+            }
+
+            SelectedWorkout = Workouts.FirstOrDefault(item => item.Id == selectedWorkoutId)
+                ?? Workouts[0];
 
             var from = SelectedPeriod?.IsCustom == true
                 ? StartDate.Date.ToUniversalTime()

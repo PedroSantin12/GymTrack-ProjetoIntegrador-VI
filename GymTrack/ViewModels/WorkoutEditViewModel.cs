@@ -213,6 +213,11 @@ public partial class WorkoutEditViewModel : BaseViewModel
             saved = true;
             await TryNotifyAsync("Treino salvo.");
         }
+        catch (InvalidOperationException exception)
+            when (exception.Message.StartsWith("Finalize a sessão em andamento", StringComparison.Ordinal))
+        {
+            ValidationMessage = exception.Message;
+        }
         catch (Exception exception)
         {
             _logger.LogError(exception, "Falha ao salvar treino {WorkoutId}.", _workoutId);

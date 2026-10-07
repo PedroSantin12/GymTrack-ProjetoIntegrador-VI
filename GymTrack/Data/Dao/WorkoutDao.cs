@@ -60,6 +60,7 @@ public sealed class WorkoutDao(GymTrackDatabase database) : IWorkoutDao
         await connection.RunInTransactionAsync(transaction =>
         {
             ValidateComposition(transaction, exercises);
+            EnsureActiveSessionKeepsExercises(transaction, workout.Id, exercises);
             SaveWorkout(transaction, workout);
             ReplaceExercises(transaction, workout.Id, exercises);
         });
@@ -74,6 +75,15 @@ public sealed class WorkoutDao(GymTrackDatabase database) : IWorkoutDao
             "SELECT COUNT(1) FROM WorkoutSession WHERE WorkoutId = ?",
             id);
 
+        return count > 0;
+    }
+
+    public async Task<bool> HasActiveSessionAsync(int id)
+    {
+        var connection = await database.GetConnectionAsync();
+        var count = await connection.ExecuteScalarAsync<int>(
+            "SELECT COUNT(1) FROM WorkoutSession WHERE WorkoutId = ? AND FinishedAt IS NULL",
+            id);
         return count > 0;
     }
 
@@ -138,6 +148,41 @@ public sealed class WorkoutDao(GymTrackDatabase database) : IWorkoutDao
             item.WorkoutId = workoutId;
             item.OrderIndex = index;
             transaction.Insert(item);
+        }
+    }
+
+    private static void EnsureActiveSessionKeepsExercises(
+        SQLiteConnection transaction,
+        int workoutId,
+        IReadOnlyList<WorkoutExercise> exercises)
+    {
+        if (workoutId == 0)
+        {
+            return;
+        }
+
+        var activeSessionId = transaction.ExecuteScalar<int>(
+            "SELECT Id FROM WorkoutSession WHERE WorkoutId = ? AND FinishedAt IS NULL LIMIT 1",
+            workoutId);
+        if (activeSessionId == 0)
+        {
+            return;
+        }
+
+        var nextExerciseIds = exercises.Select(item => item.ExerciseId).ToHashSet();
+        var existingExercises = transaction.Query<WorkoutExercise>(
+            "SELECT * FROM WorkoutExercise WHERE WorkoutId = ?",
+            workoutId);
+        var savedSets = transaction.Query<SetRecord>(
+            "SELECT * FROM SetRecord WHERE SessionId = ?",
+            activeSessionId);
+
+        if (exercises.Count == 0 ||
+            existingExercises.Any(item => !nextExerciseIds.Contains(item.ExerciseId)) ||
+            savedSets.Any(item => !nextExerciseIds.Contains(item.ExerciseId)))
+        {
+            throw new InvalidOperationException(
+                "Finalize a sessão em andamento antes de remover exercícios deste treino.");
         }
     }
 

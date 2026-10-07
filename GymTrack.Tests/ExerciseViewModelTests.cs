@@ -8,6 +8,21 @@ namespace GymTrack.Tests;
 
 public sealed class ExerciseViewModelTests
 {
+    [Fact]
+    public async Task MissingExerciseInEditMode_CannotBeSavedAsNewExercise()
+    {
+        var dao = new FakeExerciseDao();
+        var viewModel = CreateEditor(dao);
+        await viewModel.InitializeAsync(999);
+        viewModel.Name = "Supino reto";
+        viewModel.SelectedMuscleGroup = "Peito";
+
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.Contains("Não foi possível localizar", viewModel.ValidationMessage);
+        Assert.Equal(0, dao.InsertCalls);
+    }
+
     public static TheoryData<string, string?, string> InvalidExerciseData => new()
     {
         { string.Empty, "Peito", string.Empty },

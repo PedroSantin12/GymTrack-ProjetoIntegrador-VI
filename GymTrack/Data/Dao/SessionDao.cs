@@ -151,7 +151,19 @@ public sealed class SessionDao(GymTrackDatabase database) : ISessionDao
             ? DateTime.UtcNow
             : session.StartedAt;
 
-        return await connection.InsertAsync(session);
+        var inserted = 0;
+        await connection.RunInTransactionAsync(transaction =>
+        {
+            if (session.FinishedAt is null && transaction.ExecuteScalar<int>(
+                    "SELECT COUNT(1) FROM WorkoutSession WHERE FinishedAt IS NULL") > 0)
+            {
+                throw new InvalidOperationException(
+                    "Já existe uma sessão em andamento. Retome ou finalize essa sessão antes de iniciar outra.");
+            }
+
+            inserted = transaction.Insert(session);
+        });
+        return inserted;
     }
 
     public async Task<int> UpdateAsync(WorkoutSession session)

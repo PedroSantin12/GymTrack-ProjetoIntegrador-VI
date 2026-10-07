@@ -20,6 +20,8 @@ public partial class WorkoutSessionViewModel : BaseViewModel
     private readonly ILogger<WorkoutSessionViewModel> _logger;
     private WorkoutSession? _session;
     private int _closeRequested;
+    private int _pendingSetSaves;
+    private bool _isFinishing;
 
     public WorkoutSessionViewModel(
         IWorkoutDao workoutDao,
@@ -101,22 +103,22 @@ public partial class WorkoutSessionViewModel : BaseViewModel
                 return false;
             }
 
-            var composition = await _workoutDao.GetExercisesAsync(workoutId);
-            if (composition.Count == 0)
-            {
-                await _dialogService.AlertAsync(
-                    "Treino incompleto",
-                    "Adicione ao menos um exercício para iniciar o treino.",
-                    "Entendi");
-                return false;
-            }
-
             var activeSession = await _sessionDao.GetActiveAsync();
             if (activeSession is not null && activeSession.WorkoutId != workoutId)
             {
                 await _dialogService.AlertAsync(
                     "Sessão em andamento",
                     "Finalize ou retome o treino em andamento antes de iniciar outro.",
+                    "Entendi");
+                return false;
+            }
+
+            var composition = await _workoutDao.GetExercisesAsync(workoutId);
+            if (composition.Count == 0 && activeSession is null)
+            {
+                await _dialogService.AlertAsync(
+                    "Treino incompleto",
+                    "Adicione ao menos um exercício para iniciar o treino.",
                     "Entendi");
                 return false;
             }
@@ -136,11 +138,30 @@ public partial class WorkoutSessionViewModel : BaseViewModel
             var catalog = await _exerciseDao.GetAllAsync(includeInactive: true);
             var exercisesById = catalog.ToDictionary(exercise => exercise.Id);
             var savedSets = await _sessionDao.GetSetsAsync(_session.Id);
+            var plans = composition.ToList();
+            foreach (var savedExercise in savedSets.GroupBy(record => record.ExerciseId))
+            {
+                if (plans.Any(plan => plan.ExerciseId == savedExercise.Key))
+                {
+                    continue;
+                }
+
+                var latestSet = savedExercise.OrderByDescending(record => record.SetNumber).First();
+                plans.Add(new WorkoutExercise
+                {
+                    WorkoutId = workoutId,
+                    ExerciseId = savedExercise.Key,
+                    OrderIndex = plans.Count,
+                    PlannedSets = savedExercise.Max(record => record.SetNumber),
+                    PlannedReps = latestSet.Reps,
+                    PlannedLoad = latestSet.LoadKg
+                });
+            }
 
             WorkoutName = workout.Name;
             Title = workout.Name;
 
-            foreach (var plan in composition.OrderBy(item => item.OrderIndex))
+            foreach (var plan in plans.OrderBy(item => item.OrderIndex))
             {
                 if (!exercisesById.TryGetValue(plan.ExerciseId, out var exercise))
                 {
@@ -224,32 +245,38 @@ public partial class WorkoutSessionViewModel : BaseViewModel
     [RelayCommand]
     private async Task FinishAsync()
     {
-        if (IsBusy || IsFinished || _session is null)
+        if (IsBusy || IsFinished || _session is null || _isFinishing)
         {
             return;
         }
 
-        var completedSeriesText = CompletedSetsCount == 1
-            ? "1 série concluída"
-            : $"{CompletedSetsCount} séries concluídas";
-        var message = CompletedSetsCount == 0
-            ? "Nenhuma série foi concluída. Finalizar e salvar esta sessão vazia?"
-            : $"Finalizar com {completedSeriesText} e {FormatVolume(CalculateVolume())} kg de volume?";
-        var confirmed = await _dialogService.ConfirmAsync(
-            CompletedSetsCount == 0 ? "Finalizar treino vazio?" : "Finalizar treino?",
-            message,
-            "Finalizar",
-            "Continuar");
-        if (!confirmed)
+        if (Volatile.Read(ref _pendingSetSaves) > 0)
         {
+            ValidationMessage = "Aguarde o salvamento das séries antes de finalizar.";
             return;
         }
 
-        IsBusy = true;
+        _isFinishing = true;
         ValidationMessage = null;
-
         try
         {
+            var completedSeriesText = CompletedSetsCount == 1
+                ? "1 série concluída"
+                : $"{CompletedSetsCount} séries concluídas";
+            var message = CompletedSetsCount == 0
+                ? "Nenhuma série foi concluída. Finalizar e salvar esta sessão vazia?"
+                : $"Finalizar com {completedSeriesText} e {FormatVolume(CalculateVolume())} kg de volume?";
+            var confirmed = await _dialogService.ConfirmAsync(
+                CompletedSetsCount == 0 ? "Finalizar treino vazio?" : "Finalizar treino?",
+                message,
+                "Finalizar",
+                "Continuar");
+            if (!confirmed)
+            {
+                return;
+            }
+
+            IsBusy = true;
             _session.FinishedAt = UtcNow();
             if (await _sessionDao.UpdateAsync(_session) != 1)
             {
@@ -284,6 +311,7 @@ public partial class WorkoutSessionViewModel : BaseViewModel
         finally
         {
             IsBusy = false;
+            _isFinishing = false;
         }
 
         if (IsFinished)
@@ -297,6 +325,12 @@ public partial class WorkoutSessionViewModel : BaseViewModel
     {
         if (IsBusy)
         {
+            return;
+        }
+
+        if (_isFinishing || Volatile.Read(ref _pendingSetSaves) > 0)
+        {
+            ValidationMessage = "Aguarde o salvamento das séries antes de sair.";
             return;
         }
 
@@ -341,7 +375,7 @@ public partial class WorkoutSessionViewModel : BaseViewModel
 
     private void AddSet(SessionExerciseItemViewModel exercise)
     {
-        if (IsBusy || IsFinished)
+        if (IsBusy || IsFinished || _isFinishing)
         {
             return;
         }
@@ -356,7 +390,8 @@ public partial class WorkoutSessionViewModel : BaseViewModel
         SessionExerciseItemViewModel exercise,
         SessionSetItemViewModel set)
     {
-        if (IsBusy || IsFinished || set.IsCompleted || exercise.Sets.LastOrDefault() != set)
+        if (IsBusy || IsFinished || _isFinishing || set.IsBusy ||
+            set.IsCompleted || exercise.Sets.LastOrDefault() != set)
         {
             return;
         }
@@ -370,7 +405,8 @@ public partial class WorkoutSessionViewModel : BaseViewModel
         SessionExerciseItemViewModel exercise,
         SessionSetItemViewModel set)
     {
-        if (_session is null || IsFinished || set.IsCompleted || set.IsBusy)
+        if (_session is null || IsBusy || IsFinished || _isFinishing ||
+            set.IsCompleted || set.IsBusy)
         {
             return;
         }
@@ -392,6 +428,8 @@ public partial class WorkoutSessionViewModel : BaseViewModel
         }
 
         set.IsBusy = true;
+        Interlocked.Increment(ref _pendingSetSaves);
+        UpdateRemovableSets(exercise);
         set.ValidationMessage = null;
 
         try
@@ -429,6 +467,8 @@ public partial class WorkoutSessionViewModel : BaseViewModel
         finally
         {
             set.IsBusy = false;
+            Interlocked.Decrement(ref _pendingSetSaves);
+            UpdateRemovableSets(exercise);
         }
     }
 
@@ -437,7 +477,8 @@ public partial class WorkoutSessionViewModel : BaseViewModel
         for (var index = 0; index < exercise.Sets.Count; index++)
         {
             var set = exercise.Sets[index];
-            set.CanRemove = !set.IsCompleted && index == exercise.Sets.Count - 1;
+            set.CanRemove = !set.IsBusy && !set.IsCompleted &&
+                index == exercise.Sets.Count - 1;
         }
     }
 

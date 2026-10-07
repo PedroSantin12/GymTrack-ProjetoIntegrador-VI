@@ -15,6 +15,7 @@ public partial class ExerciseEditViewModel : BaseViewModel
     private readonly ILogger<ExerciseEditViewModel> _logger;
     private int _exerciseId;
     private bool _wasActive;
+    private bool _canSave = true;
 
     public ExerciseEditViewModel(
         IExerciseDao exerciseDao,
@@ -62,6 +63,7 @@ public partial class ExerciseEditViewModel : BaseViewModel
     public async Task InitializeAsync(int? exerciseId)
     {
         _exerciseId = 0;
+        _canSave = exerciseId is not > 0;
         Title = "Novo exercício";
         Name = string.Empty;
         SelectedMuscleGroup = null;
@@ -88,6 +90,7 @@ public partial class ExerciseEditViewModel : BaseViewModel
             }
 
             _exerciseId = exercise.Id;
+            _canSave = true;
             Title = "Editar exercício";
             Name = exercise.Name;
             SelectedMuscleGroup = exercise.MuscleGroup;
@@ -109,7 +112,7 @@ public partial class ExerciseEditViewModel : BaseViewModel
     [RelayCommand]
     private async Task SaveAsync()
     {
-        if (IsBusy)
+        if (IsBusy || !_canSave)
         {
             return;
         }

@@ -62,6 +62,9 @@ public partial class ExercisesViewModel : BaseViewModel
     [ObservableProperty]
     private bool showInactive;
 
+    [ObservableProperty]
+    private bool isRefreshing;
+
     partial void OnSearchTextChanged(string value)
     {
         ScheduleLoad();
@@ -125,6 +128,7 @@ public partial class ExercisesViewModel : BaseViewModel
             if (request == Volatile.Read(ref _latestLoadRequest))
             {
                 IsBusy = false;
+                IsRefreshing = false;
             }
         }
     }

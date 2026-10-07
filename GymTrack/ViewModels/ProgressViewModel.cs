@@ -16,6 +16,8 @@ public partial class ProgressViewModel : BaseViewModel
     private readonly IAnalyticsService _analyticsService;
     private readonly ILogger<ProgressViewModel> _logger;
     private IReadOnlyList<ExerciseProgressPoint> _points = [];
+    private int _latestProgressRequest;
+    private bool _isUpdatingExercises;
 
     public ProgressViewModel(
         IExerciseDao exerciseDao,
@@ -59,7 +61,10 @@ public partial class ProgressViewModel : BaseViewModel
 
     partial void OnSelectedExerciseChanged(Exercise? value)
     {
-        _ = LoadProgressAsync();
+        if (!_isUpdatingExercises)
+        {
+            _ = LoadProgressAsync();
+        }
     }
 
     partial void OnIsMaxLoadSelectedChanged(bool value)
@@ -83,25 +88,47 @@ public partial class ProgressViewModel : BaseViewModel
     [RelayCommand]
     private async Task LoadAsync()
     {
-        if (Exercises.Count == 0)
+        Interlocked.Increment(ref _latestProgressRequest);
+        try
         {
             var exercises = await _exerciseDao.GetAllAsync(includeInactive: true);
-            foreach (var exercise in exercises)
+            var selectedId = SelectedExercise?.Id;
+            _isUpdatingExercises = true;
+            try
             {
-                Exercises.Add(exercise);
+                Exercises.Clear();
+                foreach (var exercise in exercises)
+                {
+                    Exercises.Add(exercise);
+                }
+
+                SelectedExercise = Exercises.FirstOrDefault(item => item.Id == selectedId)
+                    ?? Exercises.FirstOrDefault();
+            }
+            finally
+            {
+                _isUpdatingExercises = false;
             }
 
-            SelectedExercise ??= Exercises.FirstOrDefault();
+            await LoadProgressAsync();
         }
-
-        await LoadProgressAsync();
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Falha ao carregar a lista de exercícios da evolução.");
+            StatusMessage = "Não foi possível carregar os exercícios.";
+            IsBusy = false;
+            OnPropertyChanged(nameof(IsEmpty));
+        }
     }
 
     private async Task LoadProgressAsync()
     {
-        if (SelectedExercise is null)
+        var request = Interlocked.Increment(ref _latestProgressRequest);
+        var exerciseId = SelectedExercise?.Id;
+        if (exerciseId is null)
         {
             _points = [];
+            IsBusy = false;
             UpdateChart();
             return;
         }
@@ -110,20 +137,34 @@ public partial class ProgressViewModel : BaseViewModel
         StatusMessage = null;
         try
         {
-            _points = await _analyticsService.GetExerciseProgressAsync(SelectedExercise.Id);
+            var points = await _analyticsService.GetExerciseProgressAsync(exerciseId.Value);
+            if (request != Volatile.Read(ref _latestProgressRequest))
+            {
+                return;
+            }
+
+            _points = points;
             UpdateChart();
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Falha ao carregar evolução do exercício {ExerciseId}.", SelectedExercise.Id);
+            if (request != Volatile.Read(ref _latestProgressRequest))
+            {
+                return;
+            }
+
+            _logger.LogError(exception, "Falha ao carregar evolução do exercício {ExerciseId}.", exerciseId.Value);
             StatusMessage = "Não foi possível carregar a evolução.";
             _points = [];
             UpdateChart();
         }
         finally
         {
-            IsBusy = false;
-            OnPropertyChanged(nameof(IsEmpty));
+            if (request == Volatile.Read(ref _latestProgressRequest))
+            {
+                IsBusy = false;
+                OnPropertyChanged(nameof(IsEmpty));
+            }
         }
     }
 

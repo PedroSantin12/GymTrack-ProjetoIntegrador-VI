@@ -254,14 +254,14 @@ def main() -> None:
         PageBreak(),
         Paragraph("4. Validação e testes", heading),
         Paragraph(
-            "O fluxo principal foi executado no emulador Android: criação e edição de exercícios, composição de treino, execução e retomada de sessão, conclusão de série, finalização, filtros do histórico, detalhe e alternância do gráfico. Também foi confirmado que os dados persistem após encerrar e abrir novamente o aplicativo.",
+            "Antes desta revisão, o fluxo principal foi executado no emulador Android: criação e edição de exercícios, composição de treino, execução e retomada de sessão, conclusão de série, finalização, filtros do histórico, detalhe e alternância do gráfico. A persistência após reiniciar o aplicativo também foi confirmada. Após as correções, a nova versão passou nos testes automatizados e na compilação Android; ela ainda não foi reexecutada no emulador.",
             body,
         ),
         Table(
             [
                 ["Verificação", "Resultado"],
                 ["Build Android", "Aprovado, 0 erros"],
-                ["Testes automatizados", "68 de 68 aprovados"],
+                ["Testes automatizados", "82 de 82 aprovados"],
                 ["Persistência SQLite", "Aprovada após reinício"],
                 ["Navegação", "FlyoutPage, TabbedPage, NavigationPage e modal aprovados"],
                 ["Histórico", "ListView, filtros e detalhe aprovados"],

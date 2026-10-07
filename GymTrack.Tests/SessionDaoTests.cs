@@ -6,6 +6,28 @@ namespace GymTrack.Tests;
 public sealed class SessionDaoTests
 {
     [Fact]
+    public async Task InsertAsync_PreventsTwoActiveSessions()
+    {
+        await using var context = await TestDatabase.CreateAsync();
+        IWorkoutDao workouts = new WorkoutDao(context.Database);
+        ISessionDao sessions = new SessionDao(context.Database);
+        var firstWorkout = new Workout { Name = "Primeiro" };
+        var secondWorkout = new Workout { Name = "Segundo" };
+        await workouts.SaveAsync(firstWorkout, []);
+        await workouts.SaveAsync(secondWorkout, []);
+
+        var first = new WorkoutSession { WorkoutId = firstWorkout.Id };
+        await sessions.InsertAsync(first);
+        var second = new WorkoutSession { WorkoutId = secondWorkout.Id };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sessions.InsertAsync(second));
+
+        Assert.Equal(first.Id, (await sessions.GetActiveAsync())?.Id);
+        first.FinishedAt = DateTime.UtcNow;
+        await sessions.UpdateAsync(first);
+        Assert.Equal(1, await sessions.InsertAsync(second));
+    }
+
+    [Fact]
     public async Task SessionAndSets_CanBeInsertedUpdatedAndRead()
     {
         await using var context = await TestDatabase.CreateAsync();

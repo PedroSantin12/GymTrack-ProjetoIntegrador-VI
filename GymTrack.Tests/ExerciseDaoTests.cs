@@ -6,6 +6,21 @@ namespace GymTrack.Tests;
 public sealed class ExerciseDaoTests
 {
     [Fact]
+    public async Task SearchAndDuplicateCheck_IgnoreAccentedCaseAndTreatWildcardsLiterally()
+    {
+        await using var context = await TestDatabase.CreateAsync();
+        IExerciseDao dao = new ExerciseDao(context.Database);
+        var exercise = new Exercise { Name = "Elevação lateral", MuscleGroup = "Ombros" };
+        await dao.InsertAsync(exercise);
+
+        Assert.Equal(exercise.Id, Assert.Single(await dao.SearchAsync("ELEVAÇÃO")).Id);
+        Assert.Equal(exercise.Id, Assert.Single(await dao.SearchAsync("elevacao")).Id);
+        Assert.True(await dao.ExistsAsync("ELEVAÇÃO LATERAL", "OMBROS"));
+        Assert.False(await dao.ExistsAsync("ELEVAÇÃO LATERAL", "OMBROS", exercise.Id));
+        Assert.Empty(await dao.SearchAsync("%"));
+    }
+
+    [Fact]
     public async Task CrudAndSearch_RoundTripExerciseData()
     {
         await using var context = await TestDatabase.CreateAsync();

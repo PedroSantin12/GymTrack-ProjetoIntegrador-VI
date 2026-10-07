@@ -9,6 +9,23 @@ namespace GymTrack.Tests;
 public sealed class WorkoutsViewModelTests
 {
     [Fact]
+    public async Task SearchText_FiltersWorkoutsAsUserTypesIgnoringAccents()
+    {
+        var dao = new FakeWorkoutDao();
+        dao.Summaries.Add(new WorkoutSummary { Id = 1, Name = "Treino de Braços" });
+        dao.Summaries.Add(new WorkoutSummary { Id = 2, Name = "Treino de Pernas" });
+        var viewModel = CreateViewModel(dao);
+        await viewModel.LoadCommand.ExecuteAsync(null);
+
+        viewModel.SearchText = "bracos";
+
+        Assert.Equal(1, Assert.Single(viewModel.Workouts).Id);
+        Assert.Equal(1, dao.SummaryCalls);
+        viewModel.SearchText = string.Empty;
+        Assert.Equal(2, viewModel.Workouts.Count);
+    }
+
+    [Fact]
     public async Task LoadAsync_PopulatesWorkoutSummaries()
     {
         var dao = new FakeWorkoutDao();
@@ -88,6 +105,21 @@ public sealed class WorkoutsViewModelTests
         Assert.Contains("Adicione ao menos um exercício", alert.Message);
         Assert.Equal(0, startRequests);
         Assert.Equal(0, dao.DeleteCalls);
+    }
+
+    [Fact]
+    public async Task StartEmptyWorkout_WithActiveSession_RequestsResume()
+    {
+        var dao = CreateDaoWithWorkout(exerciseCount: 0);
+        dao.HasActiveSessionResult = true;
+        var viewModel = CreateViewModel(dao);
+        int? requestedId = null;
+        viewModel.StartRequested += (_, args) => requestedId = args.WorkoutId;
+        await viewModel.LoadCommand.ExecuteAsync(null);
+
+        await Assert.Single(viewModel.Workouts).StartCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, requestedId);
     }
 
     [Fact]
@@ -200,6 +232,8 @@ public sealed class WorkoutsViewModelTests
 
         public bool HasSessionsResult { get; set; }
 
+        public bool HasActiveSessionResult { get; set; }
+
         public int SummaryCalls { get; private set; }
 
         public int DeleteCalls { get; private set; }
@@ -245,6 +279,9 @@ public sealed class WorkoutsViewModelTests
         {
             return Task.FromResult(HasSessionsResult);
         }
+
+        public Task<bool> HasActiveSessionAsync(int id) =>
+            Task.FromResult(HasActiveSessionResult);
 
         public Task<int> DeleteAsync(int id)
         {

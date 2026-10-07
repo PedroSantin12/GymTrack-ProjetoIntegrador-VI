@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GymTrack.Data.Dao;
 using GymTrack.Models;
@@ -23,6 +25,7 @@ public partial class WorkoutsViewModel : BaseViewModel
     private readonly IDialogService _dialogService;
     private readonly INotificationService _notificationService;
     private readonly ILogger<WorkoutsViewModel> _logger;
+    private IReadOnlyList<WorkoutSummary> _allWorkouts = [];
     private int _latestLoadRequest;
     private int _isShowingActionMenu;
 
@@ -47,6 +50,14 @@ public partial class WorkoutsViewModel : BaseViewModel
 
     public ObservableCollection<WorkoutListItemViewModel> Workouts { get; } = [];
 
+    [ObservableProperty]
+    private bool isRefreshing;
+
+    [ObservableProperty]
+    private string searchText = string.Empty;
+
+    partial void OnSearchTextChanged(string value) => ApplySearchFilter();
+
     [RelayCommand]
     private async Task LoadAsync()
     {
@@ -62,15 +73,8 @@ public partial class WorkoutsViewModel : BaseViewModel
                 return;
             }
 
-            Workouts.Clear();
-            foreach (var summary in summaries)
-            {
-                Workouts.Add(new WorkoutListItemViewModel(
-                    summary,
-                    EditWorkout,
-                    StartWorkoutAsync,
-                    ShowActionsAsync));
-            }
+            _allWorkouts = summaries;
+            ApplySearchFilter();
         }
         catch (Exception exception)
         {
@@ -88,6 +92,7 @@ public partial class WorkoutsViewModel : BaseViewModel
             if (request == Volatile.Read(ref _latestLoadRequest))
             {
                 IsBusy = false;
+                IsRefreshing = false;
             }
         }
     }
@@ -165,7 +170,8 @@ public partial class WorkoutsViewModel : BaseViewModel
 
     private async Task StartWorkoutAsync(WorkoutSummary workout)
     {
-        if (workout.ExerciseCount == 0)
+        if (workout.ExerciseCount == 0 &&
+            !await _workoutDao.HasActiveSessionAsync(workout.Id))
         {
             await _dialogService.AlertAsync(
                 "Treino incompleto",
@@ -237,6 +243,25 @@ public partial class WorkoutsViewModel : BaseViewModel
         catch (Exception exception)
         {
             _logger.LogWarning(exception, "O aviso ao usuário não pôde ser exibido.");
+        }
+    }
+
+    private void ApplySearchFilter()
+    {
+        var search = SearchText?.Trim() ?? string.Empty;
+        var compare = CultureInfo.GetCultureInfo("pt-BR").CompareInfo;
+        Workouts.Clear();
+        foreach (var summary in _allWorkouts.Where(item =>
+                     compare.IndexOf(
+                         item.Name,
+                         search,
+                         CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) >= 0))
+        {
+            Workouts.Add(new WorkoutListItemViewModel(
+                summary,
+                EditWorkout,
+                StartWorkoutAsync,
+                ShowActionsAsync));
         }
     }
 }

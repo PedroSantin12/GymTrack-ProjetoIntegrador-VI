@@ -9,6 +9,18 @@ namespace GymTrack.Tests;
 public sealed class WorkoutEditViewModelTests
 {
     [Fact]
+    public void ReopenedPlannedLoad_KeepsItsFullPrecision()
+    {
+        var item = new WorkoutExerciseItemViewModel(
+            new Exercise { Id = 1, Name = "Remada", MuscleGroup = "Costas" },
+            new WorkoutExercise { PlannedSets = 3, PlannedReps = 10, PlannedLoad = 1.125 },
+            _ => { }, _ => { }, _ => { });
+
+        Assert.True(item.TryBuildModel(0, out var plan, out _));
+        Assert.Equal(1.125, plan.PlannedLoad);
+    }
+
+    [Fact]
     public async Task InitializeAsync_LoadsCompositionInOrderIncludingArchivedExercise()
     {
         var workoutDao = new FakeWorkoutDao

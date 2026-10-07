@@ -7,11 +7,12 @@ using Microsoft.Extensions.Logging;
 
 namespace GymTrack.ViewModels;
 
-public sealed class DashboardWorkoutItem(WorkoutSummary workout)
+public sealed class DashboardWorkoutItem(WorkoutSummary workout, bool hasActiveSession = false)
 {
     public int Id => workout.Id;
     public string Name => workout.Name;
     public int ExerciseCount => workout.ExerciseCount;
+    public bool CanStart => ExerciseCount > 0 || hasActiveSession;
     public string Description => workout.ExerciseCount == 1 ? "1 exercício" : $"{workout.ExerciseCount} exercícios";
     public override string ToString() => Name;
 }
@@ -65,13 +66,14 @@ public partial class DashboardViewModel : BaseViewModel
         {
             var workoutSummaries = await _workoutDao.GetSummariesAsync();
             var sessions = await _sessionDao.GetSummariesAsync();
+            var activeSession = await _sessionDao.GetActiveAsync();
             Workouts.Clear();
             foreach (var workout in workoutSummaries)
             {
-                Workouts.Add(new(workout));
+                Workouts.Add(new(workout, activeSession?.WorkoutId == workout.Id));
             }
 
-            SelectedWorkout = Workouts.FirstOrDefault(item => item.ExerciseCount > 0) ?? Workouts.FirstOrDefault();
+            SelectedWorkout = Workouts.FirstOrDefault(item => item.CanStart) ?? Workouts.FirstOrDefault();
             RecentSessions.Clear();
             foreach (var session in sessions.Take(3))
             {
@@ -94,10 +96,11 @@ public partial class DashboardViewModel : BaseViewModel
         finally
         {
             IsBusy = false;
+            StartWorkoutCommand.NotifyCanExecuteChanged();
         }
     }
 
-    private bool CanStartWorkout() => SelectedWorkout?.ExerciseCount > 0 && !IsBusy;
+    private bool CanStartWorkout() => SelectedWorkout?.CanStart == true && !IsBusy;
 
     [RelayCommand(CanExecute = nameof(CanStartWorkout))]
     private void StartWorkout()

@@ -86,6 +86,67 @@ public sealed class WorkoutSessionViewModelTests
     }
 
     [Fact]
+    public async Task PendingSetSave_CannotBeRemovedOrFinished()
+    {
+        var data = CreateData();
+        var pendingSave = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        data.Sessions.SaveSetGate = pendingSave;
+        var viewModel = CreateViewModel(data);
+        await viewModel.InitializeAsync(1);
+        var exercise = Assert.Single(viewModel.Exercises);
+        var lastSet = exercise.Sets[^1];
+
+        var saving = lastSet.CompleteCommand.ExecuteAsync(null);
+        Assert.True(lastSet.IsBusy);
+        Assert.False(lastSet.CanRemove);
+        lastSet.RemoveCommand.Execute(null);
+        Assert.Equal(2, exercise.Sets.Count);
+
+        await viewModel.FinishCommand.ExecuteAsync(null);
+        Assert.Contains("Aguarde", viewModel.ValidationMessage);
+        Assert.Null(data.Sessions.ActiveSession?.FinishedAt);
+
+        pendingSave.SetResult(true);
+        await saving;
+        Assert.True(lastSet.IsCompleted);
+        Assert.Equal(1, viewModel.CompletedSetsCount);
+        await viewModel.FinishCommand.ExecuteAsync(null);
+        Assert.True(viewModel.IsFinished);
+    }
+
+    [Fact]
+    public async Task ResumeAfterOldCompositionChange_ShowsPersistedSets()
+    {
+        var data = CreateData();
+        var original = CreateViewModel(data);
+        await original.InitializeAsync(1);
+        await original.Exercises[0].Sets[0].CompleteCommand.ExecuteAsync(null);
+        data.Workouts.Composition.Clear();
+
+        var resumed = CreateViewModel(data);
+        Assert.True(await resumed.InitializeAsync(1));
+        var exercise = Assert.Single(resumed.Exercises);
+        Assert.True(Assert.Single(exercise.Sets).IsCompleted);
+        Assert.Equal(1, resumed.CompletedSetsCount);
+        Assert.Equal("300 kg de volume", resumed.VolumeText);
+    }
+
+    [Fact]
+    public async Task ResumeEmptyOldComposition_AllowsSessionToBeFinished()
+    {
+        var data = CreateData();
+        await CreateViewModel(data).InitializeAsync(1);
+        data.Workouts.Composition.Clear();
+
+        var resumed = CreateViewModel(data);
+        Assert.True(await resumed.InitializeAsync(1));
+        Assert.Empty(resumed.Exercises);
+        await resumed.FinishCommand.ExecuteAsync(null);
+        Assert.True(resumed.IsFinished);
+    }
+
+    [Fact]
     public async Task FinishAsync_SetsFinishedAtShowsSummaryAndCloses()
     {
         var data = CreateData();
@@ -263,6 +324,8 @@ public sealed class WorkoutSessionViewModelTests
         private int _nextSessionId = 50;
         private int _nextSetId = 100;
 
+        public TaskCompletionSource<bool>? SaveSetGate { get; set; }
+
         public WorkoutSession? ActiveSession { get; set; }
 
         public List<SetRecord> Sets { get; } = [];
@@ -309,8 +372,13 @@ public sealed class WorkoutSessionViewModelTests
             return Task.FromResult(1);
         }
 
-        public Task<int> SaveSetAsync(SetRecord setRecord)
+        public async Task<int> SaveSetAsync(SetRecord setRecord)
         {
+            if (SaveSetGate is not null)
+            {
+                await SaveSetGate.Task;
+            }
+
             if (setRecord.Id == 0)
             {
                 setRecord.Id = _nextSetId++;
@@ -322,7 +390,7 @@ public sealed class WorkoutSessionViewModelTests
                 Sets[index] = setRecord;
             }
 
-            return Task.FromResult(1);
+            return 1;
         }
 
         public Task<int> DeleteSetAsync(int id) => throw new NotSupportedException();

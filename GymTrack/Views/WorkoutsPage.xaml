@@ -8,7 +8,7 @@
     Title="Treinos">
 
     <Grid Padding="{StaticResource PagePadding}"
-          RowDefinitions="Auto,Auto,*,Auto"
+          RowDefinitions="Auto,Auto,Auto,*,Auto"
           RowSpacing="{StaticResource Spacing12}">
         <VerticalStackLayout Spacing="4">
             <Label Text="Treinos"
@@ -17,7 +17,11 @@
                    Style="{StaticResource SecondaryText}" />
         </VerticalStackLayout>
 
-        <Grid Grid.Row="1"
+        <SearchBar Grid.Row="1"
+                   Placeholder="Buscar treino por nome"
+                   Text="{Binding SearchText, Mode=TwoWay}" />
+
+        <Grid Grid.Row="2"
               ColumnDefinitions="*,Auto"
               ColumnSpacing="{StaticResource Spacing8}">
             <Button Text="Gerenciar exercícios"
@@ -30,9 +34,9 @@
                     IsEnabled="{Binding IsNotBusy}" />
         </Grid>
 
-        <RefreshView Grid.Row="2"
+        <RefreshView Grid.Row="3"
                      Command="{Binding LoadCommand}"
-                     IsRefreshing="{Binding IsBusy, Mode=OneWay}">
+                     IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}">
             <CollectionView ItemsSource="{Binding Workouts}"
                             SelectionMode="None">
                 <CollectionView.EmptyView>
@@ -40,10 +44,10 @@
                                          HorizontalOptions="Center"
                                          VerticalOptions="Center"
                                          MaximumWidthRequest="320">
-                        <Label Text="Nenhum treino criado"
+                        <Label Text="Nenhum treino encontrado"
                                Style="{StaticResource SectionTitle}"
                                HorizontalTextAlignment="Center" />
-                        <Label Text="Crie seu primeiro treino e adicione os exercícios na ordem desejada."
+                        <Label Text="Crie um treino ou ajuste a busca pelo nome."
                                Style="{StaticResource SecondaryText}"
                                HorizontalTextAlignment="Center" />
                         <Button Text="Criar treino"
@@ -89,7 +93,7 @@
             </CollectionView>
         </RefreshView>
 
-        <Grid Grid.Row="3"
+        <Grid Grid.Row="4"
               ColumnDefinitions="Auto,*"
               ColumnSpacing="8">
             <ActivityIndicator IsRunning="{Binding IsBusy}"

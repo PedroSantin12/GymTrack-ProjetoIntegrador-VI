@@ -6,6 +6,48 @@ namespace GymTrack.Tests;
 public sealed class WorkoutDaoTests
 {
     [Fact]
+    public async Task SaveAsync_WithActiveSession_PreservesExercisesAndStoredSets()
+    {
+        await using var context = await TestDatabase.CreateAsync();
+        IExerciseDao exerciseDao = new ExerciseDao(context.Database);
+        IWorkoutDao workoutDao = new WorkoutDao(context.Database);
+        ISessionDao sessionDao = new SessionDao(context.Database);
+        var first = new Exercise { Name = "Remada", MuscleGroup = "Costas" };
+        var second = new Exercise { Name = "Supino", MuscleGroup = "Peito" };
+        await exerciseDao.InsertAsync(first);
+        await exerciseDao.InsertAsync(second);
+        var workout = new Workout { Name = "Treino A" };
+        await workoutDao.SaveAsync(workout,
+            [new WorkoutExercise { ExerciseId = first.Id, PlannedSets = 2, PlannedReps = 10 }]);
+        var session = new WorkoutSession { WorkoutId = workout.Id };
+        await sessionDao.InsertAsync(session);
+        await sessionDao.SaveSetAsync(new SetRecord
+        {
+            SessionId = session.Id,
+            ExerciseId = first.Id,
+            SetNumber = 1,
+            Reps = 10,
+            LoadKg = 30
+        });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            workoutDao.SaveAsync(workout, []));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            workoutDao.SaveAsync(workout,
+                [new WorkoutExercise { ExerciseId = second.Id, PlannedSets = 3, PlannedReps = 8 }]));
+
+        Assert.Equal(first.Id, Assert.Single(await workoutDao.GetExercisesAsync(workout.Id)).ExerciseId);
+        Assert.Single(await sessionDao.GetSetsAsync(session.Id));
+
+        await workoutDao.SaveAsync(workout,
+        [
+            new WorkoutExercise { ExerciseId = first.Id, PlannedSets = 2, PlannedReps = 10 },
+            new WorkoutExercise { ExerciseId = second.Id, PlannedSets = 3, PlannedReps = 8 }
+        ]);
+        Assert.Equal(2, (await workoutDao.GetExercisesAsync(workout.Id)).Count);
+    }
+
+    [Fact]
     public async Task SaveAsync_AllowsEmptyDraftWorkout()
     {
         await using var context = await TestDatabase.CreateAsync();

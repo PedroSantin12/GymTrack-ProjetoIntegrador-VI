@@ -16,5 +16,7 @@ public interface IWorkoutDao
 
     Task<bool> HasSessionsAsync(int id);
 
+    Task<bool> HasActiveSessionAsync(int id) => Task.FromResult(false);
+
     Task<int> DeleteAsync(int id);
 }

@@ -25,7 +25,7 @@
 
         <RefreshView Grid.Row="2"
                      Command="{Binding LoadCommand}"
-                     IsRefreshing="{Binding IsBusy, Mode=OneWay}">
+                     IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}">
             <CollectionView ItemsSource="{Binding Exercises}"
                             SelectionMode="None">
                 <CollectionView.EmptyView>

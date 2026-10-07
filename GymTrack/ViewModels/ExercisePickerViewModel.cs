@@ -47,6 +47,9 @@ public partial class ExercisePickerViewModel : BaseViewModel
     [ObservableProperty]
     private string searchText = string.Empty;
 
+    [ObservableProperty]
+    private bool isRefreshing;
+
     partial void OnSearchTextChanged(string value)
     {
         ScheduleLoad();
@@ -119,6 +122,7 @@ public partial class ExercisePickerViewModel : BaseViewModel
             if (request == Volatile.Read(ref _latestLoadRequest))
             {
                 IsBusy = false;
+                IsRefreshing = false;
             }
         }
     }

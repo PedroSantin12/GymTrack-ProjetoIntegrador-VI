@@ -20,7 +20,7 @@ public partial class WorkoutExerciseItemViewModel : ObservableObject
         IsActive = exercise.IsActive;
         PlannedSets = plan?.PlannedSets ?? 3;
         PlannedReps = (plan?.PlannedReps ?? 10).ToString(CultureInfo.InvariantCulture);
-        PlannedLoad = plan?.PlannedLoad?.ToString("0.##", CultureInfo.CurrentCulture) ?? string.Empty;
+        PlannedLoad = plan?.PlannedLoad?.ToString("R", CultureInfo.CurrentCulture) ?? string.Empty;
         MoveUpCommand = new RelayCommand(() => moveUp(this));
         MoveDownCommand = new RelayCommand(() => moveDown(this));
         RemoveCommand = new RelayCommand(() => remove(this));
