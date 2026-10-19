@@ -34,6 +34,69 @@ public sealed class AccountServiceTests
     }
 
     [Fact]
+    public async Task RegisterConsumerAsync_CreatesActiveConsumerAndAllowsSignIn()
+    {
+        await using var context = new TestAccounts();
+
+        var registered = await context.Service.RegisterConsumerAsync(
+            "  Ana Costa  ", "  ANA.COSTA@EXAMPLE.COM  ", "SenhaSegura123!");
+
+        Assert.True(registered.Id > 0);
+        Assert.Equal("Ana Costa", registered.Name);
+        Assert.Equal("ana.costa@example.com", registered.Email);
+        Assert.Equal(UserRole.Consumer, registered.Role);
+        Assert.True(registered.IsActive);
+        Assert.NotEqual(default, registered.CreatedAt);
+        Assert.Equal(3, await context.Service.CountUsersAsync());
+        Assert.Null(await context.Service.SignInAsync(registered.Email, "senha-errada"));
+
+        var signedIn = await context.Service.SignInAsync("ANA.COSTA@EXAMPLE.COM", "SenhaSegura123!");
+        Assert.NotNull(signedIn);
+        Assert.Equal(registered.Id, signedIn.Id);
+        Assert.Equal(registered.Name, signedIn.Name);
+
+        await context.ReopenAsync();
+        Assert.NotNull(await context.Service.SignInAsync(registered.Email, "SenhaSegura123!"));
+        Assert.NotNull(await context.Service.SignInAsync("funcionario@gymtrack.app", "GymTrack123!"));
+    }
+
+    [Theory]
+    [InlineData("", "ana@example.com", "SenhaSegura123!")]
+    [InlineData(" A ", "ana@example.com", "SenhaSegura123!")]
+    [InlineData("Ana", "", "SenhaSegura123!")]
+    [InlineData("Ana", "email-invalido", "SenhaSegura123!")]
+    [InlineData("Ana", "ana@example.com", "curta")]
+    [InlineData("Ana", "ana@example.com", "        ")]
+    public async Task RegisterConsumerAsync_RejectsInvalidFields(
+        string name, string email, string password)
+    {
+        await using var context = new TestAccounts();
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            context.Service.RegisterConsumerAsync(name, email, password));
+
+        Assert.Equal(2, await context.Service.CountUsersAsync());
+    }
+
+    [Fact]
+    public async Task RegisterConsumerAsync_RejectsCaseInsensitiveDuplicatesIncludingDemoAccounts()
+    {
+        await using var context = new TestAccounts();
+        var registered = await context.Service.RegisterConsumerAsync(
+            "Ana Costa", "ana@example.com", "SenhaSegura123!");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => context.Service.RegisterConsumerAsync(
+            "Outra Ana", " ANA@EXAMPLE.COM ", "OutraSenha123!"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => context.Service.RegisterConsumerAsync(
+            "Outra Maria", " CONSUMIDOR@GYMTRACK.APP ", "OutraSenha123!"));
+
+        Assert.Equal(3, await context.Service.CountUsersAsync());
+        Assert.Equal(registered.Id,
+            (await context.Service.SignInAsync("ana@example.com", "SenhaSegura123!"))?.Id);
+        Assert.NotNull(await context.Service.SignInAsync("consumidor@gymtrack.app", "GymTrack123!"));
+    }
+
+    [Fact]
     public async Task UpdateUserAsync_DeactivatesAccountAndBlocksSignIn()
     {
         await using var context = new TestAccounts();

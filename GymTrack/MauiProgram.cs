@@ -35,6 +35,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<IWorkoutCatalogService, WorkoutCatalogService>();
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<LoginPage>();
+        builder.Services.AddTransient<RegisterViewModel>();
+        builder.Services.AddTransient<RegisterPage>();
         builder.Services.AddTransient<AdminDashboardPage>();
         builder.Services.AddTransient<UsersPage>();
         builder.Services.AddTransient<TemplateManagementPage>();

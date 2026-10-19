@@ -13,7 +13,9 @@ As contas abaixo são criadas na primeira inicialização:
 | Consumidor | `consumidor@gymtrack.app` | `GymTrack123!` |
 | Funcionário | `funcionario@gymtrack.app` | `GymTrack123!` |
 
-Na tela de login, os botões **Consumidor** e **Funcionário** preenchem os campos. Depois, toque em **Entrar**. O direcionamento depende do perfil da conta autenticada. Para alternar de conta, use **Perfil → Sair da conta**.
+Na tela de login, informe o e-mail e a senha e toque em **Entrar**. O direcionamento depende do perfil da conta autenticada. Para alternar de conta, use **Perfil → Sair da conta**.
+
+Para criar uma conta pessoal, toque em **Cadastrar-se**, informe nome, e-mail e senha e confirme a senha. Novas contas recebem o perfil de consumidor e entram automaticamente após o cadastro. Contas de funcionário são gerenciadas pela equipe; o cadastro público não concede esse perfil.
 
 As contas, os exercícios, os treinos e as sessões persistem localmente no SQLite do dispositivo. Este acesso é demonstrativo: ainda não há servidor de autenticação, backend na nuvem ou sincronização entre dispositivos. As credenciais acima não devem ser usadas em produção. Alterações nas contas de demonstração são preservadas nas próximas inicializações.
 

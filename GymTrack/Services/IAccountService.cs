@@ -8,6 +8,8 @@ public interface IAccountService
 
     Task<AppUser?> SignInAsync(string email, string password);
 
+    Task<AppUser> RegisterConsumerAsync(string name, string email, string password);
+
     Task<IReadOnlyList<AppUser>> GetUsersAsync(string? search = null);
 
     Task UpdateUserAsync(AppUser user);

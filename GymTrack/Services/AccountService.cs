@@ -69,8 +69,8 @@ public sealed class AccountService : IAccountService, IAsyncDisposable
             {
                 var demoAccounts = await Task.Run(() => new[]
                 {
-                    CreateDemoAccount("Maria Silva", "consumidor@gymtrack.app", UserRole.Consumer),
-                    CreateDemoAccount("Equipe GymTrack", "funcionario@gymtrack.app", UserRole.Employee)
+                    CreateAccount("Maria Silva", "consumidor@gymtrack.app", UserRole.Consumer, "GymTrack123!"),
+                    CreateAccount("Equipe GymTrack", "funcionario@gymtrack.app", UserRole.Employee, "GymTrack123!")
                 });
 
                 await _connection.RunInTransactionAsync(connection =>
@@ -126,6 +126,43 @@ public sealed class AccountService : IAccountService, IAsyncDisposable
         return CryptographicOperations.FixedTimeEquals(expectedHash, actualHash)
             ? ToUser(account)
             : null;
+    }
+
+    public async Task<AppUser> RegisterConsumerAsync(string name, string email, string password)
+    {
+        var trimmedName = name?.Trim();
+        if (trimmedName is null || trimmedName.Length is < 2 or > 100)
+        {
+            throw new ArgumentException("Informe um nome de 2 a 100 caracteres.", nameof(name));
+        }
+
+        var normalizedEmail = email is null ? string.Empty : NormalizeEmail(email);
+        if (normalizedEmail.Length > 254 ||
+            !MailAddress.TryCreate(normalizedEmail, out var address) || address.Address != normalizedEmail)
+        {
+            throw new ArgumentException("Informe um e-mail válido.", nameof(email));
+        }
+
+        if (string.IsNullOrWhiteSpace(password) || password.Length is < 8 or > 128)
+        {
+            throw new ArgumentException("A senha deve ter de 8 a 128 caracteres.", nameof(password));
+        }
+
+        await InitializeAsync();
+        if (await _connection.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM Account WHERE Email = ?", normalizedEmail) != 0)
+        {
+            throw new InvalidOperationException("Este e-mail já está cadastrado.");
+        }
+
+        var account = await Task.Run(() => CreateAccount(
+            trimmedName, normalizedEmail, UserRole.Consumer, password));
+        if (await _connection.InsertAsync(account, "OR IGNORE") != 1)
+        {
+            throw new InvalidOperationException("Este e-mail já está cadastrado.");
+        }
+
+        return ToUser(account);
     }
 
     public async Task<IReadOnlyList<AppUser>> GetUsersAsync(string? search = null)
@@ -197,11 +234,11 @@ public sealed class AccountService : IAccountService, IAsyncDisposable
         _initializationLock.Dispose();
     }
 
-    private static AccountRecord CreateDemoAccount(string name, string email, UserRole role)
+    private static AccountRecord CreateAccount(string name, string email, UserRole role, string password)
     {
         var salt = RandomNumberGenerator.GetBytes(32);
         var hash = Rfc2898DeriveBytes.Pbkdf2(
-            "GymTrack123!", salt, PasswordIterations, HashAlgorithmName.SHA256, HashSize);
+            password, salt, PasswordIterations, HashAlgorithmName.SHA256, HashSize);
 
         return new AccountRecord
         {

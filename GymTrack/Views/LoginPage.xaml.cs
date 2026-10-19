@@ -1,28 +1,26 @@
 using GymTrack.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GymTrack.Views;
 
 public partial class LoginPage : ContentPage
 {
     private readonly LoginViewModel _viewModel;
+    private readonly IServiceProvider _services;
 
-    public LoginPage(LoginViewModel viewModel)
+    public LoginPage(LoginViewModel viewModel, IServiceProvider services)
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
+        _services = services;
+        SizeChanged += (_, _) => BrandLogo.IsVisible = Height >= 460;
     }
 
     private void OnEmailCompleted(object? sender, EventArgs e) => PasswordInput.Focus();
 
-    private void OnConsumerDemoClicked(object? sender, EventArgs e) => FillDemo("consumidor@gymtrack.app");
-
-    private void OnEmployeeDemoClicked(object? sender, EventArgs e) => FillDemo("funcionario@gymtrack.app");
-
-    private void FillDemo(string email)
+    private async void OnRegisterClicked(object? sender, EventArgs e)
     {
         if (_viewModel.IsBusy) return;
-        _viewModel.Email = email;
-        _viewModel.Password = "GymTrack123!";
-        _viewModel.ErrorMessage = null;
+        await Navigation.PushAsync(_services.GetRequiredService<RegisterPage>());
     }
 }

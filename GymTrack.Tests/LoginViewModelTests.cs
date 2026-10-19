@@ -147,6 +147,9 @@ public sealed class LoginViewModelTests
 
         public Task InitializeAsync() => Task.CompletedTask;
 
+        public Task<AppUser> RegisterConsumerAsync(string name, string email, string password) =>
+            throw new NotSupportedException();
+
         public Task<IReadOnlyList<AppUser>> GetUsersAsync(string? search = null) =>
             throw new NotSupportedException();
 
