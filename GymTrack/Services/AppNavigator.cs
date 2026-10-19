@@ -22,7 +22,7 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
     }
 
     public Task OpenWorkspaceAsync() => NavigateAsync(session.IsEmployee
-        ? AppSection.AdminDashboard : AppSection.Home);
+        ? AppSection.AdminDashboard : AppSection.PersonalWorkouts);
 
     public async Task NavigateAsync(AppSection section)
     {
@@ -44,7 +44,6 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
                 AppSection.Users => services.GetRequiredService<UsersPage>(),
                 AppSection.AdminWorkouts => services.GetRequiredService<TemplateManagementPage>(),
                 AppSection.Statistics => services.GetRequiredService<StatisticsPage>(),
-                AppSection.Home => services.GetRequiredService<ConsumerHomePage>(),
                 AppSection.Templates => services.GetRequiredService<TemplateLibraryPage>(),
                 AppSection.PersonalWorkouts => services.GetRequiredService<PersonalWorkoutsPage>(),
                 AppSection.Progress => services.GetRequiredService<ConsumerProgressPage>(),

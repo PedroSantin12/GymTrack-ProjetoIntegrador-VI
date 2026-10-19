@@ -6,73 +6,140 @@
              x:DataType="viewModels:LoginViewModel"
              Title="Entrar"
              NavigationPage.HasNavigationBar="False"
-             BackgroundColor="{StaticResource DarkBackground}">
+             BackgroundColor="#101010">
     <Grid>
         <Image Source="login_background.png" Aspect="AspectFill" />
-        <BoxView Color="#40000000" InputTransparent="True" />
+        <BoxView InputTransparent="True">
+            <BoxView.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#80000000" Offset="0" />
+                    <GradientStop Color="#16000000" Offset="0.28" />
+                    <GradientStop Color="#9E101010" Offset="0.51" />
+                    <GradientStop Color="#F5101010" Offset="0.68" />
+                    <GradientStop Color="#FF101010" Offset="0.82" />
+                </LinearGradientBrush>
+            </BoxView.Background>
+        </BoxView>
 
-        <Grid RowDefinitions="Auto,*,Auto" Padding="24,20,24,28" MaximumWidthRequest="500">
-            <Image x:Name="BrandLogo"
-                   Source="gymtrack_logo.svg"
-                   WidthRequest="278"
-                   HeightRequest="78"
-                   HorizontalOptions="Start"
-                   Margin="0,12,0,0"
-                   SemanticProperties.Description="GymTrack" />
-
-            <Border Grid.Row="2"
-                    Padding="18,22"
-                    BackgroundColor="#E0212121"
-                    Stroke="#80595959"
-                    StrokeShape="RoundRectangle 26">
-                <VerticalStackLayout Spacing="12">
-                    <Border Padding="12,0" BackgroundColor="#CC272727" Stroke="#707070" StrokeShape="RoundRectangle 15">
-                        <Entry x:Name="EmailInput"
-                               Text="{Binding Email}"
-                               Placeholder="E-mail"
-                               Keyboard="Email"
-                               ReturnType="Next"
-                               Completed="OnEmailCompleted"
-                               MaxLength="254"
-                               SemanticProperties.Description="E-mail"
-                               AutomationId="LoginEmail" />
-                    </Border>
-
-                    <Border Padding="12,0" BackgroundColor="#CC272727" Stroke="#707070" StrokeShape="RoundRectangle 15">
-                        <Entry x:Name="PasswordInput"
-                               Text="{Binding Password}"
-                               Placeholder="Senha"
-                               IsPassword="True"
-                               ReturnType="Go"
-                               ReturnCommand="{Binding SignInCommand}"
-                               SemanticProperties.Description="Senha"
-                               AutomationId="LoginPassword" />
-                    </Border>
-
-                    <Label Text="{Binding ErrorMessage}"
-                           TextColor="{StaticResource Danger}"
-                           FontSize="12"
-                           HorizontalTextAlignment="Center"
-                           AutomationId="LoginError" />
-
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                        <Button Text="Entrar"
-                                Command="{Binding SignInCommand}"
-                                FontSize="14"
-                                Padding="8,10"
-                                AutomationId="LoginSubmit" />
-                        <Button Grid.Column="1"
-                                Text="Cadastrar-se"
-                                Style="{StaticResource SecondaryButton}"
-                                FontSize="13"
-                                Padding="8,10"
-                                Clicked="OnRegisterClicked"
-                                AutomationId="OpenRegistration" />
-                    </Grid>
-
-                    <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" />
-                </VerticalStackLayout>
+        <Grid RowDefinitions="Auto,*,Auto"
+              Padding="24,28,24,28"
+              MaximumWidthRequest="500">
+            <Border x:Name="BrandHeader"
+                    HorizontalOptions="Center"
+                    Padding="16,6"
+                    BackgroundColor="#990D0D0D"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 16">
+                <HorizontalStackLayout Spacing="0">
+                    <Label Text="GYM"
+                           FontSize="30"
+                           FontFamily="OpenSansSemibold"
+                           FontAttributes="Bold"
+                           CharacterSpacing="1"
+                           TextColor="White" />
+                    <Label Text="TRACK"
+                           FontSize="30"
+                           FontFamily="OpenSansSemibold"
+                           FontAttributes="Bold"
+                           CharacterSpacing="1"
+                           TextColor="{StaticResource BrandAccent}" />
+                </HorizontalStackLayout>
             </Border>
+
+            <VerticalStackLayout Grid.Row="2" Spacing="14">
+                <Grid x:Name="FeatureCards" ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,0,0,6">
+                    <Border Padding="14,10"
+                            BackgroundColor="#D7232323"
+                            Stroke="#6B959595"
+                            StrokeShape="RoundRectangle 18">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="TREINOS"
+                                   FontSize="10"
+                                   CharacterSpacing="1.5"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource BrandAccent}" />
+                            <Label Text="Seu ritmo. Seu plano."
+                                   FontSize="13"
+                                   FontAttributes="Bold"
+                                   LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1"
+                            Padding="14,10"
+                            BackgroundColor="#D7232323"
+                            Stroke="#6B959595"
+                            StrokeShape="RoundRectangle 18">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="EVOLUÇÃO"
+                                   FontSize="10"
+                                   CharacterSpacing="1.5"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource BrandAccent}" />
+                            <Label Text="Cada treino conta."
+                                   FontSize="13"
+                                   FontAttributes="Bold"
+                                   LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <Label Text="Acesse sua conta"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       Margin="0,0,0,2" />
+
+                <Border Padding="12,0"
+                        BackgroundColor="#EE272727"
+                        Stroke="#707070"
+                        StrokeShape="RoundRectangle 15">
+                    <Entry x:Name="EmailInput"
+                           Text="{Binding Email}"
+                           Placeholder="E-mail"
+                           Keyboard="Email"
+                           ReturnType="Next"
+                           Completed="OnEmailCompleted"
+                           MaxLength="254"
+                           SemanticProperties.Description="E-mail"
+                           AutomationId="LoginEmail" />
+                </Border>
+
+                <Border Padding="12,0"
+                        BackgroundColor="#EE272727"
+                        Stroke="#707070"
+                        StrokeShape="RoundRectangle 15">
+                    <Entry x:Name="PasswordInput"
+                           Text="{Binding Password}"
+                           Placeholder="Senha"
+                           IsPassword="True"
+                           ReturnType="Go"
+                           ReturnCommand="{Binding SignInCommand}"
+                           SemanticProperties.Description="Senha"
+                           AutomationId="LoginPassword" />
+                </Border>
+
+                <Label Text="{Binding ErrorMessage}"
+                       TextColor="{StaticResource Danger}"
+                       FontSize="12"
+                       HorizontalTextAlignment="Center"
+                       AutomationId="LoginError" />
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Button Text="Entrar"
+                            Command="{Binding SignInCommand}"
+                            FontSize="14"
+                            Padding="8,10"
+                            AutomationId="LoginSubmit" />
+                    <Button Grid.Column="1"
+                            Text="Cadastrar-se"
+                            Style="{StaticResource SecondaryButton}"
+                            FontSize="13"
+                            Padding="8,10"
+                            Clicked="OnRegisterClicked"
+                            AutomationId="OpenRegistration" />
+                </Grid>
+
+                <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" />
+            </VerticalStackLayout>
         </Grid>
     </Grid>
 </ContentPage>

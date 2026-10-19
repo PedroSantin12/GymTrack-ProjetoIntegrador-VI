@@ -7,10 +7,13 @@ namespace GymTrack.Views.Components;
 public class WorkspacePage : ContentPage
 {
     private readonly Grid _layout;
+    private readonly bool _floatingNavigation;
+    private View? _body;
 
     protected WorkspacePage(string title, string subtitle, AppSection activeSection,
         IAppNavigator navigator, AppSession session)
     {
+        _floatingNavigation = !session.IsEmployee;
         Title = title;
         NavigationPage.SetHasNavigationBar(this, false);
         BackgroundColor = Ui.Background;
@@ -27,25 +30,46 @@ public class WorkspacePage : ContentPage
         };
         _layout = new Grid
         {
-            RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) },
+            RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) },
             MaximumWidthRequest = 760,
             HorizontalOptions = LayoutOptions.Fill
         };
         _layout.Add(header);
         var navigation = CreateNavigation(activeSection, navigator, session);
-        _layout.Add(navigation, 0, 2);
+        if (_floatingNavigation)
+        {
+            navigation.VerticalOptions = LayoutOptions.End;
+            navigation.ZIndex = 1;
+            _layout.SizeChanged += (_, _) =>
+                navigation.WidthRequest = Math.Min(370, Math.Max(0, _layout.Width - 52));
+            _layout.Add(navigation, 0, 1);
+        }
+        else
+        {
+            _layout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            _layout.Add(navigation, 0, 2);
+        }
         Content = _layout;
     }
 
     protected void SetBody(View body, bool scroll = true)
     {
-        View container = scroll
-            ? new ScrollView { Content = body }
-            : body;
-        container.Margin = new Thickness(24, 4, 24, 12);
-        if (_layout.Children.FirstOrDefault(view => _layout.GetRow(view) == 1) is View previous)
-            _layout.Remove(previous);
+        View container;
+        if (scroll)
+        {
+            var content = new VerticalStackLayout { Spacing = 0 };
+            content.Add(body);
+            if (_floatingNavigation) content.Add(new Grid { HeightRequest = 100 });
+            container = new ScrollView { Content = content };
+        }
+        else
+        {
+            container = body;
+        }
+        container.Margin = new Thickness(24, 4, 24, _floatingNavigation ? 0 : 12);
+        if (_body is not null) _layout.Remove(_body);
         _layout.Add(container, 0, 1);
+        _body = container;
     }
 
     private static View CreateNavigation(AppSection section, IAppNavigator navigator, AppSession session)
@@ -53,7 +77,7 @@ public class WorkspacePage : ContentPage
         var items = session.IsEmployee
             ? new[] { (AppSection.AdminDashboard, "Painel", "home"), (AppSection.Users, "Usuários", "users"),
                 (AppSection.AdminWorkouts, "Treinos", "workout"), (AppSection.Profile, "Perfil", "profile") }
-            : new[] { (AppSection.Home, "Início", "home"), (AppSection.PersonalWorkouts, "Treinos", "workout"),
+            : new[] { (AppSection.PersonalWorkouts, "Treinos", "workout"),
                 (AppSection.Progress, "Evolução", "progress"), (AppSection.Profile, "Perfil", "profile") };
         var grid = new Grid { ColumnSpacing = 4 };
         for (var index = 0; index < items.Length; index++)
@@ -69,7 +93,7 @@ public class WorkspacePage : ContentPage
             {
                 Padding = 0,
                 StrokeThickness = 0,
-                StrokeShape = new RoundRectangle { CornerRadius = 28 },
+                StrokeShape = new RoundRectangle { CornerRadius = session.IsEmployee ? 28 : 34 },
                 BackgroundColor = selected ? Ui.Elevated : Colors.Transparent,
                 Content = new VerticalStackLayout
                 {
@@ -79,8 +103,14 @@ public class WorkspacePage : ContentPage
                     InputTransparent = true,
                     Children = { CreateIcon(icon, color), text }
                 },
-                MinimumHeightRequest = 62
+                MinimumHeightRequest = session.IsEmployee ? 62 : 68
             };
+            if (!session.IsEmployee)
+            {
+                tile.WidthRequest = 68;
+                tile.HeightRequest = 68;
+                tile.HorizontalOptions = LayoutOptions.Center;
+            }
             var button = new Button
             {
                 Text = string.Empty,
@@ -114,8 +144,10 @@ public class WorkspacePage : ContentPage
         return new Border
         {
             Padding = new Thickness(6),
-            Margin = new Thickness(16, 2, 16, 16),
-            BackgroundColor = Ui.Surface,
+            Margin = session.IsEmployee ? new Thickness(16, 2, 16, 16) : new Thickness(0, 0, 0, 16),
+            MaximumWidthRequest = session.IsEmployee ? 760 : 370,
+            HorizontalOptions = session.IsEmployee ? LayoutOptions.Fill : LayoutOptions.Center,
+            BackgroundColor = session.IsEmployee ? Ui.Surface : Color.FromArgb("#E6272727"),
             Stroke = new SolidColorBrush(Color.FromArgb("#4C4C4C")),
             StrokeThickness = 1,
             StrokeShape = new RoundRectangle { CornerRadius = 38 },

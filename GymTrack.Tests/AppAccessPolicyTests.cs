@@ -32,7 +32,6 @@ public sealed class AppAccessPolicyTests
     }
 
     [Theory]
-    [InlineData(AppSection.Home)]
     [InlineData(AppSection.Templates)]
     [InlineData(AppSection.PersonalWorkouts)]
     [InlineData(AppSection.Progress)]

@@ -10,7 +10,7 @@ public partial class RegisterPage : ContentPage
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
-        SizeChanged += (_, _) => BrandLogo.IsVisible = Height >= 460;
+        SizeChanged += (_, _) => BrandHeader.IsVisible = Height >= 550;
     }
 
     private void OnNameCompleted(object? sender, EventArgs e) => EmailInput.Focus();

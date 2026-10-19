@@ -12,7 +12,7 @@ public static class AppAccessPolicy
         {
             UserRole.Employee => section is AppSection.AdminDashboard or AppSection.Users or
                 AppSection.Exercises or AppSection.AdminWorkouts or AppSection.Statistics,
-            UserRole.Consumer => section is AppSection.Home or AppSection.Templates or
+            UserRole.Consumer => section is AppSection.Templates or
                 AppSection.PersonalWorkouts or AppSection.Progress,
             _ => false
         };

@@ -2,7 +2,7 @@
 
 Aplicativo acadêmico para organizar treinos de musculação, registrar sessões e acompanhar a evolução. Usa .NET 10, .NET MAUI, C#, XAML, MVVM e SQLite, com Android como plataforma principal.
 
-O aplicativo começa no login e abre a área correspondente à conta: funcionário ou consumidor. A interface usa fundo escuro, tons de cinza, destaque laranja `#FF913A` e navegação inferior arredondada.
+O aplicativo começa no login e abre a área correspondente à conta: funcionário ou consumidor. A entrada e o cadastro usam fotos de treino, o nome GymTrack e formulários sem rolagem. A interface usa fundo escuro, tons de cinza, destaque laranja `#FF913A` e navegação inferior arredondada.
 
 ## Acesso de demonstração
 
@@ -32,7 +32,8 @@ As contas, os exercícios, os treinos e as sessões persistem localmente no SQLi
 
 **Consumidor**
 
-- Início com cards para escolher um treino pronto ou criar o próprio treino.
+- Navegação inferior flutuante com **Treinos**, **Evolução** e **Perfil**.
+- Treinos é a primeira página após o login, com opções para criar uma rotina ou explorar os treinos prontos.
 - Biblioteca de treinos prontos com pesquisa e cópia para a conta.
 - Meus treinos com criação, edição e início de sessão.
 - Execução com cronômetro, registro de séries, repetições e carga, retomada de sessão e finalização.
@@ -46,9 +47,9 @@ O consumidor recebe uma cópia independente do treino pronto. Alterar ou excluir
 1. Entre como **Funcionário** e abra **Painel → Exercícios** para cadastrar os movimentos.
 2. Abra **Treinos**, crie um treino pronto, adicione exercícios e salve sua composição.
 3. Saia da conta pelo **Perfil** e entre como **Consumidor**.
-4. No Início, selecione **Ver treinos prontos**, escolha a rotina e revise sua cópia no editor.
-5. Abra **Meus treinos**, toque em **Começar treino**, registre as séries e finalize a sessão.
-6. Consulte **Evolução** para ver os dados dessa conta. Também é possível criar uma rotina própria pelo card **Criar meu treino**.
+4. Em **Treinos**, selecione **Explorar treinos prontos**, escolha a rotina e revise sua cópia no editor.
+5. De volta a **Treinos**, toque em **Começar treino**, registre as séries e finalize a sessão.
+6. Consulte **Evolução** para ver os dados dessa conta. Também é possível criar uma rotina própria por **+ Criar treino**.
 
 Treinos sem exercícios não podem iniciar. Ao atualizar uma instalação antiga, os treinos existentes sem proprietário passam a ser modelos do catálogo. Seus registros são preservados; o histórico antigo não é atribuído automaticamente a uma das novas contas.
 
@@ -88,7 +89,7 @@ Os testes automatizados e a compilação Android validam a lógica e a geração
 
 - `Views/LoginPage` e `ViewModels/LoginViewModel`: entrada e autenticação local.
 - `Views/Admin`: painel, usuários, treinos prontos e estatísticas do funcionário.
-- `Views/Consumer`: início, biblioteca, treinos pessoais, evolução e perfil.
+- `Views/Consumer`: treinos pessoais, biblioteca, evolução e perfil.
 - `Views/Components`: componentes visuais e navegação inferior compartilhados.
 - `Views/WorkoutEditPage`, `Views/WorkoutSessionPage` e seus view models: composição e execução de treinos.
 - `Services`: contas, sessão atual, permissões, navegação e catálogo de treinos.

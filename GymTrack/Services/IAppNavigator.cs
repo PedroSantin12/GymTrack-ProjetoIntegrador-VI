@@ -2,7 +2,6 @@ namespace GymTrack.Services;
 
 public enum AppSection
 {
-    Home,
     Templates,
     PersonalWorkouts,
     Progress,
