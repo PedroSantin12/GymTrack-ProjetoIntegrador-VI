@@ -16,9 +16,16 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(new NavigationPage(_services.GetRequiredService<LoginPage>()))
+        var window = new Window(new NavigationPage(_services.GetRequiredService<LoginPage>()))
         {
             Title = "GymTrack"
         };
+
+#if WINDOWS
+        window.Width = 420;
+        window.Height = 820;
+#endif
+
+        return window;
     }
 }

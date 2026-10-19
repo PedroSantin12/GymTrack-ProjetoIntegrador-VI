@@ -53,10 +53,13 @@ Treinos sem exercícios não podem iniciar. Ao atualizar uma instalação antiga
 ## Abrir no Visual Studio Community
 
 1. Confirme que a carga de trabalho **Desenvolvimento de interface do usuário de aplicativo multiplataforma .NET** e o SDK Android estão instalados.
-2. Execute `Abrir-GymTrack.cmd`.
-3. No Visual Studio, selecione um emulador Android e execute o projeto `GymTrack`.
+2. Se já tinha uma cópia clonada, execute **Git → Pull** no Visual Studio para obter a versão mais recente da `main`.
+3. Feche a solução e execute `Abrir-GymTrack.cmd` na pasta do clone que deseja abrir.
+4. No Visual Studio, selecione um emulador Android e execute o projeto `GymTrack`.
 
-O atalho cria a unidade temporária `M:` e abre a solução por um caminho somente ASCII. Isso é necessário porque as ferramentas Android rejeitam o caractere acentuado presente no caminho original deste workspace.
+O atalho cria uma unidade temporária e abre a solução por um caminho somente ASCII. Isso é necessário porque as ferramentas Android rejeitam o caractere acentuado presente no caminho original deste workspace.
+
+A primeira tela da versão reformulada é o login. Se aparecer a interface antiga, confira se `GymTrack/Views/LoginPage.xaml` existe na cópia aberta e se `GymTrack/App.xaml.cs` inicia `LoginPage`. **Windows Machine** abre o aplicativo no Windows; para conferir a experiência Android, selecione um emulador ou celular Android na barra superior.
 
 Para compilar no terminal:
 
