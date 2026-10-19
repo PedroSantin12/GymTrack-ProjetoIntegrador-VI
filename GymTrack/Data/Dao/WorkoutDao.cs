@@ -127,6 +127,8 @@ public sealed class WorkoutDao(GymTrackDatabase database) : IWorkoutDao
                        throw new InvalidOperationException("Treino não encontrado.");
 
         workout.CreatedAt = existing.CreatedAt;
+        workout.OwnerUserId = existing.OwnerUserId;
+        workout.IsTemplate = existing.IsTemplate;
         workout.UpdatedAt = now;
         transaction.Update(workout);
     }

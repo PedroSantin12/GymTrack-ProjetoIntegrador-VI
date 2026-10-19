@@ -1,16 +1,19 @@
 using GymTrack.ViewModels;
+using GymTrack.Services;
 
 namespace GymTrack.Views;
 
 public partial class HistoryDetailPage : ContentPage
 {
     private readonly HistoryDetailViewModel _viewModel;
+    private readonly IAppNavigator _navigator;
 
-    public HistoryDetailPage(HistoryDetailViewModel viewModel)
+    public HistoryDetailPage(HistoryDetailViewModel viewModel, IAppNavigator navigator)
     {
         InitializeComponent();
         BindingContext = viewModel;
         _viewModel = viewModel;
+        _navigator = navigator;
         viewModel.ProgressRequested += OnProgressRequested;
     }
 
@@ -18,11 +21,6 @@ public partial class HistoryDetailPage : ContentPage
 
     private async void OnProgressRequested(object? sender, EventArgs e)
     {
-        await Navigation.PopToRootAsync();
-        if (Application.Current?.Windows.FirstOrDefault()?.Page is MainFlyoutPage flyout &&
-            flyout.Detail is MainTabbedPage tabs)
-        {
-            tabs.SelectProgress();
-        }
+        await _navigator.NavigateAsync(AppSection.Progress);
     }
 }

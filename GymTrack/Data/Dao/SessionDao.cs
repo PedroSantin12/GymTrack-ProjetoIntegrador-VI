@@ -1,8 +1,9 @@
 using GymTrack.Models;
+using GymTrack.Services;
 
 namespace GymTrack.Data.Dao;
 
-public sealed class SessionDao(GymTrackDatabase database) : ISessionDao
+public sealed class SessionDao(GymTrackDatabase database, AppSession? appSession = null) : ISessionDao
 {
     public async Task<IReadOnlyList<WorkoutSession>> GetAllAsync()
     {
@@ -146,6 +147,12 @@ public sealed class SessionDao(GymTrackDatabase database) : ISessionDao
     {
         ArgumentNullException.ThrowIfNull(session);
 
+        int? userId = appSession is null
+            ? null
+            : appSession.CurrentUser is { Id: > 0, Role: UserRole.Consumer, IsActive: true } user
+                ? user.Id
+                : throw new UnauthorizedAccessException("Entre com uma conta de consumidor para iniciar um treino.");
+
         var connection = await database.GetConnectionAsync();
         session.StartedAt = session.StartedAt == default
             ? DateTime.UtcNow
@@ -154,8 +161,29 @@ public sealed class SessionDao(GymTrackDatabase database) : ISessionDao
         var inserted = 0;
         await connection.RunInTransactionAsync(transaction =>
         {
-            if (session.FinishedAt is null && transaction.ExecuteScalar<int>(
-                    "SELECT COUNT(1) FROM WorkoutSession WHERE FinishedAt IS NULL") > 0)
+            if (userId is int ownerId && transaction.ExecuteScalar<int>(
+                    "SELECT COUNT(1) FROM Workout WHERE Id = ? AND OwnerUserId = ? AND IsTemplate = 0",
+                    session.WorkoutId,
+                    ownerId) == 0)
+            {
+                throw new UnauthorizedAccessException("Este treino não pertence à sua conta.");
+            }
+
+            var activeSessionCount = session.FinishedAt is not null
+                ? 0
+                : userId is int activeOwnerId
+                    ? transaction.ExecuteScalar<int>(
+                        """
+                        SELECT COUNT(1)
+                        FROM WorkoutSession ws
+                        INNER JOIN Workout w ON w.Id = ws.WorkoutId
+                        WHERE ws.FinishedAt IS NULL AND w.OwnerUserId = ? AND w.IsTemplate = 0
+                        """,
+                        activeOwnerId)
+                    : transaction.ExecuteScalar<int>(
+                        "SELECT COUNT(1) FROM WorkoutSession WHERE FinishedAt IS NULL");
+
+            if (activeSessionCount > 0)
             {
                 throw new InvalidOperationException(
                     "Já existe uma sessão em andamento. Retome ou finalize essa sessão antes de iniciar outra.");

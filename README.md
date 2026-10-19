@@ -1,6 +1,54 @@
 # GymTrack
 
-Aplicativo mobile acadêmico para organizar treinos de musculação, registrar sessões e acompanhar evolução. O projeto usa .NET MAUI, C#, XAML, MVVM e SQLite, com Android como plataforma principal.
+Aplicativo acadêmico para organizar treinos de musculação, registrar sessões e acompanhar a evolução. Usa .NET 10, .NET MAUI, C#, XAML, MVVM e SQLite, com Android como plataforma principal.
+
+O aplicativo começa no login e abre a área correspondente à conta: funcionário ou consumidor. A interface usa fundo escuro, tons de cinza, destaque laranja `#FF913A` e navegação inferior arredondada.
+
+## Acesso de demonstração
+
+As contas abaixo são criadas na primeira inicialização:
+
+| Perfil | E-mail | Senha |
+| --- | --- | --- |
+| Consumidor | `consumidor@gymtrack.app` | `GymTrack123!` |
+| Funcionário | `funcionario@gymtrack.app` | `GymTrack123!` |
+
+Na tela de login, os botões **Consumidor** e **Funcionário** preenchem os campos. Depois, toque em **Entrar**. O direcionamento depende do perfil da conta autenticada. Para alternar de conta, use **Perfil → Sair da conta**.
+
+As contas, os exercícios, os treinos e as sessões persistem localmente no SQLite do dispositivo. Este acesso é demonstrativo: ainda não há servidor de autenticação, backend na nuvem ou sincronização entre dispositivos. As credenciais acima não devem ser usadas em produção. Alterações nas contas de demonstração são preservadas nas próximas inicializações.
+
+## Áreas do aplicativo
+
+**Funcionário**
+
+- Painel com resumo de usuários e treinos prontos.
+- Usuários: visualizar, pesquisar, editar e desativar contas.
+- Exercícios: cadastrar nome, grupo muscular e descrição, pesquisar e gerenciar exercícios ativos ou arquivados.
+- Treinos prontos: criar, editar e excluir rotinas com exercícios, séries, repetições e carga planejada.
+- Estatísticas: consultar quantidade de usuários, contas ativas e desativadas, perfis de acesso, total de treinos criados e treinos prontos.
+- Perfil com os dados da conta e opção de sair.
+
+**Consumidor**
+
+- Início com cards para escolher um treino pronto ou criar o próprio treino.
+- Biblioteca de treinos prontos com pesquisa e cópia para a conta.
+- Meus treinos com criação, edição e início de sessão.
+- Execução com cronômetro, registro de séries, repetições e carga, retomada de sessão e finalização.
+- Evolução com sessões concluídas, tempo acumulado, frequência nos últimos sete dias e treinos recentes do próprio usuário.
+- Perfil com os dados da conta e opção de sair.
+
+O consumidor recebe uma cópia independente do treino pronto. Alterar ou excluir o modelo do catálogo não altera essa cópia. O acesso a treinos pessoais e sessões é restrito ao dono da conta; o catálogo de exercícios é compartilhado.
+
+## Roteiro de demonstração
+
+1. Entre como **Funcionário** e abra **Painel → Exercícios** para cadastrar os movimentos.
+2. Abra **Treinos**, crie um treino pronto, adicione exercícios e salve sua composição.
+3. Saia da conta pelo **Perfil** e entre como **Consumidor**.
+4. No Início, selecione **Ver treinos prontos**, escolha a rotina e revise sua cópia no editor.
+5. Abra **Meus treinos**, toque em **Começar treino**, registre as séries e finalize a sessão.
+6. Consulte **Evolução** para ver os dados dessa conta. Também é possível criar uma rotina própria pelo card **Criar meu treino**.
+
+Treinos sem exercícios não podem iniciar. Ao atualizar uma instalação antiga, os treinos existentes sem proprietário passam a ser modelos do catálogo. Seus registros são preservados; o histórico antigo não é atribuído automaticamente a uma das novas contas.
 
 ## Abrir no Visual Studio Community
 
@@ -18,39 +66,27 @@ dotnet build M:\GymTrack\GymTrack.csproj -f net10.0-android
 dotnet test M:\GymTrack.Tests\GymTrack.Tests.csproj
 ```
 
-## Estrutura e funcionalidades implementadas
+## Desenvolvimento no ambiente de nuvem
 
-- `MainFlyoutPage` é a raiz do aplicativo.
-- `MainTabbedPage` contém quatro abas, cada uma hospedada em sua própria `NavigationPage`: Início, Treinos, Histórico e Evolução.
-- O menu lateral fornece acesso a Exercícios e Sobre.
-- O CRUD de exercícios usa navegação modal real com `PushModalAsync` e `PopModalAsync`.
-- A tela de exercícios possui busca em tempo real com debounce, filtro por grupo muscular e opção de exibir arquivados.
-- O formulário valida os campos, evita duplicatas e persiste o estado ativo definido pelo `CheckBox`.
-- Exclusões exigem confirmação; exercícios vinculados são arquivados para preservar o histórico.
-- A tela de treinos lista quantidade de exercícios, última execução e mantém a ação Iniciar visível.
-- A lista de treinos também permite busca por nome em tempo real, sem diferenciar acentos e maiúsculas.
-- O editor de treino permite rascunhos, seleção pesquisável de exercícios ativos, séries, repetições, carga opcional, remoção e reordenação.
-- A composição completa do treino é salva em uma transação e reaberta preservando ordem e valores planejados.
-- Treinos sem exercícios não podem iniciar; treinos com histórico não podem ser excluídos.
-- A execução do treino abre em tela modal focada, com cronômetro, progresso, volume e valores planejados pré-preenchidos.
-- Cada série usa edição direta de carga/repetições, conclusão persistida, feedback Toast e opção de adicionar/remover série não concluída.
-- Sessões em andamento podem ser retomadas; sair exige confirmação e finalizar grava `FinishedAt` após confirmação e resumo.
-- O Histórico usa `ListView` explicitamente, ordena sessões da mais recente para a mais antiga e filtra por treino, período predefinido ou intervalo de datas.
-- O detalhe da sessão apresenta exercícios, séries, duração e volume reais, com atalho para Evolução.
-- A tela Evolução usa `RadioButton` exclusivo para alternar entre maior carga e volume e renderiza dados persistidos com LiveCharts.
-- O Dashboard permite iniciar um treino, mostra o último treino, resumo semanal e sessões recentes.
-- Operações concluídas e falhas recuperáveis usam feedback não bloqueante com Toast.
-- Cores, espaçamentos, estilos, ícone e splash do GymTrack ficam centralizados em `Resources`.
-- A persistência possui cinco tabelas SQLite, inicialização assíncrona, índices, chaves estrangeiras e DAOs explícitos.
+O ambiente configurado disponibiliza .NET, MAUI, JDK e SDK Android. Em um novo terminal:
 
-As fases 0 a 9 da especificação estão implementadas. O fluxo principal foi validado anteriormente em emulador Android. Após as correções desta revisão, a versão atual passou nos testes automatizados e na compilação Android; ainda falta uma nova execução no emulador.
+```bash
+source /workspace/.gymtrack-setup/env.sh
+cd /workspace/GymTrack-ProjetoIntegrador-VI
+dotnet test GymTrack.Tests/GymTrack.Tests.csproj
+dotnet build GymTrack/GymTrack.csproj -f net10.0-android -p:AppSettingsDirectory=/workspace/.gymtrack-setup/xamarin
+```
 
-## Roteiro rápido de demonstração
+Os testes automatizados e a compilação Android validam a lógica e a geração do aplicativo. A verificação visual e a interação com as telas exigem um dispositivo ou emulador Android e devem ser feitas separadamente.
 
-1. Abra o Dashboard e inicie um treino cadastrado.
-2. Conclua ao menos uma série e finalize a sessão.
-3. Abra o Histórico, aplique os filtros e toque na sessão para ver os detalhes.
-4. Use **Ver evolução** e alterne entre **Maior carga** e **Volume**.
-5. Pelo menu lateral, abra Exercícios e Sobre.
+## Organização do código
 
-Para o gráfico demonstrar variação temporal, registre o mesmo exercício em pelo menos duas sessões concluídas.
+- `Views/LoginPage` e `ViewModels/LoginViewModel`: entrada e autenticação local.
+- `Views/Admin`: painel, usuários, treinos prontos e estatísticas do funcionário.
+- `Views/Consumer`: início, biblioteca, treinos pessoais, evolução e perfil.
+- `Views/Components`: componentes visuais e navegação inferior compartilhados.
+- `Views/WorkoutEditPage`, `Views/WorkoutSessionPage` e seus view models: composição e execução de treinos.
+- `Services`: contas, sessão atual, permissões, navegação e catálogo de treinos.
+- `Data` e `Models`: banco SQLite, migração dos treinos existentes, DAOs e entidades.
+- `Resources`: cores, estilos e demais recursos visuais.
+- `GymTrack.Tests`: testes de persistência, serviços, permissões e view models.

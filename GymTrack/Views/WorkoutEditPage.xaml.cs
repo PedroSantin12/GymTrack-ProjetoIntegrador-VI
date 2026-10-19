@@ -32,6 +32,11 @@ public partial class WorkoutEditPage : ContentPage
         return _viewModel.InitializeAsync(workoutId);
     }
 
+    public Task InitializeNewAsync(int? ownerUserId, bool isTemplate)
+    {
+        return _viewModel.InitializeNewAsync(ownerUserId, isTemplate);
+    }
+
     private async void OnAddExerciseRequested(object? sender, EventArgs e)
     {
         if (_isOpeningPicker)

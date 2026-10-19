@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GymTrack.Data.Dao;
 using GymTrack.Models;
+using GymTrack.Services;
 using Microsoft.Extensions.Logging;
 
 namespace GymTrack.ViewModels;
@@ -52,16 +53,19 @@ public partial class HistoryViewModel : BaseViewModel
     private readonly ISessionDao _sessionDao;
     private readonly IWorkoutDao _workoutDao;
     private readonly ILogger<HistoryViewModel> _logger;
+    private readonly AppSession? _appSession;
     private int _latestLoadRequest;
 
     public HistoryViewModel(
         ISessionDao sessionDao,
         IWorkoutDao workoutDao,
-        ILogger<HistoryViewModel> logger)
+        ILogger<HistoryViewModel> logger,
+        AppSession? appSession = null)
     {
         _sessionDao = sessionDao;
         _workoutDao = workoutDao;
         _logger = logger;
+        _appSession = appSession;
         Title = "Histórico";
         Periods.Add(new("Todo o período", null));
         Periods.Add(new("Últimos 7 dias", 7));
@@ -129,7 +133,11 @@ public partial class HistoryViewModel : BaseViewModel
 
             Workouts.Clear();
             Workouts.Add(new(null, "Todos os treinos"));
-            foreach (var workout in workouts.OrderBy(workout => workout.Name))
+            var visibleWorkouts = _appSession is null ? workouts : workouts
+                .Where(workout => _appSession.CurrentUser is { IsActive: true } user &&
+                    user.Role == UserRole.Consumer && workout.OwnerUserId == user.Id && !workout.IsTemplate)
+                .ToArray();
+            foreach (var workout in visibleWorkouts.OrderBy(workout => workout.Name))
             {
                 Workouts.Add(new(workout.Id, workout.Name));
             }

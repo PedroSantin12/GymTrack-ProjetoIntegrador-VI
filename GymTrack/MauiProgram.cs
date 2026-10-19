@@ -4,6 +4,8 @@ using GymTrack.Data.Dao;
 using GymTrack.Services;
 using GymTrack.ViewModels;
 using GymTrack.Views;
+using GymTrack.Views.Admin;
+using GymTrack.Views.Consumer;
 using LiveChartsCore.SkiaSharpView.Maui;
 using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
@@ -25,6 +27,23 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
+
+        builder.Services.AddSingleton<AppSession>();
+        builder.Services.AddSingleton<IAccountService>(_ =>
+            new AccountService(Path.Combine(FileSystem.AppDataDirectory, "accounts.db3")));
+        builder.Services.AddSingleton<IAppNavigator, AppNavigator>();
+        builder.Services.AddSingleton<IWorkoutCatalogService, WorkoutCatalogService>();
+        builder.Services.AddTransient<LoginViewModel>();
+        builder.Services.AddTransient<LoginPage>();
+        builder.Services.AddTransient<AdminDashboardPage>();
+        builder.Services.AddTransient<UsersPage>();
+        builder.Services.AddTransient<TemplateManagementPage>();
+        builder.Services.AddTransient<StatisticsPage>();
+        builder.Services.AddTransient<ConsumerHomePage>();
+        builder.Services.AddTransient<TemplateLibraryPage>();
+        builder.Services.AddTransient<PersonalWorkoutsPage>();
+        builder.Services.AddTransient<ConsumerProgressPage>();
+        builder.Services.AddTransient<ProfilePage>();
 
         builder.Services.AddSingleton<MainFlyoutPage>();
         builder.Services.AddSingleton<FlyoutMenuPage>();
@@ -57,7 +76,13 @@ public static class MauiProgram
         builder.Services.AddSingleton<GymTrackDatabase>();
         builder.Services.AddSingleton<IExerciseDao, ExerciseDao>();
         builder.Services.AddSingleton<IWorkoutDao, WorkoutDao>();
-        builder.Services.AddSingleton<ISessionDao, SessionDao>();
+        builder.Services.AddSingleton<ISessionDao>(provider =>
+        {
+            var session = provider.GetRequiredService<AppSession>();
+            return new UserSessionDao(
+                new SessionDao(provider.GetRequiredService<GymTrackDatabase>(), session),
+                provider.GetRequiredService<IWorkoutDao>(), session);
+        });
         builder.Services.AddSingleton<INotificationService, NotificationService>();
         builder.Services.AddSingleton<IDialogService, DialogService>();
         builder.Services.AddSingleton<IAnalyticsService, AnalyticsService>();

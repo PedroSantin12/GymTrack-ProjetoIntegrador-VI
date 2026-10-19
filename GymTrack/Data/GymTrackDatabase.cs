@@ -49,6 +49,7 @@ public sealed class GymTrackDatabase : IAsyncDisposable
             await _connection.ExecuteAsync("PRAGMA foreign_keys = ON");
             await _connection.ExecuteAsync(CreateExerciseTableSql);
             await _connection.ExecuteAsync(CreateWorkoutTableSql);
+            await MigrateWorkoutOwnershipAsync();
             await _connection.ExecuteAsync(CreateWorkoutExerciseTableSql);
             await _connection.ExecuteAsync(CreateWorkoutSessionTableSql);
             await _connection.ExecuteAsync(CreateSetRecordTableSql);
@@ -79,6 +80,8 @@ public sealed class GymTrackDatabase : IAsyncDisposable
     private async Task CreateIndexesAsync()
     {
         await _connection.ExecuteAsync(
+            "CREATE INDEX IF NOT EXISTS IX_Workout_OwnerUserId ON Workout (OwnerUserId, IsTemplate)");
+        await _connection.ExecuteAsync(
             "CREATE INDEX IF NOT EXISTS IX_Exercise_Name ON Exercise (Name COLLATE NOCASE)");
         await _connection.ExecuteAsync(
             "CREATE INDEX IF NOT EXISTS IX_WorkoutExercise_WorkoutId ON WorkoutExercise (WorkoutId)");
@@ -98,6 +101,24 @@ public sealed class GymTrackDatabase : IAsyncDisposable
             "CREATE UNIQUE INDEX IF NOT EXISTS UX_SetRecord_SetNumber ON SetRecord (SessionId, ExerciseId, SetNumber)");
     }
 
+    private Task MigrateWorkoutOwnershipAsync()
+    {
+        return _connection.RunInTransactionAsync(transaction =>
+        {
+            var columns = transaction.GetTableInfo("Workout");
+            if (!columns.Any(column => column.Name == nameof(Models.Workout.OwnerUserId)))
+            {
+                transaction.Execute("ALTER TABLE Workout ADD COLUMN OwnerUserId INTEGER NULL");
+            }
+
+            if (!columns.Any(column => column.Name == nameof(Models.Workout.IsTemplate)))
+            {
+                transaction.Execute("ALTER TABLE Workout ADD COLUMN IsTemplate INTEGER NOT NULL DEFAULT 0");
+                transaction.Execute("UPDATE Workout SET IsTemplate = 1 WHERE OwnerUserId IS NULL");
+            }
+        });
+    }
+
     private const string CreateExerciseTableSql =
         """
         CREATE TABLE IF NOT EXISTS Exercise (
@@ -115,6 +136,8 @@ public sealed class GymTrackDatabase : IAsyncDisposable
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             Name TEXT NOT NULL,
             Description TEXT NULL,
+            OwnerUserId INTEGER NULL,
+            IsTemplate INTEGER NOT NULL DEFAULT 0 CHECK (IsTemplate IN (0, 1)),
             CreatedAt TEXT NOT NULL,
             UpdatedAt TEXT NOT NULL
         )

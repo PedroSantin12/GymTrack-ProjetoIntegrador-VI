@@ -15,6 +15,8 @@ public partial class WorkoutEditViewModel : BaseViewModel
     private readonly INotificationService _notificationService;
     private readonly ILogger<WorkoutEditViewModel> _logger;
     private int _workoutId;
+    private int? _ownerUserId;
+    private bool _isTemplate;
 
     public WorkoutEditViewModel(
         IWorkoutDao workoutDao,
@@ -56,9 +58,29 @@ public partial class WorkoutEditViewModel : BaseViewModel
 
     public bool HasValidationMessage => !string.IsNullOrWhiteSpace(ValidationMessage);
 
+    public async Task InitializeNewAsync(int? ownerUserId, bool isTemplate)
+    {
+        if (ownerUserId is <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(ownerUserId));
+        }
+
+        if (isTemplate && ownerUserId is not null)
+        {
+            throw new ArgumentException("Treinos prontos não possuem um proprietário individual.", nameof(ownerUserId));
+        }
+
+        await InitializeAsync(null);
+        _ownerUserId = ownerUserId;
+        _isTemplate = isTemplate;
+        Title = isTemplate ? "Novo treino pronto" : "Novo treino";
+    }
+
     public async Task InitializeAsync(int? workoutId)
     {
         _workoutId = 0;
+        _ownerUserId = null;
+        _isTemplate = false;
         Title = "Novo treino";
         Name = string.Empty;
         Description = string.Empty;
@@ -101,6 +123,8 @@ public partial class WorkoutEditViewModel : BaseViewModel
             }
 
             _workoutId = workout.Id;
+            _ownerUserId = workout.OwnerUserId;
+            _isTemplate = workout.IsTemplate;
             Title = "Editar treino";
             Name = workout.Name;
             Description = workout.Description ?? string.Empty;
@@ -172,6 +196,12 @@ public partial class WorkoutEditViewModel : BaseViewModel
             return;
         }
 
+        if (_isTemplate && Exercises.Count == 0)
+        {
+            ValidationMessage = "Adicione ao menos um exercício para disponibilizar este treino pronto.";
+            return;
+        }
+
         var composition = new List<WorkoutExercise>(Exercises.Count);
         for (var index = 0; index < Exercises.Count; index++)
         {
@@ -198,6 +228,8 @@ public partial class WorkoutEditViewModel : BaseViewModel
             {
                 Id = _workoutId,
                 Name = normalizedName,
+                OwnerUserId = _ownerUserId,
+                IsTemplate = _isTemplate,
                 Description = string.IsNullOrEmpty(normalizedDescription)
                     ? null
                     : normalizedDescription

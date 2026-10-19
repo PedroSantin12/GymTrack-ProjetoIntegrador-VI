@@ -11,11 +11,12 @@ public partial class App : Application
     {
         InitializeComponent();
         _services = services;
+        UserAppTheme = AppTheme.Dark;
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(_services.GetRequiredService<MainFlyoutPage>())
+        return new Window(new NavigationPage(_services.GetRequiredService<LoginPage>()))
         {
             Title = "GymTrack"
         };

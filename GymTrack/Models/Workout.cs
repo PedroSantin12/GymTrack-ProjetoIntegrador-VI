@@ -13,6 +13,10 @@ public sealed class Workout
 
     public string? Description { get; set; }
 
+    public int? OwnerUserId { get; set; }
+
+    public bool IsTemplate { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }

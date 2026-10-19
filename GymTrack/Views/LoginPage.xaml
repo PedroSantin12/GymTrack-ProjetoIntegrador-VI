@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
+             x:Class="GymTrack.Views.LoginPage"
+             x:DataType="viewModels:LoginViewModel"
+             Title="Entrar" NavigationPage.HasNavigationBar="False"
+             BackgroundColor="{StaticResource DarkBackground}">
+    <ScrollView>
+        <VerticalStackLayout Padding="28,40,28,28" Spacing="24" MaximumWidthRequest="520" HorizontalOptions="Fill">
+            <HorizontalStackLayout Spacing="0" Margin="0,4,0,0">
+                <Label Text="GYM" FontSize="26" FontFamily="OpenSansSemibold" FontAttributes="Bold" />
+                <Label Text="TRACK" FontSize="26" FontFamily="OpenSansSemibold" FontAttributes="Bold" TextColor="{StaticResource BrandAccent}" />
+            </HorizontalStackLayout>
+            <Border Stroke="#4C4C4C" StrokeShape="RoundRectangle 24" Padding="24" BackgroundColor="#272727">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="SEU PRÓXIMO PASSO" FontSize="11" CharacterSpacing="2" TextColor="{StaticResource BrandAccent}" />
+                    <Label Text="Mais constância.&#10;Mais evolução." FontSize="32" FontFamily="OpenSansSemibold" FontAttributes="Bold" LineHeight="1.1" />
+                    <BoxView Color="{StaticResource BrandAccent}" HeightRequest="4" WidthRequest="48" HorizontalOptions="Start" Margin="0,4" />
+                    <Label Text="Seu treino, sua rotina e suas conquistas em um só lugar." Style="{StaticResource SecondaryText}" />
+                </VerticalStackLayout>
+            </Border>
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Bem-vindo de volta" Style="{StaticResource PageTitle}" />
+                <Label Text="Entre na sua conta para continuar." Style="{StaticResource SecondaryText}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="8">
+                <Label Text="E-mail" Style="{StaticResource CaptionText}" />
+                <Border Padding="12,0" StrokeShape="RoundRectangle 14">
+                    <Entry x:Name="EmailInput" Text="{Binding Email}" Placeholder="seuemail@exemplo.com" Keyboard="Email" ReturnType="Next" Completed="OnEmailCompleted" MaxLength="254" AutomationId="LoginEmail" />
+                </Border>
+                <Label Text="Senha" Style="{StaticResource CaptionText}" Margin="0,8,0,0" />
+                <Border Padding="12,0" StrokeShape="RoundRectangle 14">
+                    <Entry x:Name="PasswordInput" Text="{Binding Password}" Placeholder="Sua senha" IsPassword="True" ReturnType="Go" ReturnCommand="{Binding SignInCommand}" AutomationId="LoginPassword" />
+                </Border>
+                <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource Danger}" FontSize="13" AutomationId="LoginError" />
+                <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" />
+                <Button Text="Entrar" Command="{Binding SignInCommand}" AutomationId="LoginSubmit" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="10">
+                <Label Text="EXPERIMENTE O GYMTRACK" FontSize="10" CharacterSpacing="1.5" TextColor="{StaticResource DarkTextSecondary}" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Button Text="Consumidor" Style="{StaticResource SecondaryButton}" Clicked="OnConsumerDemoClicked" FontSize="13" />
+                    <Button Grid.Column="1" Text="Funcionário" Style="{StaticResource SecondaryButton}" Clicked="OnEmployeeDemoClicked" FontSize="13" />
+                </Grid>
+                <Label Text="Contas locais de demonstração. Selecione um perfil para preencher o acesso e toque em Entrar." FontSize="12" TextColor="{StaticResource DarkTextSecondary}" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
