@@ -62,15 +62,34 @@
                             <DataTemplate x:DataType="viewModels:WorkoutExerciseItemViewModel">
                                 <Border Padding="14">
                                     <VerticalStackLayout Spacing="12">
-                                        <Grid ColumnDefinitions="*,Auto"
+                                        <Grid ColumnDefinitions="82,*,Auto"
                                               ColumnSpacing="8">
-                                            <VerticalStackLayout Spacing="2">
+                                            <Border WidthRequest="82"
+                                                    HeightRequest="62"
+                                                    Padding="3"
+                                                    BackgroundColor="#191919"
+                                                    StrokeShape="RoundRectangle 9">
+                                                <Grid>
+                                                    <Image Source="{Binding PreviewSource}"
+                                                           IsVisible="{Binding HasPreview}"
+                                                           Aspect="AspectFit"
+                                                           BackgroundColor="White"
+                                                           SemanticProperties.Description="Ilustração do exercício" />
+                                                    <Label Text="SEM MÍDIA"
+                                                           IsVisible="{Binding HasNoPreview}"
+                                                           FontSize="9"
+                                                           TextColor="#A4A5AC"
+                                                           HorizontalTextAlignment="Center"
+                                                           VerticalTextAlignment="Center" />
+                                                </Grid>
+                                            </Border>
+                                            <VerticalStackLayout Grid.Column="1" Spacing="2">
                                                 <Label Text="{Binding PositionText}"
                                                        Style="{StaticResource SectionTitle}" />
                                                 <Label Text="{Binding MuscleGroup}"
                                                        Style="{StaticResource SecondaryText}" />
                                             </VerticalStackLayout>
-                                            <Label Grid.Column="1"
+                                            <Label Grid.Column="2"
                                                    Text="{Binding StateText}"
                                                    TextColor="{StaticResource Danger}"
                                                    Style="{StaticResource CaptionText}"

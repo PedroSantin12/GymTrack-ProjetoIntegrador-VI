@@ -32,7 +32,11 @@ public sealed class ExercisePickerItemViewModel
 
     public bool HasNotes => !string.IsNullOrWhiteSpace(Notes);
 
-    public string PreviewSource => ExerciseMediaCatalog.ForExercise(Name, MuscleGroup);
+    public string? PreviewSource => ExerciseMediaCatalog.ForExercise(Name, MuscleGroup);
+
+    public bool HasPreview => PreviewSource is not null;
+
+    public bool HasNoPreview => !HasPreview;
 
     public IRelayCommand SelectCommand { get; }
 

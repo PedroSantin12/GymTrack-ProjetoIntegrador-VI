@@ -47,7 +47,7 @@
                     <VerticalStackLayout Spacing="4" Padding="0,2,0,14">
                         <Label Text="{Binding ActiveGroupTitle}"
                                Style="{StaticResource SectionTitle}" />
-                        <Label Text="Toque em Ver execução para assistir ao movimento."
+                        <Label Text="Toque em Ver execução para consultar o guia."
                                Style="{StaticResource CaptionText}" />
                     </VerticalStackLayout>
                 </CollectionView.Header>
@@ -71,17 +71,26 @@
                         <Border Margin="0,0,0,10"
                                 Padding="12">
                             <VerticalStackLayout Spacing="12">
-                                <Grid ColumnDefinitions="62,*"
+                                <Grid ColumnDefinitions="88,*"
                                       ColumnSpacing="12">
-                                    <Border WidthRequest="58"
-                                            HeightRequest="58"
+                                    <Border WidthRequest="84"
+                                            HeightRequest="64"
                                             Padding="3"
                                             StrokeShape="RoundRectangle 16"
                                             BackgroundColor="#191919">
-                                        <Image Source="{Binding PreviewSource}"
-                                               IsAnimationPlaying="True"
-                                               Aspect="AspectFit"
-                                               SemanticProperties.Description="Prévia animada da execução" />
+                                        <Grid>
+                                            <Image Source="{Binding PreviewSource}"
+                                                   IsVisible="{Binding HasPreview}"
+                                                   Aspect="AspectFit"
+                                                   BackgroundColor="White"
+                                                   SemanticProperties.Description="Ilustração do exercício" />
+                                            <Label Text="SEM MÍDIA"
+                                                   IsVisible="{Binding HasNoPreview}"
+                                                   FontSize="9"
+                                                   TextColor="#A4A5AC"
+                                                   HorizontalTextAlignment="Center"
+                                                   VerticalTextAlignment="Center" />
+                                        </Grid>
                                     </Border>
 
                                     <VerticalStackLayout Grid.Column="1" Spacing="2"

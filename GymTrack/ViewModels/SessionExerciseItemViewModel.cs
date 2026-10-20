@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using GymTrack.Models;
+using GymTrack.Services;
 
 namespace GymTrack.ViewModels;
 
@@ -33,6 +34,12 @@ public sealed class SessionExerciseItemViewModel
     public string Name { get; }
 
     public string MuscleGroup { get; }
+
+    public string? PreviewSource => ExerciseMediaCatalog.ForExercise(Name, MuscleGroup);
+
+    public bool HasPreview => PreviewSource is not null;
+
+    public bool HasNoPreview => !HasPreview;
 
     public int PlannedReps { get; }
 

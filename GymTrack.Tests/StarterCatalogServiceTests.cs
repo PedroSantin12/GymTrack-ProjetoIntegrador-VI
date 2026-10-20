@@ -7,6 +7,22 @@ namespace GymTrack.Tests;
 public sealed class StarterCatalogServiceTests
 {
     [Fact]
+    public async Task EnsureSeededAsync_EveryStarterExerciseHasItsOwnGuide()
+    {
+        await using var context = await TestDatabase.CreateAsync();
+        await new StarterCatalogService(context.Database).EnsureSeededAsync();
+
+        foreach (var exercise in await new ExerciseDao(context.Database).GetAllAsync())
+        {
+            var guide = ExerciseGuideCatalog.ForExercise(exercise.Name);
+            Assert.NotNull(guide);
+            Assert.True(guide.Steps.Count >= 3, exercise.Name);
+            Assert.False(string.IsNullOrWhiteSpace(guide.Muscles));
+            Assert.False(string.IsNullOrWhiteSpace(guide.Caution));
+        }
+    }
+
+    [Fact]
     public async Task EnsureSeededAsync_CreatesTwentyGroupsAndThreeUsableTemplates()
     {
         await using var context = await TestDatabase.CreateAsync();

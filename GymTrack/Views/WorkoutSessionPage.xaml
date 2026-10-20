@@ -49,14 +49,36 @@
                         <Border Padding="14"
                                 Margin="0,0,0,10">
                             <VerticalStackLayout Spacing="10">
-                                <VerticalStackLayout Spacing="2">
-                                    <Label Text="{Binding Name}"
-                                           Style="{StaticResource SectionTitle}" />
-                                    <Label Text="{Binding MuscleGroup}"
-                                           Style="{StaticResource SecondaryText}" />
-                                    <Label Text="{Binding PreviousPerformanceText}"
-                                           Style="{StaticResource CaptionText}" />
-                                </VerticalStackLayout>
+                                <Grid ColumnDefinitions="82,*"
+                                      ColumnSpacing="10">
+                                    <Border WidthRequest="82"
+                                            HeightRequest="62"
+                                            Padding="3"
+                                            BackgroundColor="#191919"
+                                            StrokeShape="RoundRectangle 9">
+                                        <Grid>
+                                            <Image Source="{Binding PreviewSource}"
+                                                   IsVisible="{Binding HasPreview}"
+                                                   Aspect="AspectFit"
+                                                   BackgroundColor="White"
+                                                   SemanticProperties.Description="Ilustração do exercício" />
+                                            <Label Text="SEM MÍDIA"
+                                                   IsVisible="{Binding HasNoPreview}"
+                                                   FontSize="9"
+                                                   TextColor="#A4A5AC"
+                                                   HorizontalTextAlignment="Center"
+                                                   VerticalTextAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                        <Label Text="{Binding Name}"
+                                               Style="{StaticResource SectionTitle}" />
+                                        <Label Text="{Binding MuscleGroup}"
+                                               Style="{StaticResource SecondaryText}" />
+                                        <Label Text="{Binding PreviousPerformanceText}"
+                                               Style="{StaticResource CaptionText}" />
+                                    </VerticalStackLayout>
+                                </Grid>
 
                                 <Button Text="Ver execução"
                                         Style="{StaticResource SecondaryButton}"

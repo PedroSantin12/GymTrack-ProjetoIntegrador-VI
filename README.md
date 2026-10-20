@@ -34,13 +34,13 @@ As contas, os exercícios, os treinos e as sessões persistem localmente no SQLi
 
 - Navegação inferior fixa com **Treinos**, **Evolução** e **Perfil**.
 - Treinos é a primeira página após o login e reúne resumo de sessões reais, retomada do treino em andamento e rotinas pessoais.
-- Biblioteca com seis modelos de base (Full Body, Upper Body, Lower Body, Push, Pull e Legs) e treinos prontos de peito, pernas e glúteos. É possível pesquisar e conferir exercícios, séries, repetições e animações antes de copiar o treino para a conta.
+- Biblioteca com seis modelos de base (Full Body, Upper Body, Lower Body, Push, Pull e Legs) e treinos prontos de peito, pernas e glúteos. É possível pesquisar e conferir exercícios, séries, repetições e guias de execução antes de copiar o treino para a conta.
 - Meus treinos com criação, edição, duplicação, exclusão confirmada e início de sessão. Ao excluir uma rotina com sessões concluídas, ela sai da lista e o histórico permanece disponível.
-- Execução com demonstrações animadas dos exercícios, cronômetro, registro de séries, repetições e carga, retomada de sessão e finalização.
+- Execução com imagens demonstrativas dos exercícios, cronômetro, registro de séries, repetições e carga, retomada de sessão e finalização.
 - Evolução com sessões concluídas, tempo acumulado, frequência nos últimos sete dias e treinos recentes do próprio usuário.
 - Perfil com os dados da conta e opção de sair.
 
-O catálogo inicial inclui 33 exercícios em 20 grupos musculares e três treinos prontos de peito, pernas e glúteos, além dos seis modelos de base. Ao abrir qualquer treino pronto, o consumidor pode examinar a sequência e as animações de cada exercício antes de adicioná-lo à própria conta. As demonstrações são GIFs originais incluídos no aplicativo e funcionam sem internet. Ele recebe uma cópia independente: alterar ou excluir um treino pronto do catálogo não modifica a cópia. O acesso a treinos pessoais e sessões é restrito ao dono da conta; o catálogo de exercícios é compartilhado.
+O catálogo inicial inclui 33 exercícios em 20 grupos musculares e três treinos prontos de peito, pernas e glúteos, além dos seis modelos de base. Ao abrir qualquer treino pronto, o consumidor pode examinar a sequência, séries, repetições e o guia de cada exercício antes de adicioná-lo à própria conta. Todos os 33 exercícios iniciais têm imagens anatômicas estáticas incluídas no aplicativo e funcionam sem internet. As imagens, sua origem e os créditos estão documentados em [MEDIA_CREDITS.md](MEDIA_CREDITS.md). Exercícios personalizados sem imagem correspondente exibem uma indicação discreta de mídia indisponível. O consumidor recebe uma cópia independente: alterar ou excluir um treino pronto do catálogo não modifica a cópia. O acesso a treinos pessoais e sessões é restrito ao dono da conta; o catálogo de exercícios é compartilhado.
 
 ## Roteiro de demonstração
 

@@ -2,6 +2,7 @@ using GymTrack.Data.Dao;
 using GymTrack.Models;
 using GymTrack.Services;
 using GymTrack.Views.Components;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace GymTrack.Views.Consumer;
 
@@ -12,7 +13,7 @@ public sealed class TemplateDetailPage : ContentPage
     private readonly IWorkoutCatalogService _catalog;
     private readonly IAppNavigator _navigator;
     private readonly AppSession _session;
-    private readonly VerticalStackLayout _content = new() { Spacing = 16 };
+    private readonly VerticalStackLayout _content = new() { Spacing = 10 };
     private readonly Label _status = Ui.Text(string.Empty, 13, Ui.Accent);
     private readonly Button _choose;
     private int _templateId;
@@ -101,6 +102,8 @@ public sealed class TemplateDetailPage : ContentPage
         if (!string.IsNullOrWhiteSpace(workout.Description))
             _content.Add(Ui.Text(workout.Description, 14, Ui.Muted));
         _content.Add(Ui.Text(ConsumerUi.ExerciseCount(plans.Count), 13, Ui.Muted));
+        _content.Add(new Grid { HeightRequest = 6 });
+        _content.Add(Ui.Text("Exercícios", 17, Ui.Foreground, FontAttributes.Bold));
 
         foreach (var plan in plans)
         {
@@ -134,6 +137,8 @@ public sealed class TemplateDetailPage : ContentPage
         if (!string.IsNullOrWhiteSpace(plan.Description))
             _content.Add(Ui.Text(plan.Description, 14, Ui.Muted));
         _content.Add(Ui.Text(ConsumerUi.ExerciseCount(plan.Exercises.Count), 13, Ui.Muted));
+        _content.Add(new Grid { HeightRequest = 6 });
+        _content.Add(Ui.Text("Exercícios", 17, Ui.Foreground, FontAttributes.Bold));
 
         foreach (var item in plan.Exercises)
         {
@@ -152,21 +157,67 @@ public sealed class TemplateDetailPage : ContentPage
     private Border ExerciseCard(string name, string muscleGroup, int sets, int reps,
         int? exerciseId)
     {
-        var content = new VerticalStackLayout { Spacing = 9 };
-        content.Add(Ui.Tag(muscleGroup));
-        content.Add(Ui.Text(name, 19, Ui.Foreground, FontAttributes.Bold));
-        content.Add(new Image
+        var media = ExerciseMediaCatalog.Get(name);
+        View thumb = media.Image is { } image
+            ? new Image { Source = image, Aspect = Aspect.AspectFit,
+                WidthRequest = 86, HeightRequest = 68, BackgroundColor = Colors.White }
+            : new Label
+            {
+                Text = "SEM\nMÍDIA",
+                TextColor = Ui.Muted,
+                FontSize = 10,
+                HorizontalTextAlignment = TextAlignment.Center,
+                VerticalTextAlignment = TextAlignment.Center,
+                WidthRequest = 86,
+                HeightRequest = 68
+            };
+        var thumbnail = new Border
         {
-            Source = ExerciseMediaCatalog.ForExercise(name, muscleGroup),
-            HeightRequest = 150,
-            Aspect = Aspect.AspectFit,
-            IsAnimationPlaying = true,
-            BackgroundColor = Color.FromArgb("#191919")
-        });
-        content.Add(Ui.Text($"{sets} séries · {reps} repetições", 13, Ui.Muted));
+            Content = thumb,
+            WidthRequest = 86,
+            HeightRequest = 68,
+            Padding = 0,
+            BackgroundColor = Color.FromArgb("#151619"),
+            StrokeThickness = 0,
+            StrokeShape = new RoundRectangle { CornerRadius = 9 }
+        };
+
+        var title = Ui.Text(name, 16, Ui.Foreground, FontAttributes.Bold);
+        title.MaxLines = 2;
+        var info = new VerticalStackLayout { Spacing = 3 };
+        info.Add(title);
+        info.Add(Ui.Text(muscleGroup, 12, Color.FromArgb("#FF8A1F")));
+        info.Add(Ui.Text($"{sets} × {reps}", 12, Ui.Muted));
         if (exerciseId is > 0)
-            content.Add(Ui.Button("Ver execução", () => _navigator.OpenExerciseDemoAsync(exerciseId.Value), true));
-        return Ui.Card(content, new Thickness(18));
+        {
+            var preview = Ui.Button("Ver execução  →",
+                () => _navigator.OpenExerciseDemoAsync(exerciseId.Value), true);
+            preview.TextColor = Color.FromArgb("#FF8A1F");
+            preview.BackgroundColor = Colors.Transparent;
+            preview.BorderWidth = 0;
+            preview.MinimumHeightRequest = 36;
+            preview.Padding = new Thickness(0, 2);
+            preview.HorizontalOptions = LayoutOptions.Start;
+            info.Add(preview);
+        }
+        else
+        {
+            info.Add(Ui.Text("Guia indisponível", 11, Ui.Muted));
+        }
+
+        var row = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(86) },
+            new ColumnDefinition(GridLength.Star) }, ColumnSpacing = 12 };
+        row.Add(thumbnail, 0, 0);
+        row.Add(info, 1, 0);
+        return new Border
+        {
+            Content = row,
+            BackgroundColor = Color.FromArgb("#202126"),
+            Stroke = new SolidColorBrush(Color.FromArgb("#34363B")),
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = 12 },
+            Padding = 12
+        };
     }
 
     private async Task ChooseAsync()

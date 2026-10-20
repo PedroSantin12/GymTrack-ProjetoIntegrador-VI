@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
 using GymTrack.Data.Dao;
+using GymTrack.Services;
 using Microsoft.Extensions.Logging;
 
 namespace GymTrack.ViewModels;
@@ -18,6 +19,9 @@ public sealed class HistoryExerciseGroupViewModel(int exerciseId, string exercis
     public int ExerciseId { get; } = exerciseId;
     public string ExerciseName { get; } = exerciseName;
     public string MuscleGroup { get; } = muscleGroup;
+    public string? PreviewSource => ExerciseMediaCatalog.ForExercise(ExerciseName, MuscleGroup);
+    public bool HasPreview => PreviewSource is not null;
+    public bool HasNoPreview => !HasPreview;
     public ObservableCollection<HistorySetItemViewModel> Sets { get; } = [];
 }
 
