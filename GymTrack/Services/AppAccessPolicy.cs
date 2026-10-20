@@ -19,11 +19,12 @@ public static class AppAccessPolicy
     }
 
     public static bool CanEditWorkout(AppUser? user, Workout? workout) =>
-        user is { IsActive: true } && workout is not null &&
+        user is { IsActive: true } && workout is { IsArchived: false } &&
         (user.Role == UserRole.Employee && workout.IsTemplate ||
          user.Role == UserRole.Consumer && !workout.IsTemplate && workout.OwnerUserId == user.Id);
 
     public static bool CanStartWorkout(AppUser? user, Workout? workout) =>
-        user is { IsActive: true, Role: UserRole.Consumer } && workout is { IsTemplate: false } &&
+        user is { IsActive: true, Role: UserRole.Consumer } &&
+        workout is { IsTemplate: false, IsArchived: false } &&
         workout.OwnerUserId == user.Id;
 }

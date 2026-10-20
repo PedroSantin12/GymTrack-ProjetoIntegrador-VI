@@ -129,6 +129,7 @@ public sealed class WorkoutDao(GymTrackDatabase database) : IWorkoutDao
         workout.CreatedAt = existing.CreatedAt;
         workout.OwnerUserId = existing.OwnerUserId;
         workout.IsTemplate = existing.IsTemplate;
+        workout.IsArchived = existing.IsArchived;
         workout.UpdatedAt = now;
         transaction.Update(workout);
     }

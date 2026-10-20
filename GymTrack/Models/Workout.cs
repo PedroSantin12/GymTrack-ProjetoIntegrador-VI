@@ -17,6 +17,8 @@ public sealed class Workout
 
     public bool IsTemplate { get; set; }
 
+    public bool IsArchived { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }

@@ -1,72 +1,57 @@
-using Microsoft.Maui.Controls.Shapes;
-
 using GymTrack.Services;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace GymTrack.Views.Components;
 
 public class WorkspacePage : ContentPage
 {
     private readonly Grid _layout;
-    private readonly bool _floatingNavigation;
     private View? _body;
 
     protected WorkspacePage(string title, string subtitle, AppSection activeSection,
         IAppNavigator navigator, AppSession session)
     {
-        _floatingNavigation = !session.IsEmployee;
         Title = title;
         NavigationPage.SetHasNavigationBar(this, false);
         BackgroundColor = Ui.Background;
+
         var header = new VerticalStackLayout
         {
-            Spacing = 6,
-            Padding = new Thickness(24, 22, 24, 14),
+            Spacing = 3,
+            Padding = new Thickness(18, 16, 18, 10),
             Children =
             {
-                Ui.Tag(session.IsEmployee ? "GYMTRACK / GESTÃO" : "GYMTRACK / SEU RITMO"),
-                Ui.Text(title, 30, attributes: FontAttributes.Bold),
+                Ui.Text(session.IsEmployee ? "GYMTRACK  /  GESTÃO" : "GymTrack", 15,
+                    Ui.Accent, FontAttributes.Bold),
+                Ui.Text(title, 24, Ui.Foreground, FontAttributes.Bold),
                 Ui.Text(subtitle, 13, Ui.Muted)
             }
         };
+
         _layout = new Grid
         {
-            RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) },
-            MaximumWidthRequest = 760,
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Star),
+                new RowDefinition(GridLength.Auto)
+            },
+            MaximumWidthRequest = session.IsEmployee ? 760 : 460,
             HorizontalOptions = LayoutOptions.Fill
         };
-        _layout.Add(header);
-        var navigation = CreateNavigation(activeSection, navigator, session);
-        if (_floatingNavigation)
-        {
-            navigation.VerticalOptions = LayoutOptions.End;
-            navigation.ZIndex = 1;
-            _layout.SizeChanged += (_, _) =>
-                navigation.WidthRequest = Math.Min(370, Math.Max(0, _layout.Width - 52));
-            _layout.Add(navigation, 0, 1);
-        }
-        else
-        {
-            _layout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            _layout.Add(navigation, 0, 2);
-        }
+        _layout.Add(header, 0, 0);
+        _layout.Add(CreateNavigation(activeSection, navigator, session), 0, 2);
         Content = _layout;
     }
 
     protected void SetBody(View body, bool scroll = true)
     {
-        View container;
-        if (scroll)
+        View container = scroll ? new ScrollView
         {
-            var content = new VerticalStackLayout { Spacing = 0 };
-            content.Add(body);
-            if (_floatingNavigation) content.Add(new Grid { HeightRequest = 100 });
-            container = new ScrollView { Content = content };
-        }
-        else
-        {
-            container = body;
-        }
-        container.Margin = new Thickness(24, 4, 24, _floatingNavigation ? 0 : 12);
+            Content = body,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Never
+        } : body;
+        container.Margin = new Thickness(18, 2, 18, 12);
         if (_body is not null) _layout.Remove(_body);
         _layout.Add(container, 0, 1);
         _body = container;
@@ -75,83 +60,71 @@ public class WorkspacePage : ContentPage
     private static View CreateNavigation(AppSection section, IAppNavigator navigator, AppSession session)
     {
         var items = session.IsEmployee
-            ? new[] { (AppSection.AdminDashboard, "Painel", "home"), (AppSection.Users, "Usuários", "users"),
-                (AppSection.AdminWorkouts, "Treinos", "workout"), (AppSection.Profile, "Perfil", "profile") }
+            ? new[] { (AppSection.AdminDashboard, "Painel", "home"),
+                (AppSection.Users, "Usuários", "users"),
+                (AppSection.AdminWorkouts, "Treinos", "workout"),
+                (AppSection.Profile, "Perfil", "profile") }
             : new[] { (AppSection.PersonalWorkouts, "Treinos", "workout"),
-                (AppSection.Progress, "Evolução", "progress"), (AppSection.Profile, "Perfil", "profile") };
-        var grid = new Grid { ColumnSpacing = 4 };
+                (AppSection.Progress, "Evolução", "progress"),
+                (AppSection.Profile, "Perfil", "profile") };
+
+        var grid = new Grid { ColumnSpacing = 0 };
         for (var index = 0; index < items.Length; index++)
         {
             grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
             var (route, label, icon) = items[index];
-            var selected = section == route || section == AppSection.Templates && route == AppSection.PersonalWorkouts ||
-                section is AppSection.Statistics or AppSection.Exercises && route == AppSection.AdminDashboard;
+            var selected = section == route ||
+                section == AppSection.Templates && route == AppSection.PersonalWorkouts ||
+                session.IsEmployee && section is AppSection.Statistics or AppSection.Exercises && route == AppSection.AdminDashboard;
             var color = selected ? Ui.Accent : Ui.Muted;
-            var text = Ui.Text(label, 10, color, selected ? FontAttributes.Bold : FontAttributes.None);
-            text.HorizontalTextAlignment = TextAlignment.Center;
-            var tile = new Border
+            var caption = Ui.Text(label, 10, color, selected ? FontAttributes.Bold : FontAttributes.None);
+            caption.HorizontalTextAlignment = TextAlignment.Center;
+            var content = new VerticalStackLayout
             {
-                Padding = 0,
-                StrokeThickness = 0,
-                StrokeShape = new RoundRectangle { CornerRadius = session.IsEmployee ? 28 : 34 },
-                BackgroundColor = selected ? Ui.Elevated : Colors.Transparent,
-                Content = new VerticalStackLayout
-                {
-                    Spacing = 3,
-                    HorizontalOptions = LayoutOptions.Fill,
-                    VerticalOptions = LayoutOptions.Center,
-                    InputTransparent = true,
-                    Children = { CreateIcon(icon, color), text }
-                },
-                MinimumHeightRequest = session.IsEmployee ? 62 : 68
+                Spacing = 3,
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalOptions = LayoutOptions.Center,
+                InputTransparent = true,
+                Children = { CreateIcon(icon, color), caption }
             };
-            if (!session.IsEmployee)
-            {
-                tile.WidthRequest = 68;
-                tile.HeightRequest = 68;
-                tile.HorizontalOptions = LayoutOptions.Center;
-            }
+            var tile = new Grid { HeightRequest = 58 };
+            tile.Add(content);
+            if (selected)
+                tile.Add(new BoxView
+                {
+                    Color = Ui.Accent, HeightRequest = 2, WidthRequest = 44,
+                    VerticalOptions = LayoutOptions.End, HorizontalOptions = LayoutOptions.Center
+                });
             var button = new Button
             {
                 Text = string.Empty,
-                Style = new Style(typeof(Button)),
                 BackgroundColor = Colors.Transparent,
                 BorderWidth = 0,
-                CornerRadius = 28,
+                CornerRadius = 0,
                 Padding = 0,
-                AutomationId = $"Navigate{route}",
-                MinimumHeightRequest = 62
+                MinimumHeightRequest = 58,
+                AutomationId = $"Navigate{route}"
             };
             SemanticProperties.SetDescription(button, label + (selected ? ", selecionado" : ""));
-            var iconAndLabel = tile.Content;
-            var tileLayout = new Grid();
-            tile.Content = tileLayout;
-            tileLayout.Add((View)iconAndLabel);
-            tileLayout.Add(button);
             button.Clicked += async (_, _) =>
             {
                 if (!button.IsEnabled || section == route) return;
                 button.IsEnabled = false;
                 try { await navigator.NavigateAsync(route); }
-                catch (Exception)
-                {
-                    await Ui.ShowErrorAsync("Navegação indisponível", "Confira seu acesso e tente novamente.");
-                }
+                catch { await Ui.ShowErrorAsync("Navegação indisponível", "Confira seu acesso e tente novamente."); }
                 finally { button.IsEnabled = true; }
             };
+            tile.Add(button);
             grid.Add(tile, index);
         }
+
         return new Border
         {
-            Padding = new Thickness(6),
-            Margin = session.IsEmployee ? new Thickness(16, 2, 16, 16) : new Thickness(0, 0, 0, 16),
-            MaximumWidthRequest = session.IsEmployee ? 760 : 370,
-            HorizontalOptions = session.IsEmployee ? LayoutOptions.Fill : LayoutOptions.Center,
-            BackgroundColor = session.IsEmployee ? Ui.Surface : Color.FromArgb("#E6272727"),
-            Stroke = new SolidColorBrush(Color.FromArgb("#4C4C4C")),
+            Padding = new Thickness(4, 3, 4, 4),
+            BackgroundColor = Ui.Secondary,
+            Stroke = new SolidColorBrush(Ui.Border),
             StrokeThickness = 1,
-            StrokeShape = new RoundRectangle { CornerRadius = 38 },
-            Shadow = new Shadow { Brush = new SolidColorBrush(Colors.Black), Opacity = .3f, Radius = 12, Offset = new Point(0, 4) },
+            StrokeShape = new RoundRectangle { CornerRadius = 0 },
             Content = grid
         };
     }
@@ -170,10 +143,10 @@ public class WorkspacePage : ContentPage
         {
             Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(data)!,
             Stroke = new SolidColorBrush(color),
-            StrokeThickness = 1.7,
+            StrokeThickness = 1.8,
             StrokeLineCap = PenLineCap.Round,
-            WidthRequest = 24,
-            HeightRequest = 24,
+            WidthRequest = 23,
+            HeightRequest = 23,
             HorizontalOptions = LayoutOptions.Center,
             Aspect = Stretch.Uniform
         };
