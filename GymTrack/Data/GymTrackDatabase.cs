@@ -116,6 +116,11 @@ public sealed class GymTrackDatabase : IAsyncDisposable
                 transaction.Execute("ALTER TABLE Workout ADD COLUMN IsTemplate INTEGER NOT NULL DEFAULT 0");
                 transaction.Execute("UPDATE Workout SET IsTemplate = 1 WHERE OwnerUserId IS NULL");
             }
+
+            if (!columns.Any(column => column.Name == nameof(Models.Workout.IsArchived)))
+            {
+                transaction.Execute("ALTER TABLE Workout ADD COLUMN IsArchived INTEGER NOT NULL DEFAULT 0");
+            }
         });
     }
 
@@ -138,6 +143,7 @@ public sealed class GymTrackDatabase : IAsyncDisposable
             Description TEXT NULL,
             OwnerUserId INTEGER NULL,
             IsTemplate INTEGER NOT NULL DEFAULT 0 CHECK (IsTemplate IN (0, 1)),
+            IsArchived INTEGER NOT NULL DEFAULT 0 CHECK (IsArchived IN (0, 1)),
             CreatedAt TEXT NOT NULL,
             UpdatedAt TEXT NOT NULL
         )

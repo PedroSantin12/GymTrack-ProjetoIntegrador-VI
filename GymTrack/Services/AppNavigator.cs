@@ -104,10 +104,22 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
             await RequireUserAsync();
             var page = services.GetRequiredService<ExerciseDemoPage>();
             await page.InitializeAsync(exerciseId);
-            var navigation = CurrentNavigation.Navigation.ModalStack.LastOrDefault() is NavigationPage modal
-                ? modal
-                : CurrentNavigation;
-            await navigation.PushAsync(page);
+            var modal = CurrentNavigation.Navigation.ModalStack.LastOrDefault();
+            if (modal is NavigationPage modalNavigation)
+            {
+                await modalNavigation.PushAsync(page);
+            }
+            else if (modal is not null)
+            {
+                var close = new ToolbarItem { Text = "Fechar" };
+                close.Clicked += async (_, _) => await page.Navigation.PopModalAsync();
+                page.ToolbarItems.Add(close);
+                await CurrentNavigation.Navigation.PushModalAsync(new NavigationPage(page));
+            }
+            else
+            {
+                await CurrentNavigation.PushAsync(page);
+            }
         }
         finally { _isNavigating = false; }
     }

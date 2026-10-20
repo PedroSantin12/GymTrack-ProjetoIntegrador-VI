@@ -4,14 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <Color x:Key="BrandAccent">#FF913A</Color>
-    <Color x:Key="BrandAccentPressed">#E07825</Color>
+    <Color x:Key="BrandAccentPressed">#FF9D3D</Color>
 
-    <Color x:Key="DarkBackground">#171717</Color>
-    <Color x:Key="DarkSurface">#272727</Color>
-    <Color x:Key="DarkSurfaceElevated">#4C4C4C</Color>
-    <Color x:Key="DarkBorder">#4C4C4C</Color>
-    <Color x:Key="DarkTextPrimary">#FAFAFA</Color>
-    <Color x:Key="DarkTextSecondary">#B9B9B9</Color>
+    <Color x:Key="DarkBackground">#0E0E10</Color>
+    <Color x:Key="DarkSurface">#1C1C20</Color>
+    <Color x:Key="DarkSurfaceElevated">#252529</Color>
+    <Color x:Key="DarkBorder">#303036</Color>
+    <Color x:Key="DarkTextPrimary">#F5F5F7</Color>
+    <Color x:Key="DarkTextSecondary">#9A9AA3</Color>
 
     <Color x:Key="LightBackground">#F5F7F8</Color>
     <Color x:Key="LightSurface">#FFFFFF</Color>
@@ -20,11 +20,11 @@
     <Color x:Key="LightTextPrimary">#111820</Color>
     <Color x:Key="LightTextSecondary">#5D6973</Color>
 
-    <Color x:Key="GrayLight">#B9B9B9</Color>
+    <Color x:Key="GrayLight">#9A9AA3</Color>
     <Color x:Key="GrayMedium">#959595</Color>
     <Color x:Key="GrayMuted">#707070</Color>
-    <Color x:Key="GrayBorder">#4C4C4C</Color>
-    <Color x:Key="GraySurface">#272727</Color>
+    <Color x:Key="GrayBorder">#303036</Color>
+    <Color x:Key="GraySurface">#1C1C20</Color>
 
     <Color x:Key="Danger">#FF6B6B</Color>
     <Color x:Key="Disabled">#707070</Color>

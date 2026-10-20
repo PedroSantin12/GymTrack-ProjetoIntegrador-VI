@@ -2,7 +2,7 @@
 
 Aplicativo acadêmico para organizar treinos de musculação, registrar sessões e acompanhar a evolução. Usa .NET 10, .NET MAUI, C#, XAML, MVVM e SQLite, com Android como plataforma principal.
 
-O aplicativo começa no login e abre a área correspondente à conta: funcionário ou consumidor. A entrada e o cadastro usam fotos de treino, o nome GymTrack e formulários sem rolagem. A interface usa fundo escuro, tons de cinza, destaque laranja `#FF913A` e navegação inferior arredondada.
+O aplicativo começa no login e abre a área correspondente à conta: funcionário ou consumidor. A entrada e o cadastro usam fotos de treino, o nome GymTrack e formulários sem rolagem. A interface usa fundo escuro, tons de cinza, destaque laranja `#FF913A` e navegação inferior fixa.
 
 ## Acesso de demonstração
 
@@ -32,15 +32,15 @@ As contas, os exercícios, os treinos e as sessões persistem localmente no SQLi
 
 **Consumidor**
 
-- Navegação inferior flutuante com **Treinos**, **Evolução** e **Perfil**.
-- Treinos é a primeira página após o login, com opções para criar uma rotina ou explorar os treinos prontos.
-- Biblioteca de treinos prontos com pesquisa, detalhe dos exercícios, demonstração de execução e cópia para a conta.
-- Meus treinos com criação, edição e início de sessão.
-- Execução com cronômetro, registro de séries, repetições e carga, retomada de sessão e finalização.
+- Navegação inferior fixa com **Treinos**, **Evolução** e **Perfil**.
+- Treinos é a primeira página após o login e reúne resumo de sessões reais, retomada do treino em andamento e rotinas pessoais.
+- Biblioteca com seis modelos de base (Full Body, Upper Body, Lower Body, Push, Pull e Legs) e treinos prontos de peito, pernas e glúteos. É possível pesquisar e conferir exercícios, séries, repetições e animações antes de copiar o treino para a conta.
+- Meus treinos com criação, edição, duplicação, exclusão confirmada e início de sessão. Ao excluir uma rotina com sessões concluídas, ela sai da lista e o histórico permanece disponível.
+- Execução com demonstrações animadas dos exercícios, cronômetro, registro de séries, repetições e carga, retomada de sessão e finalização.
 - Evolução com sessões concluídas, tempo acumulado, frequência nos últimos sete dias e treinos recentes do próprio usuário.
 - Perfil com os dados da conta e opção de sair.
 
-O catálogo inicial inclui 33 exercícios em 20 grupos musculares e três treinos prontos de peito, pernas e glúteos. Ao abrir um treino pronto, o consumidor pode examinar a sequência e a execução de cada exercício antes de adicioná-lo à própria conta. Ele recebe uma cópia independente: alterar ou excluir o modelo do catálogo não modifica a cópia. O acesso a treinos pessoais e sessões é restrito ao dono da conta; o catálogo de exercícios é compartilhado.
+O catálogo inicial inclui 33 exercícios em 20 grupos musculares e três treinos prontos de peito, pernas e glúteos, além dos seis modelos de base. Ao abrir qualquer treino pronto, o consumidor pode examinar a sequência e as animações de cada exercício antes de adicioná-lo à própria conta. As demonstrações são GIFs originais incluídos no aplicativo e funcionam sem internet. Ele recebe uma cópia independente: alterar ou excluir um treino pronto do catálogo não modifica a cópia. O acesso a treinos pessoais e sessões é restrito ao dono da conta; o catálogo de exercícios é compartilhado.
 
 ## Roteiro de demonstração
 
@@ -48,8 +48,8 @@ O catálogo inicial inclui 33 exercícios em 20 grupos musculares e três treino
 2. Abra **Treinos**, crie um treino pronto, adicione exercícios e salve sua composição.
 3. Saia da conta pelo **Perfil** e entre como **Consumidor**.
 4. Em **Treinos**, selecione **Explorar treinos prontos**, abra a rotina, confira os exercícios e toque em **Adicionar aos meus treinos** para revisar sua cópia no editor.
-5. De volta a **Treinos**, toque em **Começar treino**, registre as séries e finalize a sessão.
-6. Consulte **Evolução** para ver os dados dessa conta. Também é possível criar uma rotina própria por **+ Criar treino**.
+5. De volta a **Treinos**, toque em **Iniciar treino**, registre as séries e finalize a sessão. Se sair antes, use **Continuar treino** para retomá-la.
+6. Consulte **Evolução** para ver os dados dessa conta. Também é possível criar uma rotina própria pelo botão **+** em Treinos.
 
 Treinos sem exercícios não podem iniciar. Ao atualizar uma instalação antiga, os treinos existentes sem proprietário passam a ser modelos do catálogo. Seus registros são preservados; o histórico antigo não é atribuído automaticamente a uma das novas contas.
 

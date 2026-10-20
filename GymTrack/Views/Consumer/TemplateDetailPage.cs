@@ -16,6 +16,7 @@ public sealed class TemplateDetailPage : ContentPage
     private readonly Label _status = Ui.Text(string.Empty, 13, Ui.Accent);
     private readonly Button _choose;
     private int _templateId;
+    private string? _starterKey;
     private int? _copiedWorkoutId;
     private bool _busy;
 
@@ -78,6 +79,7 @@ public sealed class TemplateDetailPage : ContentPage
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(templateId);
 
         _templateId = templateId;
+        _starterKey = null;
         _copiedWorkoutId = null;
         _status.Text = string.Empty;
         _choose.IsEnabled = false;
@@ -86,7 +88,7 @@ public sealed class TemplateDetailPage : ContentPage
         _content.Add(Ui.Text("Carregando treino...", 14, Ui.Muted));
 
         var workout = await _workouts.GetByIdAsync(templateId);
-        if (workout is null || !workout.IsTemplate)
+        if (workout is null || !workout.IsTemplate || workout.IsArchived)
             throw new InvalidOperationException("Treino pronto não encontrado.");
 
         var plans = await _workouts.GetExercisesAsync(templateId);
@@ -103,7 +105,8 @@ public sealed class TemplateDetailPage : ContentPage
         foreach (var plan in plans)
         {
             if (exercises.TryGetValue(plan.ExerciseId, out var exercise))
-                _content.Add(ExerciseCard(exercise, plan));
+                _content.Add(ExerciseCard(exercise.Name, exercise.MuscleGroup,
+                    plan.PlannedSets, plan.PlannedReps, exercise.Id));
         }
 
         if (plans.Count == 0)
@@ -113,21 +116,56 @@ public sealed class TemplateDetailPage : ContentPage
         _choose.IsEnabled = plans.Count > 0;
     }
 
-    private Border ExerciseCard(Exercise exercise, WorkoutExercise plan)
+    public async Task InitializeStarterAsync(StarterWorkoutPlan plan)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+
+        _templateId = 0;
+        _starterKey = plan.Key;
+        _copiedWorkoutId = null;
+        _status.Text = string.Empty;
+        _choose.IsEnabled = false;
+        _choose.Text = "Usar e personalizar";
+
+        var exercises = await _exercises.GetAllAsync(includeInactive: true);
+        _content.Clear();
+        _content.Add(Ui.Tag("MODELO DE TREINO"));
+        _content.Add(Ui.Text(plan.Name, 30, Ui.Foreground, FontAttributes.Bold));
+        if (!string.IsNullOrWhiteSpace(plan.Description))
+            _content.Add(Ui.Text(plan.Description, 14, Ui.Muted));
+        _content.Add(Ui.Text(ConsumerUi.ExerciseCount(plan.Exercises.Count), 13, Ui.Muted));
+
+        foreach (var item in plan.Exercises)
+        {
+            var exerciseId = exercises.FirstOrDefault(exercise =>
+                exercise.IsActive &&
+                string.Equals(exercise.Name, item.Name, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(exercise.MuscleGroup, item.MuscleGroup, StringComparison.OrdinalIgnoreCase))?.Id;
+            _content.Add(ExerciseCard(item.Name, item.MuscleGroup,
+                item.Sets, item.Reps, exerciseId));
+        }
+
+        _content.Add(new Grid { HeightRequest = 20 });
+        _choose.IsEnabled = plan.Exercises.Count > 0;
+    }
+
+    private Border ExerciseCard(string name, string muscleGroup, int sets, int reps,
+        int? exerciseId)
     {
         var content = new VerticalStackLayout { Spacing = 9 };
-        content.Add(Ui.Tag(exercise.MuscleGroup));
-        content.Add(Ui.Text(exercise.Name, 19, Ui.Foreground, FontAttributes.Bold));
+        content.Add(Ui.Tag(muscleGroup));
+        content.Add(Ui.Text(name, 19, Ui.Foreground, FontAttributes.Bold));
         content.Add(new Image
         {
-            Source = ExerciseMediaCatalog.ForExercise(exercise.Name, exercise.MuscleGroup),
+            Source = ExerciseMediaCatalog.ForExercise(name, muscleGroup),
             HeightRequest = 150,
             Aspect = Aspect.AspectFit,
             IsAnimationPlaying = true,
             BackgroundColor = Color.FromArgb("#191919")
         });
-        content.Add(Ui.Text($"{plan.PlannedSets} séries · {plan.PlannedReps} repetições", 13, Ui.Muted));
-        content.Add(Ui.Button("Ver execução", () => _navigator.OpenExerciseDemoAsync(exercise.Id), true));
+        content.Add(Ui.Text($"{sets} séries · {reps} repetições", 13, Ui.Muted));
+        if (exerciseId is > 0)
+            content.Add(Ui.Button("Ver execução", () => _navigator.OpenExerciseDemoAsync(exerciseId.Value), true));
         return Ui.Card(content, new Thickness(18));
     }
 
@@ -140,7 +178,9 @@ public sealed class TemplateDetailPage : ContentPage
         _status.Text = string.Empty;
         try
         {
-            _copiedWorkoutId ??= await _catalog.CopyTemplateAsync(_templateId, user.Id);
+            _copiedWorkoutId ??= _starterKey is { } key
+                ? await _catalog.CreateFromStarterAsync(key, user.Id)
+                : await _catalog.CopyTemplateAsync(_templateId, user.Id);
             _choose.Text = "Abrir meu treino";
             await _navigator.OpenWorkoutEditorAsync(_copiedWorkoutId.Value);
         }

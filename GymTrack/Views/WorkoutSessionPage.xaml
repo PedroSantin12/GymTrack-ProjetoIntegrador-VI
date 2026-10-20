@@ -58,24 +58,26 @@
                                            Style="{StaticResource CaptionText}" />
                                 </VerticalStackLayout>
 
-                                <Grid ColumnDefinitions="36,*,60,60,90"
+                                <Button Text="Ver execução"
+                                        Style="{StaticResource SecondaryButton}"
+                                        HorizontalOptions="End"
+                                        FontSize="13"
+                                        Clicked="OnPreviewExerciseClicked" />
+
+                                <Grid ColumnDefinitions="30,*,*,92"
                                       ColumnSpacing="4">
                                     <Label Text="Série"
                                            FontSize="11"
                                            HorizontalTextAlignment="Center" />
                                     <Label Grid.Column="1"
-                                           Text="Anterior"
-                                           FontSize="11"
-                                           HorizontalTextAlignment="Center" />
-                                    <Label Grid.Column="2"
                                            Text="kg"
                                            FontSize="11"
                                            HorizontalTextAlignment="Center" />
-                                    <Label Grid.Column="3"
+                                    <Label Grid.Column="2"
                                            Text="Reps"
                                            FontSize="11"
                                            HorizontalTextAlignment="Center" />
-                                    <Label Grid.Column="4"
+                                    <Label Grid.Column="3"
                                            Text="Concluir"
                                            FontSize="11"
                                            HorizontalTextAlignment="Center" />
@@ -97,19 +99,14 @@
                                                     </DataTrigger>
                                                 </Border.Triggers>
 
-                                                <Grid RowDefinitions="Auto,Auto"
-                                                      ColumnDefinitions="36,*,60,60,90"
+                                                <Grid RowDefinitions="Auto,Auto,Auto"
+                                                      ColumnDefinitions="30,*,*,92"
                                                       ColumnSpacing="4"
                                                       RowSpacing="4">
                                                     <Label Text="{Binding SetNumberText}"
                                                            HorizontalTextAlignment="Center"
                                                            VerticalTextAlignment="Center" />
-                                                    <Label Grid.Column="1"
-                                                           Text="{Binding PreviousText}"
-                                                           Style="{StaticResource CaptionText}"
-                                                           HorizontalTextAlignment="Center"
-                                                           VerticalTextAlignment="Center" />
-                                                    <Entry Grid.Column="2"
+                                                    <Entry Grid.Column="1"
                                                            Text="{Binding LoadText, Mode=TwoWay}"
                                                            Keyboard="Numeric"
                                                            MaxLength="8"
@@ -117,7 +114,7 @@
                                                            MinimumHeightRequest="44"
                                                            HorizontalTextAlignment="Center"
                                                            IsReadOnly="{Binding IsCompleted}" />
-                                                    <Entry Grid.Column="3"
+                                                    <Entry Grid.Column="2"
                                                            Text="{Binding RepsText, Mode=TwoWay}"
                                                            Keyboard="Numeric"
                                                            MaxLength="5"
@@ -125,7 +122,7 @@
                                                            MinimumHeightRequest="44"
                                                            HorizontalTextAlignment="Center"
                                                            IsReadOnly="{Binding IsCompleted}" />
-                                                    <VerticalStackLayout Grid.Column="4"
+                                                    <VerticalStackLayout Grid.Column="3"
                                                                          Spacing="2">
                                                         <Button Text="{Binding CompletionText}"
                                                                 Command="{Binding CompleteCommand}"
@@ -141,7 +138,11 @@
                                                                 Padding="4" />
                                                     </VerticalStackLayout>
                                                     <Label Grid.Row="1"
-                                                           Grid.ColumnSpan="5"
+                                                           Grid.ColumnSpan="4"
+                                                           Text="{Binding PreviousText, StringFormat='Anterior: {0}'}"
+                                                           Style="{StaticResource CaptionText}" />
+                                                    <Label Grid.Row="2"
+                                                           Grid.ColumnSpan="4"
                                                            Text="{Binding ValidationMessage}"
                                                            IsVisible="{Binding HasValidationMessage}"
                                                            TextColor="{StaticResource Danger}"

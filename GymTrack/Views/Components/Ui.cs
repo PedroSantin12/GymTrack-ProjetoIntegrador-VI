@@ -5,11 +5,13 @@ namespace GymTrack.Views.Components;
 public static class Ui
 {
     public static readonly Color Accent = Color.FromArgb("#FF913A");
-    public static readonly Color Background = Color.FromArgb("#171717");
-    public static readonly Color Surface = Color.FromArgb("#272727");
-    public static readonly Color Elevated = Color.FromArgb("#4C4C4C");
-    public static readonly Color Muted = Color.FromArgb("#B9B9B9");
-    public static readonly Color Foreground = Color.FromArgb("#FAFAFA");
+    public static readonly Color Background = Color.FromArgb("#0E0E10");
+    public static readonly Color Secondary = Color.FromArgb("#17171A");
+    public static readonly Color Surface = Color.FromArgb("#1C1C20");
+    public static readonly Color Elevated = Color.FromArgb("#252529");
+    public static readonly Color Border = Color.FromArgb("#303036");
+    public static readonly Color Muted = Color.FromArgb("#9A9AA3");
+    public static readonly Color Foreground = Color.FromArgb("#F5F5F7");
 
     public static Label Text(string text, int size = 14, Color? color = null,
         FontAttributes attributes = FontAttributes.None) => new()
@@ -25,11 +27,11 @@ public static class Ui
     public static Border Card(View content, Thickness? padding = null) => new()
     {
         Content = content,
-        Padding = padding ?? new Thickness(20),
+        Padding = padding ?? new Thickness(16),
         BackgroundColor = Surface,
-        Stroke = new SolidColorBrush(Color.FromArgb("#4C4C4C")),
+        Stroke = new SolidColorBrush(Border),
         StrokeThickness = 1,
-        StrokeShape = new RoundRectangle { CornerRadius = 22 }
+        StrokeShape = new RoundRectangle { CornerRadius = 14 }
     };
 
     public static Button Button(string text, Func<Task> action, bool secondary = false)
@@ -37,11 +39,13 @@ public static class Ui
         var button = new Button
         {
             Text = text,
-            BackgroundColor = secondary ? Elevated : Accent,
+            BackgroundColor = secondary ? Surface : Accent,
             TextColor = secondary ? Foreground : Background,
-            CornerRadius = 14,
-            Padding = new Thickness(16, 12),
-            MinimumHeightRequest = 50,
+            BorderColor = secondary ? Border : Colors.Transparent,
+            BorderWidth = secondary ? 1 : 0,
+            CornerRadius = 12,
+            Padding = new Thickness(14, 9),
+            MinimumHeightRequest = 48,
             FontFamily = "OpenSansSemibold",
             FontSize = 14
         };

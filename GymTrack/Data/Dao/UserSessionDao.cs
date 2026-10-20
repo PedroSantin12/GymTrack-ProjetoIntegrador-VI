@@ -74,6 +74,10 @@ public sealed class UserSessionDao(
     {
         ArgumentNullException.ThrowIfNull(session);
         await RequireOwnedWorkoutAsync(session.WorkoutId);
+        if (await workouts.GetByIdAsync(session.WorkoutId) is { IsArchived: true })
+        {
+            throw AccessDenied();
+        }
         if (session.Id != 0)
         {
             await RequireOwnedSessionAsync(session.Id);

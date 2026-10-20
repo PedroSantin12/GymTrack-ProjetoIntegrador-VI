@@ -1,3 +1,4 @@
+using GymTrack.Services;
 using GymTrack.ViewModels;
 using Microsoft.Extensions.Logging;
 
@@ -6,17 +7,21 @@ namespace GymTrack.Views;
 public partial class WorkoutSessionPage : ContentPage
 {
     private readonly WorkoutSessionViewModel _viewModel;
+    private readonly IAppNavigator _navigator;
     private readonly ILogger<WorkoutSessionPage> _logger;
     private IDispatcherTimer? _timer;
     private bool _isClosing;
+    private bool _isOpeningPreview;
 
     public WorkoutSessionPage(
         WorkoutSessionViewModel viewModel,
+        IAppNavigator navigator,
         ILogger<WorkoutSessionPage> logger)
     {
         InitializeComponent();
         BindingContext = viewModel;
         _viewModel = viewModel;
+        _navigator = navigator;
         _logger = logger;
 
         viewModel.CloseRequested += OnCloseRequested;
@@ -54,6 +59,29 @@ public partial class WorkoutSessionPage : ContentPage
         timer.Interval = TimeSpan.FromSeconds(1);
         timer.Tick += (_, _) => _viewModel.RefreshElapsedTime();
         return timer;
+    }
+
+    private async void OnPreviewExerciseClicked(object? sender, EventArgs e)
+    {
+        if (_isOpeningPreview || sender is not Button { BindingContext: SessionExerciseItemViewModel exercise })
+        {
+            return;
+        }
+
+        _isOpeningPreview = true;
+        try
+        {
+            await _navigator.OpenExerciseDemoAsync(exercise.ExerciseId);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Falha ao abrir a execução do exercício {ExerciseId}.", exercise.ExerciseId);
+            _viewModel.ValidationMessage = "Não foi possível abrir a execução deste exercício.";
+        }
+        finally
+        {
+            _isOpeningPreview = false;
+        }
     }
 
     private async void OnCloseRequested(object? sender, EventArgs e)

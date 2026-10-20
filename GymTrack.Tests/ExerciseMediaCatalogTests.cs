@@ -42,4 +42,23 @@ public sealed class ExerciseMediaCatalogTests
     {
         Assert.Equal(expected, ExerciseMediaCatalog.ForExercise("Exercício antigo", group));
     }
+
+    [Theory]
+    [InlineData("Supino reto", "Peito", "demo_bench_press.gif")]
+    [InlineData("Supino inclinado", "Peito", "demo_incline_press.gif")]
+    [InlineData("Remada baixa", "Costas", "demo_row.gif")]
+    [InlineData("Rosca direta", "Bíceps", "demo_curl.gif")]
+    [InlineData("Desenvolvimento militar", "Ombros", "demo_press.gif")]
+    [InlineData("Elevação de panturrilha", "Panturrilhas", "demo_calf_raise.gif")]
+    public void ForExercise_MapsExistingStarterPlans(string name, string group, string expected)
+    {
+        Assert.Equal(expected, ExerciseMediaCatalog.ForExercise(name, group));
+    }
+
+    [Fact]
+    public void ForExercise_MapsExistingPosteriorDeCoxaGroup()
+    {
+        Assert.Equal("demo_hinge.gif",
+            ExerciseMediaCatalog.ForExercise("Movimento personalizado", "Posterior de coxa"));
+    }
 }

@@ -12,7 +12,7 @@ public sealed class TemplateLibraryPage : WorkspacePage
     private readonly IStarterCatalogService _starterCatalog;
     private readonly IServiceProvider _services;
     private readonly SearchBar _search;
-    private readonly VerticalStackLayout _items = new() { Spacing = 14 };
+    private readonly VerticalStackLayout _items = new() { Spacing = 12 };
     private readonly Label _status = ConsumerUi.Status();
     private int _request;
     private bool _busy;
@@ -40,13 +40,13 @@ public sealed class TemplateLibraryPage : WorkspacePage
             if (string.IsNullOrEmpty(args.NewTextValue)) await LoadAsync();
         };
 
-        var body = new VerticalStackLayout { Spacing = 18 };
-        body.Add(Ui.Tag("BIBLIOTECA"));
+        var body = new VerticalStackLayout { Spacing = 16 };
         body.Add(_search);
         body.Add(Ui.Text("Veja os exercícios e a execução antes de adicionar um treino à sua rotina.", 13, Ui.Muted));
         body.Add(_status);
         body.Add(_items);
-        body.Add(Ui.Button("Meus treinos", () => RunAsync(() => _navigator.NavigateAsync(AppSection.PersonalWorkouts)), true));
+        body.Add(Ui.Button("Voltar aos meus treinos",
+            () => RunAsync(() => _navigator.NavigateAsync(AppSection.PersonalWorkouts)), true));
         SetBody(body);
     }
 
@@ -63,41 +63,65 @@ public sealed class TemplateLibraryPage : WorkspacePage
         {
             _status.Text = "Buscando treinos...";
             await _starterCatalog.EnsureSeededAsync();
-            var templates = (await _catalog.GetTemplatesAsync(_search.Text))
+            var term = _search.Text?.Trim();
+            var starters = _catalog.GetStarterPlans()
+                .Where(item => string.IsNullOrEmpty(term) ||
+                    item.Name.Contains(term, StringComparison.CurrentCultureIgnoreCase) ||
+                    item.Description.Contains(term, StringComparison.CurrentCultureIgnoreCase))
+                .ToList();
+            var templates = (await _catalog.GetTemplatesAsync(term))
                 .Where(template => template.ExerciseCount > 0).ToList();
             if (request != _request) return;
+
             _items.Clear();
-            foreach (var template in templates) _items.Add(TemplateCard(template));
-            if (templates.Count == 0)
+            if (starters.Count > 0)
             {
-                _items.Add(ConsumerUi.Empty("Nenhum treino encontrado", string.IsNullOrWhiteSpace(_search.Text)
-                    ? "Os treinos publicados pela equipe aparecerão aqui. Você também pode criar seu próprio treino."
-                    : "Tente pesquisar por outro nome."));
+                _items.Add(Ui.Text("Modelos para começar", 17, Ui.Foreground, FontAttributes.Bold));
+                foreach (var starter in starters) _items.Add(StarterCard(starter));
             }
-            _status.Text = templates.Count == 0 ? string.Empty : $"{templates.Count} {(templates.Count == 1 ? "treino disponível" : "treinos disponíveis")}";
+            if (templates.Count > 0)
+            {
+                _items.Add(Ui.Text("Treinos de músculos e da equipe", 17, Ui.Foreground, FontAttributes.Bold));
+                foreach (var template in templates) _items.Add(TemplateCard(template));
+            }
+            if (starters.Count + templates.Count == 0)
+                _items.Add(ConsumerUi.Empty("Nenhum treino encontrado", "Tente pesquisar por outro nome."));
+            _status.Text = string.Empty;
         }
         catch
         {
-            if (request == _request) _status.Text = "Não foi possível buscar os treinos. Pesquise novamente para tentar.";
+            if (request == _request)
+                _status.Text = "Não foi possível buscar os treinos. Pesquise novamente para tentar.";
         }
     }
 
-    private Border TemplateCard(WorkoutCatalogItem template)
-    {
-        var content = new VerticalStackLayout { Spacing = 13 };
-        content.Add(Ui.Tag("TREINO PRONTO"));
-        content.Add(Ui.Text(template.Name, 22, null, FontAttributes.Bold));
-        if (!string.IsNullOrWhiteSpace(template.Description)) content.Add(Ui.Text(template.Description, 14, Ui.Muted));
-        content.Add(Ui.Text(ConsumerUi.ExerciseCount(template.ExerciseCount), 13, Ui.Muted));
-        var preview = Ui.Button("Ver exercícios", () => RunAsync(async () =>
+    private Border StarterCard(StarterWorkoutPlan plan) => PlanCard(
+        plan.Name, plan.Description, plan.Exercises.Count,
+        async () =>
+        {
+            var detail = _services.GetRequiredService<TemplateDetailPage>();
+            await detail.InitializeStarterAsync(plan);
+            await Navigation.PushAsync(detail);
+        });
+
+    private Border TemplateCard(WorkoutCatalogItem template) => PlanCard(
+        template.Name, template.Description, template.ExerciseCount,
+        async () =>
         {
             var detail = _services.GetRequiredService<TemplateDetailPage>();
             await detail.InitializeAsync(template.Id);
             await Navigation.PushAsync(detail);
-        }));
-        preview.IsEnabled = template.ExerciseCount > 0;
-        content.Add(preview);
-        if (template.ExerciseCount == 0) content.Add(Ui.Text("A equipe está preparando os exercícios deste treino.", 12, Ui.Muted));
+        });
+
+    private Border PlanCard(string name, string? description, int count, Func<Task> open)
+    {
+        var content = new VerticalStackLayout { Spacing = 12 };
+        content.Add(Ui.Tag("TREINO PRONTO"));
+        content.Add(Ui.Text(name, 20, Ui.Foreground, FontAttributes.Bold));
+        if (!string.IsNullOrWhiteSpace(description))
+            content.Add(Ui.Text(description, 13, Ui.Muted));
+        content.Add(Ui.Text(ConsumerUi.ExerciseCount(count), 13, Ui.Muted));
+        content.Add(Ui.Button("Ver exercícios", () => RunAsync(open)));
         return Ui.Card(content);
     }
 
