@@ -37,10 +37,12 @@ As contas, os exercícios, os treinos e as sessões persistem localmente no SQLi
 - Biblioteca com seis modelos de base (Full Body, Upper Body, Lower Body, Push, Pull e Legs) e treinos prontos de peito, pernas e glúteos. É possível pesquisar e conferir exercícios, séries, repetições e animações antes de copiar o treino para a conta.
 - Meus treinos com criação, edição, duplicação, exclusão confirmada e início de sessão. Ao excluir uma rotina com sessões concluídas, ela sai da lista e o histórico permanece disponível.
 - Execução com demonstrações animadas dos exercícios, cronômetro, registro de séries, repetições e carga, retomada de sessão e finalização.
-- Evolução com sessões concluídas, tempo acumulado, frequência nos últimos sete dias e treinos recentes do próprio usuário.
-- Perfil com os dados da conta e opção de sair.
+- Evolução com registro manual de treino e data, histórico por dia da semana, sessões concluídas, frequência, tempo e carga das sessões feitas no app.
+- Perfil com nome e e-mail da conta, registros de peso e medidas corporais, gráfico de peso e opção de sair.
 
 O catálogo inicial inclui 33 exercícios em 20 grupos musculares e três treinos prontos de peito, pernas e glúteos, além dos seis modelos de base. Ao abrir qualquer treino pronto, o consumidor pode examinar a sequência e as animações de cada exercício antes de adicioná-lo à própria conta. As demonstrações são GIFs originais incluídos no aplicativo e funcionam sem internet. Ele recebe uma cópia independente: alterar ou excluir um treino pronto do catálogo não modifica a cópia. O acesso a treinos pessoais e sessões é restrito ao dono da conta; o catálogo de exercícios é compartilhado.
+
+Na conta de demonstração do consumidor, a aba **Evolução** inclui alguns registros manuais marcados como **Exemplo**. Eles aparecem no histórico, mas não entram nas estatísticas; podem ser excluídos e não reaparecem. Registros manuais e medidas corporais ficam apenas no banco local do dispositivo e são separados por conta. Volume e carga são calculados somente a partir de séries realmente registradas no app.
 
 ## Roteiro de demonstração
 
@@ -49,7 +51,7 @@ O catálogo inicial inclui 33 exercícios em 20 grupos musculares e três treino
 3. Saia da conta pelo **Perfil** e entre como **Consumidor**.
 4. Em **Treinos**, selecione **Explorar treinos prontos**, abra a rotina, confira os exercícios e toque em **Adicionar aos meus treinos** para revisar sua cópia no editor.
 5. De volta a **Treinos**, toque em **Iniciar treino**, registre as séries e finalize a sessão. Se sair antes, use **Continuar treino** para retomá-la.
-6. Consulte **Evolução** para ver os dados dessa conta. Também é possível criar uma rotina própria pelo botão **+** em Treinos.
+6. Consulte **Evolução** para ver o histórico e registrar um treino feito em outra data. Em **Perfil**, cadastre o peso e outras medidas para acompanhar o gráfico. Também é possível criar uma rotina própria pelo botão **+** em Treinos.
 
 Treinos sem exercícios não podem iniciar. Ao atualizar uma instalação antiga, os treinos existentes sem proprietário passam a ser modelos do catálogo. Seus registros são preservados; o histórico antigo não é atribuído automaticamente a uma das novas contas.
 

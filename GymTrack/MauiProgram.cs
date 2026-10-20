@@ -34,6 +34,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAppNavigator, AppNavigator>();
         builder.Services.AddSingleton<IWorkoutCatalogService, WorkoutCatalogService>();
         builder.Services.AddSingleton<IStarterCatalogService, StarterCatalogService>();
+        builder.Services.AddSingleton<IManualWorkoutLogService, ManualWorkoutLogService>();
+        builder.Services.AddSingleton<IBodyMeasurementService, BodyMeasurementService>();
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<RegisterViewModel>();

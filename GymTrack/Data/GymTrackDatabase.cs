@@ -53,9 +53,12 @@ public sealed class GymTrackDatabase : IAsyncDisposable
             await _connection.ExecuteAsync(CreateWorkoutExerciseTableSql);
             await _connection.ExecuteAsync(CreateWorkoutSessionTableSql);
             await _connection.ExecuteAsync(CreateSetRecordTableSql);
+            await _connection.ExecuteAsync(CreateManualWorkoutLogTableSql);
+            await _connection.ExecuteAsync(CreateManualWorkoutDemoSeedTableSql);
+            await _connection.ExecuteAsync(CreateBodyMeasurementTableSql);
 
             await CreateIndexesAsync();
-            await _connection.ExecuteAsync("PRAGMA user_version = 1");
+            await _connection.ExecuteAsync("PRAGMA user_version = 2");
 
             _isInitialized = true;
         }
@@ -99,6 +102,10 @@ public sealed class GymTrackDatabase : IAsyncDisposable
             "CREATE INDEX IF NOT EXISTS IX_SetRecord_ExerciseId ON SetRecord (ExerciseId)");
         await _connection.ExecuteAsync(
             "CREATE UNIQUE INDEX IF NOT EXISTS UX_SetRecord_SetNumber ON SetRecord (SessionId, ExerciseId, SetNumber)");
+        await _connection.ExecuteAsync(
+            "CREATE INDEX IF NOT EXISTS IX_ManualWorkoutLog_OwnerDate ON ManualWorkoutLog (OwnerUserId, PerformedOn DESC)");
+        await _connection.ExecuteAsync(
+            "CREATE UNIQUE INDEX IF NOT EXISTS UX_BodyMeasurement_OwnerDate ON BodyMeasurement (OwnerUserId, MeasuredOn)");
     }
 
     private Task MigrateWorkoutOwnershipAsync()
@@ -187,6 +194,39 @@ public sealed class GymTrackDatabase : IAsyncDisposable
             LoadKg REAL NOT NULL CHECK (LoadKg >= 0),
             FOREIGN KEY (SessionId) REFERENCES WorkoutSession (Id) ON DELETE CASCADE,
             FOREIGN KEY (ExerciseId) REFERENCES Exercise (Id) ON DELETE RESTRICT
+        )
+        """;
+
+    private const string CreateManualWorkoutLogTableSql =
+        """
+        CREATE TABLE IF NOT EXISTS ManualWorkoutLog (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            OwnerUserId INTEGER NOT NULL CHECK (OwnerUserId > 0),
+            WorkoutName TEXT NOT NULL,
+            PerformedOn TEXT NOT NULL,
+            Notes TEXT NULL,
+            IsExample INTEGER NOT NULL DEFAULT 0 CHECK (IsExample IN (0, 1))
+        )
+        """;
+
+    private const string CreateManualWorkoutDemoSeedTableSql =
+        """
+        CREATE TABLE IF NOT EXISTS ManualWorkoutDemoSeed (
+            OwnerUserId INTEGER PRIMARY KEY CHECK (OwnerUserId > 0)
+        )
+        """;
+
+    private const string CreateBodyMeasurementTableSql =
+        """
+        CREATE TABLE IF NOT EXISTS BodyMeasurement (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            OwnerUserId INTEGER NOT NULL CHECK (OwnerUserId > 0),
+            MeasuredOn TEXT NOT NULL,
+            WeightKg REAL NOT NULL CHECK (WeightKg > 0),
+            HeightCm REAL NULL CHECK (HeightCm IS NULL OR HeightCm > 0),
+            WaistCm REAL NULL CHECK (WaistCm IS NULL OR WaistCm > 0),
+            HipCm REAL NULL CHECK (HipCm IS NULL OR HipCm > 0),
+            ChestCm REAL NULL CHECK (ChestCm IS NULL OR ChestCm > 0)
         )
         """;
 }
