@@ -76,10 +76,66 @@ public sealed class ExercisePickerViewModelTests
         Assert.Equal("Supino reto", Assert.Single(viewModel.Exercises).Name);
     }
 
+    [Fact]
+    public async Task SelectingMuscleGroupFiltersExercisesAndKeepsPreviewSeparateFromSelection()
+    {
+        var dao = new FakeExerciseDao();
+        dao.Stored.AddRange(
+        [
+            new Exercise { Id = 1, Name = "Supino reto", MuscleGroup = "Peito" },
+            new Exercise { Id = 2, Name = "Rosca direta", MuscleGroup = "Bíceps" }
+        ]);
+        var viewModel = CreateViewModel(dao);
+        await viewModel.InitializeAsync([]);
+        Assert.True(viewModel.IsGroupSelectionVisible);
+
+        viewModel.SelectGroupCommand.Execute("Peito");
+        await viewModel.LoadCommand.ExecuteAsync(null);
+
+        Assert.True(viewModel.IsExerciseListVisible);
+        Assert.Equal("Peito", viewModel.ActiveGroupTitle);
+        Assert.Equal((string.Empty, "Peito", false), dao.LastSearchRequest);
+        var item = Assert.Single(viewModel.Exercises);
+        Assert.Equal("Supino reto", item.Name);
+
+        Exercise? previewed = null;
+        Exercise? selected = null;
+        viewModel.PreviewRequested += (_, args) => previewed = args.Exercise;
+        viewModel.ExerciseSelected += (_, args) => selected = args.Exercise;
+        item.PreviewCommand.Execute(null);
+
+        Assert.Equal(1, previewed?.Id);
+        Assert.Null(selected);
+
+        viewModel.ShowGroupsCommand.Execute(null);
+        Assert.True(viewModel.IsGroupSelectionVisible);
+    }
+
+    [Theory]
+    [InlineData("Costas")]
+    [InlineData("Pernas")]
+    [InlineData("Braços")]
+    [InlineData("Core")]
+    public async Task LegacyMuscleGroupsRemainSelectable(string group)
+    {
+        var dao = new FakeExerciseDao();
+        dao.Stored.Add(new Exercise { Id = 8, Name = "Exercício antigo", MuscleGroup = group });
+        var viewModel = CreateViewModel(dao);
+        await viewModel.InitializeAsync([]);
+
+        viewModel.SelectGroupCommand.Execute(group);
+        await viewModel.LoadCommand.ExecuteAsync(null);
+
+        Assert.Equal(group, viewModel.ActiveGroupTitle);
+        Assert.Equal((string.Empty, group, false), dao.LastSearchRequest);
+        Assert.Equal(8, Assert.Single(viewModel.Exercises).Id);
+    }
+
     private static ExercisePickerViewModel CreateViewModel(FakeExerciseDao dao)
     {
         return new ExercisePickerViewModel(
             dao,
+            new FakeStarterCatalogService(),
             new FakeNotificationService(),
             NullLogger<ExercisePickerViewModel>.Instance);
     }
@@ -112,6 +168,7 @@ public sealed class ExercisePickerViewModelTests
             LastSearchRequest = (searchText, muscleGroup, includeInactive);
             var result = Stored
                 .Where(item => includeInactive || item.IsActive)
+                .Where(item => muscleGroup is null || item.MuscleGroup == muscleGroup)
                 .Where(item => string.IsNullOrWhiteSpace(searchText) ||
                     item.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase))
                 .ToList();
@@ -156,6 +213,11 @@ public sealed class ExercisePickerViewModelTests
         {
             return Task.FromResult(false);
         }
+    }
+
+    private sealed class FakeStarterCatalogService : IStarterCatalogService
+    {
+        public Task EnsureSeededAsync() => Task.CompletedTask;
     }
 
     private sealed class FakeNotificationService : INotificationService

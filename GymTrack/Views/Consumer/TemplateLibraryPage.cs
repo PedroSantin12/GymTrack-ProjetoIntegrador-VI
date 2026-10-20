@@ -1,26 +1,31 @@
 using GymTrack.Models;
 using GymTrack.Services;
 using GymTrack.Views.Components;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GymTrack.Views.Consumer;
 
 public sealed class TemplateLibraryPage : WorkspacePage
 {
     private readonly IAppNavigator _navigator;
-    private readonly AppSession _session;
     private readonly IWorkoutCatalogService _catalog;
+    private readonly IStarterCatalogService _starterCatalog;
+    private readonly IServiceProvider _services;
     private readonly SearchBar _search;
     private readonly VerticalStackLayout _items = new() { Spacing = 14 };
     private readonly Label _status = ConsumerUi.Status();
     private int _request;
     private bool _busy;
 
-    public TemplateLibraryPage(IAppNavigator navigator, AppSession session, IWorkoutCatalogService catalog)
+    public TemplateLibraryPage(IAppNavigator navigator, AppSession session,
+        IWorkoutCatalogService catalog, IStarterCatalogService starterCatalog,
+        IServiceProvider services)
         : base("Treinos prontos", "Escolha uma rotina e faça dela a sua.", AppSection.Templates, navigator, session)
     {
         _navigator = navigator;
-        _session = session;
         _catalog = catalog;
+        _starterCatalog = starterCatalog;
+        _services = services;
         _search = new SearchBar
         {
             Placeholder = "Pesquisar treino",
@@ -38,7 +43,7 @@ public sealed class TemplateLibraryPage : WorkspacePage
         var body = new VerticalStackLayout { Spacing = 18 };
         body.Add(Ui.Tag("BIBLIOTECA"));
         body.Add(_search);
-        body.Add(Ui.Text("Ao escolher, você recebe uma cópia para adaptar e acompanhar seus treinos.", 13, Ui.Muted));
+        body.Add(Ui.Text("Veja os exercícios e a execução antes de adicionar um treino à sua rotina.", 13, Ui.Muted));
         body.Add(_status);
         body.Add(_items);
         body.Add(Ui.Button("Meus treinos", () => RunAsync(() => _navigator.NavigateAsync(AppSection.PersonalWorkouts)), true));
@@ -57,6 +62,7 @@ public sealed class TemplateLibraryPage : WorkspacePage
         try
         {
             _status.Text = "Buscando treinos...";
+            await _starterCatalog.EnsureSeededAsync();
             var templates = (await _catalog.GetTemplatesAsync(_search.Text))
                 .Where(template => template.ExerciseCount > 0).ToList();
             if (request != _request) return;
@@ -83,14 +89,14 @@ public sealed class TemplateLibraryPage : WorkspacePage
         content.Add(Ui.Text(template.Name, 22, null, FontAttributes.Bold));
         if (!string.IsNullOrWhiteSpace(template.Description)) content.Add(Ui.Text(template.Description, 14, Ui.Muted));
         content.Add(Ui.Text(ConsumerUi.ExerciseCount(template.ExerciseCount), 13, Ui.Muted));
-        var choose = Ui.Button("Escolher este treino", () => RunAsync(async () =>
+        var preview = Ui.Button("Ver exercícios", () => RunAsync(async () =>
         {
-            if (_session.CurrentUser is not { } user) return;
-            var id = await _catalog.CopyTemplateAsync(template.Id, user.Id);
-            await _navigator.OpenWorkoutEditorAsync(id);
+            var detail = _services.GetRequiredService<TemplateDetailPage>();
+            await detail.InitializeAsync(template.Id);
+            await Navigation.PushAsync(detail);
         }));
-        choose.IsEnabled = template.ExerciseCount > 0;
-        content.Add(choose);
+        preview.IsEnabled = template.ExerciseCount > 0;
+        content.Add(preview);
         if (template.ExerciseCount == 0) content.Add(Ui.Text("A equipe está preparando os exercícios deste treino.", 12, Ui.Muted));
         return Ui.Card(content);
     }

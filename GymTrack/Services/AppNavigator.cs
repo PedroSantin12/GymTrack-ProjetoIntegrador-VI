@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace GymTrack.Services;
 
 public sealed class AppNavigator(IServiceProvider services, AppSession session,
-    IAccountService accounts, IWorkoutDao workouts) : IAppNavigator
+    IAccountService accounts, IWorkoutDao workouts, IStarterCatalogService starterCatalog) : IAppNavigator
 {
     private bool _isNavigating;
     private static Window CurrentWindow => Application.Current?.Windows.FirstOrDefault()
@@ -21,8 +21,12 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
         return Task.CompletedTask;
     }
 
-    public Task OpenWorkspaceAsync() => NavigateAsync(session.IsEmployee
-        ? AppSection.AdminDashboard : AppSection.PersonalWorkouts);
+    public async Task OpenWorkspaceAsync()
+    {
+        await starterCatalog.EnsureSeededAsync();
+        await NavigateAsync(session.IsEmployee
+            ? AppSection.AdminDashboard : AppSection.PersonalWorkouts);
+    }
 
     public async Task NavigateAsync(AppSection section)
     {
@@ -87,6 +91,23 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
                 throw new UnauthorizedAccessException("Este treino não pertence à sua conta.");
             var page = services.GetRequiredService<WorkoutSessionPage>();
             if (await page.InitializeAsync(workoutId)) await CurrentNavigation.Navigation.PushModalAsync(page);
+        }
+        finally { _isNavigating = false; }
+    }
+
+    public async Task OpenExerciseDemoAsync(int exerciseId)
+    {
+        if (_isNavigating) return;
+        _isNavigating = true;
+        try
+        {
+            await RequireUserAsync();
+            var page = services.GetRequiredService<ExerciseDemoPage>();
+            await page.InitializeAsync(exerciseId);
+            var navigation = CurrentNavigation.Navigation.ModalStack.LastOrDefault() is NavigationPage modal
+                ? modal
+                : CurrentNavigation;
+            await navigation.PushAsync(page);
         }
         finally { _isNavigating = false; }
     }

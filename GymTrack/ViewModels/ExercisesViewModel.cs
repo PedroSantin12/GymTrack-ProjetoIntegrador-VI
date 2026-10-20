@@ -43,15 +43,7 @@ public partial class ExercisesViewModel : BaseViewModel
     public ObservableCollection<ExerciseListItemViewModel> Exercises { get; } = [];
 
     public IReadOnlyList<string> MuscleGroups { get; } =
-    [
-        "Todos",
-        "Peito",
-        "Costas",
-        "Pernas",
-        "Ombros",
-        "Braços",
-        "Core"
-    ];
+        ["Todos", .. MuscleGroupCatalog.AllForEditing];
 
     [ObservableProperty]
     private string searchText = string.Empty;

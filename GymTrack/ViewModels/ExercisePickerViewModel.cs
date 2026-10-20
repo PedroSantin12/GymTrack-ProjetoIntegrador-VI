@@ -18,6 +18,7 @@ public partial class ExercisePickerViewModel : BaseViewModel
     private const int SearchDebounceMilliseconds = 250;
 
     private readonly IExerciseDao _exerciseDao;
+    private readonly IStarterCatalogService _starterCatalog;
     private readonly INotificationService _notificationService;
     private readonly ILogger<ExercisePickerViewModel> _logger;
     private readonly HashSet<int> _excludedExerciseIds = [];
@@ -27,10 +28,12 @@ public partial class ExercisePickerViewModel : BaseViewModel
 
     public ExercisePickerViewModel(
         IExerciseDao exerciseDao,
+        IStarterCatalogService starterCatalog,
         INotificationService notificationService,
         ILogger<ExercisePickerViewModel> logger)
     {
         _exerciseDao = exerciseDao;
+        _starterCatalog = starterCatalog;
         _notificationService = notificationService;
         _logger = logger;
         Title = "Selecionar exercício";
@@ -38,22 +41,44 @@ public partial class ExercisePickerViewModel : BaseViewModel
 
     public event EventHandler<ExercisePickerSelectionEventArgs>? ExerciseSelected;
 
+    public event EventHandler<ExercisePickerSelectionEventArgs>? PreviewRequested;
+
     public event EventHandler? ManageExercisesRequested;
 
     public event EventHandler? CloseRequested;
 
     public ObservableCollection<ExercisePickerItemViewModel> Exercises { get; } = [];
 
+    public string ActiveGroupTitle => SelectedMuscleGroup ?? "Todos os exercícios";
+
+    public bool IsExerciseListVisible => !IsGroupSelectionVisible;
+
     [ObservableProperty]
     private string searchText = string.Empty;
+
+    [ObservableProperty]
+    private string? selectedMuscleGroup;
+
+    [ObservableProperty]
+    private bool isGroupSelectionVisible = true;
 
     [ObservableProperty]
     private bool isRefreshing;
 
     partial void OnSearchTextChanged(string value)
     {
+        if (!string.IsNullOrWhiteSpace(value)) IsGroupSelectionVisible = false;
         ScheduleLoad();
     }
+
+    partial void OnSelectedMuscleGroupChanged(string? value)
+    {
+        OnPropertyChanged(nameof(ActiveGroupTitle));
+        ScheduleLoad();
+    }
+
+    partial void OnIsGroupSelectionVisibleChanged(bool value) =>
+        OnPropertyChanged(nameof(IsExerciseListVisible));
 
     public async Task InitializeAsync(IReadOnlyCollection<int> excludedIds)
     {
@@ -72,7 +97,28 @@ public partial class ExercisePickerViewModel : BaseViewModel
         }
 
         SearchText = string.Empty;
+        SelectedMuscleGroup = null;
+        IsGroupSelectionVisible = true;
         await LoadAsync();
+    }
+
+    [RelayCommand]
+    private void SelectGroup(string group)
+    {
+        if (!MuscleGroupCatalog.AllForEditing.Contains(group, StringComparer.Ordinal)) return;
+        IsGroupSelectionVisible = false;
+        if (SelectedMuscleGroup == group)
+            ScheduleLoad();
+        else
+            SelectedMuscleGroup = group;
+    }
+
+    [RelayCommand]
+    private void ShowGroups()
+    {
+        SearchText = string.Empty;
+        SelectedMuscleGroup = null;
+        IsGroupSelectionVisible = true;
     }
 
     [RelayCommand]
@@ -85,9 +131,10 @@ public partial class ExercisePickerViewModel : BaseViewModel
 
         try
         {
+            await _starterCatalog.EnsureSeededAsync();
             var exercises = await _exerciseDao.SearchAsync(
                 SearchText,
-                muscleGroup: null,
+                muscleGroup: SelectedMuscleGroup,
                 includeInactive: false);
 
             if (request != Volatile.Read(ref _latestLoadRequest))
@@ -102,7 +149,8 @@ public partial class ExercisePickerViewModel : BaseViewModel
                 {
                     Exercises.Add(new ExercisePickerItemViewModel(
                         exercise,
-                        SelectExercise));
+                        SelectExercise,
+                        PreviewExercise));
                 }
             }
         }
@@ -156,6 +204,11 @@ public partial class ExercisePickerViewModel : BaseViewModel
         ExerciseSelected?.Invoke(
             this,
             new ExercisePickerSelectionEventArgs(exercise));
+    }
+
+    private void PreviewExercise(Exercise exercise)
+    {
+        if (!IsBusy) PreviewRequested?.Invoke(this, new ExercisePickerSelectionEventArgs(exercise));
     }
 
     private void ScheduleLoad()

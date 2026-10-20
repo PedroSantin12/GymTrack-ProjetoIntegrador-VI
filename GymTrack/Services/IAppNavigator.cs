@@ -20,5 +20,6 @@ public interface IAppNavigator
     Task NavigateAsync(AppSection section);
     Task OpenWorkoutEditorAsync(int? workoutId);
     Task StartWorkoutAsync(int workoutId);
+    Task OpenExerciseDemoAsync(int exerciseId);
     Task OpenHistoryAsync();
 }

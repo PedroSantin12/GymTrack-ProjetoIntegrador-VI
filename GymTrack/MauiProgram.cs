@@ -33,6 +33,7 @@ public static class MauiProgram
             new AccountService(Path.Combine(FileSystem.AppDataDirectory, "accounts.db3")));
         builder.Services.AddSingleton<IAppNavigator, AppNavigator>();
         builder.Services.AddSingleton<IWorkoutCatalogService, WorkoutCatalogService>();
+        builder.Services.AddSingleton<IStarterCatalogService, StarterCatalogService>();
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<RegisterViewModel>();
@@ -42,6 +43,7 @@ public static class MauiProgram
         builder.Services.AddTransient<TemplateManagementPage>();
         builder.Services.AddTransient<StatisticsPage>();
         builder.Services.AddTransient<TemplateLibraryPage>();
+        builder.Services.AddTransient<TemplateDetailPage>();
         builder.Services.AddTransient<PersonalWorkoutsPage>();
         builder.Services.AddTransient<ConsumerProgressPage>();
         builder.Services.AddTransient<ProfilePage>();
@@ -58,6 +60,7 @@ public static class MauiProgram
         builder.Services.AddTransient<ExerciseEditPage>();
         builder.Services.AddTransient<WorkoutEditPage>();
         builder.Services.AddTransient<ExercisePickerPage>();
+        builder.Services.AddTransient<ExerciseDemoPage>();
         builder.Services.AddTransient<WorkoutSessionPage>();
         builder.Services.AddTransient<HistoryDetailPage>();
         builder.Services.AddTransient<AboutPage>();

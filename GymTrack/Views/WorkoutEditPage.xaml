@@ -85,6 +85,12 @@
                                             </Label>
                                         </Grid>
 
+                                        <Button Text="Ver execução"
+                                                Style="{StaticResource SecondaryButton}"
+                                                HorizontalOptions="End"
+                                                FontSize="13"
+                                                Clicked="OnPreviewExerciseClicked" />
+
                                         <Grid ColumnDefinitions="Auto,*,Auto"
                                               ColumnSpacing="10">
                                             <Label Text="Séries planejadas"

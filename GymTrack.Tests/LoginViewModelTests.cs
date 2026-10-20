@@ -181,6 +181,8 @@ public sealed class LoginViewModelTests
 
         public Task StartWorkoutAsync(int workoutId) => throw new NotSupportedException();
 
+        public Task OpenExerciseDemoAsync(int exerciseId) => throw new NotSupportedException();
+
         public Task OpenHistoryAsync() => throw new NotSupportedException();
     }
 }

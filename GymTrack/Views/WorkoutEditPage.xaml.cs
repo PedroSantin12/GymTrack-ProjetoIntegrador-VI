@@ -1,3 +1,4 @@
+using GymTrack.Services;
 using GymTrack.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ public partial class WorkoutEditPage : ContentPage
     private readonly IServiceProvider _services;
     private readonly ILogger<WorkoutEditPage> _logger;
     private bool _isOpeningPicker;
+    private bool _isOpeningPreview;
     private bool _isClosing;
 
     public WorkoutEditPage(
@@ -73,6 +75,29 @@ public partial class WorkoutEditPage : ContentPage
         if (sender is ExercisePickerPage picker)
         {
             picker.ExerciseSelected -= OnExerciseSelected;
+        }
+    }
+
+    private async void OnPreviewExerciseClicked(object? sender, EventArgs e)
+    {
+        if (_isOpeningPreview || sender is not Button { BindingContext: WorkoutExerciseItemViewModel exercise })
+        {
+            return;
+        }
+
+        _isOpeningPreview = true;
+        try
+        {
+            await _services.GetRequiredService<IAppNavigator>().OpenExerciseDemoAsync(exercise.ExerciseId);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Falha ao abrir a execução do exercício {ExerciseId}.", exercise.ExerciseId);
+            _viewModel.ValidationMessage = "Não foi possível abrir a execução deste exercício.";
+        }
+        finally
+        {
+            _isOpeningPreview = false;
         }
     }
 

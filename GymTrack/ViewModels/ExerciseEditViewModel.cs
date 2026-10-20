@@ -32,15 +32,7 @@ public partial class ExerciseEditViewModel : BaseViewModel
 
     public event EventHandler? CloseRequested;
 
-    public IReadOnlyList<string> MuscleGroups { get; } =
-    [
-        "Peito",
-        "Costas",
-        "Pernas",
-        "Ombros",
-        "Braços",
-        "Core"
-    ];
+    public IReadOnlyList<string> MuscleGroups { get; } = MuscleGroupCatalog.AllForEditing;
 
     [ObservableProperty]
     private string name = string.Empty;
