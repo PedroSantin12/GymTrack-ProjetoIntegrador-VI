@@ -42,8 +42,33 @@
                         <DataTemplate x:DataType="viewModels:HistoryExerciseGroupViewModel">
                             <Border>
                                 <VerticalStackLayout Spacing="10">
-                                    <Label Text="{Binding ExerciseName}" Style="{StaticResource SectionTitle}" />
-                                    <Label Text="{Binding MuscleGroup}" Style="{StaticResource CaptionText}" />
+                                    <Grid ColumnDefinitions="82,*" ColumnSpacing="10">
+                                        <Border WidthRequest="82"
+                                                HeightRequest="62"
+                                                Padding="3"
+                                                BackgroundColor="#191919"
+                                                StrokeShape="RoundRectangle 9">
+                                            <Grid>
+                                                <Image Source="{Binding PreviewSource}"
+                                                       IsVisible="{Binding HasPreview}"
+                                                       Aspect="AspectFit"
+                                                       BackgroundColor="White"
+                                                       SemanticProperties.Description="Ilustração do exercício" />
+                                                <Label Text="SEM MÍDIA"
+                                                       IsVisible="{Binding HasNoPreview}"
+                                                       FontSize="9"
+                                                       TextColor="#A4A5AC"
+                                                       HorizontalTextAlignment="Center"
+                                                       VerticalTextAlignment="Center" />
+                                            </Grid>
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                            <Label Text="{Binding ExerciseName}"
+                                                   Style="{StaticResource SectionTitle}" />
+                                            <Label Text="{Binding MuscleGroup}"
+                                                   Style="{StaticResource CaptionText}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
                                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="8">
                                         <BindableLayout.ItemTemplate>
                                             <DataTemplate x:DataType="viewModels:HistorySetItemViewModel">

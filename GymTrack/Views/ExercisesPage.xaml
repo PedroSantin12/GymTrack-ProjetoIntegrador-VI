@@ -62,9 +62,28 @@
                     <DataTemplate x:DataType="viewModels:ExerciseListItemViewModel">
                         <Border Margin="0,0,0,8"
                                 Padding="16,12">
-                            <Grid ColumnDefinitions="*,Auto"
-                                  ColumnSpacing="12">
-                                <VerticalStackLayout Spacing="2">
+                            <Grid ColumnDefinitions="72,*,Auto"
+                                  ColumnSpacing="8">
+                                <Border WidthRequest="72"
+                                        HeightRequest="58"
+                                        Padding="3"
+                                        BackgroundColor="#191919"
+                                        StrokeShape="RoundRectangle 9">
+                                    <Grid>
+                                        <Image Source="{Binding PreviewSource}"
+                                               IsVisible="{Binding HasPreview}"
+                                               Aspect="AspectFit"
+                                               BackgroundColor="White"
+                                               SemanticProperties.Description="Ilustração do exercício" />
+                                        <Label Text="SEM MÍDIA"
+                                               IsVisible="{Binding HasNoPreview}"
+                                               FontSize="9"
+                                               TextColor="#A4A5AC"
+                                               HorizontalTextAlignment="Center"
+                                               VerticalTextAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" Spacing="2">
                                     <VerticalStackLayout.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding EditCommand}" />
                                     </VerticalStackLayout.GestureRecognizers>
@@ -88,7 +107,7 @@
                                     </HorizontalStackLayout>
                                 </VerticalStackLayout>
 
-                                <Button Grid.Column="1"
+                                <Button Grid.Column="2"
                                         Text="Ações"
                                         Style="{StaticResource SecondaryButton}"
                                         Command="{Binding ActionsCommand}" />

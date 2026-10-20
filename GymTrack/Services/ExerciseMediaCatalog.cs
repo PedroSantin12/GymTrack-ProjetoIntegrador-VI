@@ -3,78 +3,56 @@ using System.Text;
 
 namespace GymTrack.Services;
 
+public sealed record ExerciseMedia(string? Image, string? Credit = null, string? SourceUrl = null);
+
 public static class ExerciseMediaCatalog
 {
-    public static string ForExercise(string name, string muscleGroup)
-    {
-        var key = Normalize(name);
-        return key switch
+    // Images are exercise-specific. Unknown or custom movements have no assigned media.
+    private static readonly IReadOnlyDictionary<string, ExerciseMedia> Media =
+        new Dictionary<string, ExerciseMedia>(StringComparer.Ordinal)
         {
-            "prancha frontal" => "demo_plank.gif",
-            "abdominal no solo" => "demo_crunch.gif",
-            "flexao de punhos com halteres" => "demo_wrist_curl.gif",
-            "rosca direta" or "rosca direta com halteres" or "rosca martelo" => "demo_curl.gif",
-            "remada alta com halteres" => "demo_upright_row.gif",
-            "puxada frontal" => "demo_pulldown.gif",
-            "remada curvada" or "remada baixa" => "demo_row.gif",
-            "extensao lombar no banco" => "demo_back_extension.gif",
-            "desenvolvimento com halteres" or "desenvolvimento militar" => "demo_press.gif",
-            "elevacao lateral" or "elevacao lateral (halter)" => "demo_lateral_raise.gif",
-            "supino reto" or "supino reto com halteres" => "demo_bench_press.gif",
-            "supino inclinado" or "supino inclinado com halteres" => "demo_incline_press.gif",
-            "crucifixo com halteres" => "demo_fly.gif",
-            "flexao de bracos" => "demo_pushup.gif",
-            "mobilidade cervical" => "demo_neck.gif",
-            "encolhimento com halteres" => "demo_shrug.gif",
-            "triceps na polia" => "demo_triceps.gif",
-            "triceps frances" => "demo_overhead_triceps.gif",
-            "cadeira abdutora" => "demo_abductor.gif",
-            "cadeira adutora" => "demo_adductor.gif",
-            "elevacao pelvica" => "demo_hip_thrust.gif",
-            "agachamento sumo" => "demo_sumo_squat.gif",
-            "coice no cabo" => "demo_kickback.gif",
-            "elevacao de panturrilha" or "elevacao de panturrilhas em pe" => "demo_calf_raise.gif",
-            "mesa flexora" => "demo_leg_curl.gif",
-            "levantamento terra romeno" => "demo_hinge.gif",
-            "agachamento livre" => "demo_squat.gif",
-            "leg press" => "demo_leg_press.gif",
-            "cadeira extensora" => "demo_leg_extension.gif",
-            "caminhada na esteira" => "demo_walk.gif",
-            "polichinelo" => "demo_jumping_jack.gif",
-            "alongamento geral" => "demo_stretch.gif",
-            _ => ForGroup(muscleGroup)
+            ["prancha frontal"] = new("anatomy_prancha_frontal.png", "Ilustração anatômica gerada para GymTrack"),
+            ["abdominal no solo"] = new("anatomy_abdominal_no_solo.png", "Ilustração anatômica gerada para GymTrack"),
+            ["flexao de punhos com halteres"] = new("anatomy_flexao_de_punhos_com_halteres.png", "Ilustração anatômica gerada para GymTrack"),
+            ["rosca direta com halteres"] = new("anatomy_rosca_direta_com_halteres.png", "Ilustração anatômica gerada para GymTrack"),
+            ["rosca martelo"] = new("anatomy_rosca_martelo.png", "Ilustração anatômica gerada para GymTrack"),
+            ["remada alta com halteres"] = new("anatomy_remada_alta_com_halteres.png", "Ilustração anatômica gerada para GymTrack"),
+            ["puxada frontal"] = new("anatomy_puxada_frontal.png", "Ilustração anatômica gerada para GymTrack"),
+            ["remada curvada"] = new("anatomy_remada_curvada.png", "Ilustração anatômica gerada para GymTrack"),
+            ["extensao lombar no banco"] = new("anatomy_extensao_lombar_no_banco.png", "Ilustração anatômica gerada para GymTrack"),
+            ["desenvolvimento com halteres"] = new("anatomy_desenvolvimento_com_halteres.png", "Ilustração anatômica gerada para GymTrack"),
+            ["elevacao lateral"] = new("anatomy_elevacao_lateral.png", "Ilustração anatômica gerada para GymTrack"),
+            ["supino reto com halteres"] = new("anatomy_supino_reto_com_halteres.png", "Ilustração anatômica gerada para GymTrack"),
+            ["supino inclinado com halteres"] = new("anatomy_supino_inclinado_com_halteres.png", "Ilustração anatômica gerada para GymTrack"),
+            ["crucifixo com halteres"] = new("anatomy_crucifixo_com_halteres.png", "Ilustração anatômica gerada para GymTrack"),
+            ["flexao de bracos"] = new("anatomy_flexao_de_bracos.png", "Ilustração anatômica gerada para GymTrack"),
+            ["mobilidade cervical"] = new("anatomy_mobilidade_cervical.png", "Ilustração anatômica gerada para GymTrack"),
+            ["encolhimento com halteres"] = new("anatomy_encolhimento_com_halteres.png", "Ilustração anatômica gerada para GymTrack"),
+            ["triceps na polia"] = new("anatomy_triceps_na_polia.png", "Ilustração anatômica gerada para GymTrack"),
+            ["triceps frances"] = new("anatomy_triceps_frances.png", "Ilustração anatômica gerada para GymTrack"),
+            ["cadeira abdutora"] = new("anatomy_cadeira_abdutora.png", "Ilustração anatômica gerada para GymTrack"),
+            ["cadeira adutora"] = new("anatomy_cadeira_adutora.png", "Ilustração anatômica gerada para GymTrack"),
+            ["coice no cabo"] = new("anatomy_coice_no_cabo.png", "Ilustração anatômica gerada para GymTrack"),
+            ["elevacao de panturrilhas em pe"] = new("anatomy_elevacao_de_panturrilhas_em_pe.png", "Ilustração anatômica gerada para GymTrack"),
+            ["elevacao pelvica"] = new("anatomy_elevacao_pelvica.png", "Ilustração anatômica gerada para GymTrack"),
+            ["agachamento sumo"] = new("anatomy_agachamento_sumo.png", "Ilustração anatômica gerada para GymTrack"),
+            ["mesa flexora"] = new("anatomy_mesa_flexora.png", "Ilustração anatômica gerada para GymTrack"),
+            ["levantamento terra romeno"] = new("anatomy_levantamento_terra_romeno.png", "Ilustração anatômica gerada para GymTrack"),
+            ["agachamento livre"] = new("anatomy_agachamento_livre.png", "Ilustração anatômica gerada para GymTrack"),
+            ["leg press"] = new("anatomy_leg_press.png", "Ilustração anatômica gerada para GymTrack"),
+            ["cadeira extensora"] = new("exercise_leg_extension.jpg", "Imagem: Franpol / wger · CC BY-SA 4.0",
+                "https://wger.de/api/v2/exerciseimage/386/"),
+            ["caminhada na esteira"] = new("anatomy_caminhada_na_esteira.png", "Ilustração anatômica gerada para GymTrack"),
+            ["polichinelo"] = new("anatomy_polichinelo.png", "Ilustração anatômica gerada para GymTrack"),
+            ["alongamento geral"] = new("anatomy_alongamento_geral.png", "Ilustração anatômica gerada para GymTrack"),
         };
-    }
 
-    private static string ForGroup(string muscleGroup) => Normalize(muscleGroup) switch
-    {
-        "abdominais" => "demo_crunch.gif",
-        "antebracos" => "demo_wrist_curl.gif",
-        "biceps" => "demo_curl.gif",
-        "costas superiores" => "demo_upright_row.gif",
-        "dorsais" => "demo_row.gif",
-        "lombar" => "demo_back_extension.gif",
-        "ombros" => "demo_lateral_raise.gif",
-        "peito" => "demo_bench_press.gif",
-        "pescoco" => "demo_neck.gif",
-        "trapezio" => "demo_shrug.gif",
-        "triceps" => "demo_triceps.gif",
-        "abdutores" => "demo_abductor.gif",
-        "adutores" => "demo_adductor.gif",
-        "gluteos" => "demo_hip_thrust.gif",
-        "panturrilhas" => "demo_calf_raise.gif",
-        "posterior de coxa" or "posteriores de coxa" => "demo_hinge.gif",
-        "quadriceps" => "demo_squat.gif",
-        "cardio" => "demo_walk.gif",
-        "corpo inteiro" => "demo_jumping_jack.gif",
-        "costas" => "demo_row.gif",
-        "pernas" => "demo_squat.gif",
-        "bracos" => "demo_curl.gif",
-        "core" => "demo_crunch.gif",
-        _ => "demo_stretch.gif"
-    };
+    public static ExerciseMedia Get(string name) =>
+        Media.TryGetValue(Normalize(name), out var media) ? media : new ExerciseMedia(null);
 
-    private static string Normalize(string? value)
+    public static string? ForExercise(string name, string muscleGroup) => Get(name).Image;
+
+    internal static string Normalize(string? value)
     {
         var decomposed = (value ?? string.Empty).Trim().Normalize(NormalizationForm.FormD);
         var plain = new StringBuilder(decomposed.Length);
@@ -83,7 +61,6 @@ public static class ExerciseMediaCatalog
             if (CharUnicodeInfo.GetUnicodeCategory(character) != UnicodeCategory.NonSpacingMark)
                 plain.Append(char.ToLowerInvariant(character));
         }
-
         return plain.ToString().Normalize(NormalizationForm.FormC);
     }
 }

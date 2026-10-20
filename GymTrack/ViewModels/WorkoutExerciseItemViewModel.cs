@@ -2,6 +2,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GymTrack.Models;
+using GymTrack.Services;
 
 namespace GymTrack.ViewModels;
 
@@ -31,6 +32,12 @@ public partial class WorkoutExerciseItemViewModel : ObservableObject
     public string Name { get; }
 
     public string MuscleGroup { get; }
+
+    public string? PreviewSource => ExerciseMediaCatalog.ForExercise(Name, MuscleGroup);
+
+    public bool HasPreview => PreviewSource is not null;
+
+    public bool HasNoPreview => !HasPreview;
 
     public bool IsActive { get; }
 
