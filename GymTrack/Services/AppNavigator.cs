@@ -24,8 +24,30 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
     public async Task OpenWorkspaceAsync()
     {
         await starterCatalog.EnsureSeededAsync();
-        await NavigateAsync(session.IsEmployee
+        await NavigateAsync(session.IsManagementMode
             ? AppSection.AdminDashboard : AppSection.PersonalWorkouts);
+    }
+
+    public async Task SwitchWorkspaceAsync()
+    {
+        if (_isNavigating) return;
+        _isNavigating = true;
+        try
+        {
+            await RequireUserAsync();
+            var wasPersonal = session.IsPersonalMode;
+            session.SetEmployeePersonalMode(!wasPersonal);
+            try
+            {
+                ShowSection(wasPersonal ? AppSection.AdminDashboard : AppSection.PersonalWorkouts);
+            }
+            catch
+            {
+                session.SetEmployeePersonalMode(wasPersonal);
+                throw;
+            }
+        }
+        finally { _isNavigating = false; }
     }
 
     public async Task NavigateAsync(AppSection section)
@@ -35,28 +57,30 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
         try
         {
             var user = await RequireUserAsync();
-            if (!AppAccessPolicy.CanNavigate(user, section))
+            if (!AppAccessPolicy.CanNavigate(user, section, session.IsPersonalMode))
                 throw new UnauthorizedAccessException("Seu perfil não possui acesso a esta área.");
-            if (section == AppSection.Exercises)
-            {
-                await CurrentNavigation.PushAsync(services.GetRequiredService<ExercisesPage>());
-                return;
-            }
-            Page page = section switch
-            {
-                AppSection.AdminDashboard => services.GetRequiredService<AdminDashboardPage>(),
-                AppSection.Users => services.GetRequiredService<UsersPage>(),
-                AppSection.AdminWorkouts => services.GetRequiredService<TemplateManagementPage>(),
-                AppSection.Statistics => services.GetRequiredService<StatisticsPage>(),
-                AppSection.Templates => services.GetRequiredService<TemplateLibraryPage>(),
-                AppSection.PersonalWorkouts => services.GetRequiredService<PersonalWorkoutsPage>(),
-                AppSection.Progress => services.GetRequiredService<ConsumerProgressPage>(),
-                AppSection.Profile => services.GetRequiredService<ProfilePage>(),
-                _ => throw new ArgumentOutOfRangeException(nameof(section))
-            };
-            CurrentWindow.Page = new NavigationPage(page);
+            ShowSection(section);
         }
         finally { _isNavigating = false; }
+    }
+
+    private void ShowSection(AppSection section)
+    {
+        Page page = section switch
+        {
+            AppSection.AdminDashboard => services.GetRequiredService<AdminDashboardPage>(),
+            AppSection.Students => services.GetRequiredService<StudentsPage>(),
+            AppSection.Users => services.GetRequiredService<UsersPage>(),
+            AppSection.Exercises => services.GetRequiredService<ExercisesPage>().UseWorkspaceNavigation(this, session),
+            AppSection.AdminWorkouts => services.GetRequiredService<TemplateManagementPage>(),
+            AppSection.Statistics => services.GetRequiredService<StatisticsPage>(),
+            AppSection.Templates => services.GetRequiredService<TemplateLibraryPage>(),
+            AppSection.PersonalWorkouts => services.GetRequiredService<PersonalWorkoutsPage>(),
+            AppSection.Progress => services.GetRequiredService<ConsumerProgressPage>(),
+            AppSection.Profile => services.GetRequiredService<ProfilePage>(),
+            _ => throw new ArgumentOutOfRangeException(nameof(section))
+        };
+        CurrentWindow.Page = new NavigationPage(page);
     }
 
     public async Task OpenWorkoutEditorAsync(int? workoutId)
@@ -67,14 +91,13 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
         {
             var user = await RequireUserAsync();
             var workout = workoutId.HasValue ? await workouts.GetByIdAsync(workoutId.Value) : null;
-            if (workoutId.HasValue && !AppAccessPolicy.CanEditWorkout(user, workout))
+            if (workoutId.HasValue && !AppAccessPolicy.CanEditWorkout(user, workout, session.IsPersonalMode))
                 throw new UnauthorizedAccessException("Este treino não está disponível para edição.");
             var page = services.GetRequiredService<WorkoutEditPage>();
             if (workoutId.HasValue)
                 await page.InitializeAsync(workoutId);
             else
-                await page.InitializeNewAsync(user.Role == UserRole.Consumer ? user.Id : null,
-                    user.Role == UserRole.Employee);
+                await page.InitializeNewAsync(session.IsPersonalMode ? user.Id : null, session.IsManagementMode);
             await CurrentNavigation.PushAsync(page);
         }
         finally { _isNavigating = false; }
@@ -87,7 +110,7 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
         try
         {
             var user = await RequireUserAsync();
-            if (!AppAccessPolicy.CanStartWorkout(user, await workouts.GetByIdAsync(workoutId)))
+            if (!AppAccessPolicy.CanStartWorkout(user, await workouts.GetByIdAsync(workoutId), session.IsPersonalMode))
                 throw new UnauthorizedAccessException("Este treino não pertence à sua conta.");
             var page = services.GetRequiredService<WorkoutSessionPage>();
             if (await page.InitializeAsync(workoutId)) await CurrentNavigation.Navigation.PushModalAsync(page);
@@ -126,8 +149,8 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
 
     public async Task OpenHistoryAsync()
     {
-        var user = await RequireUserAsync();
-        if (user.Role != UserRole.Consumer) throw new UnauthorizedAccessException();
+        await RequireUserAsync();
+        if (!session.IsPersonalMode) throw new UnauthorizedAccessException();
         await CurrentNavigation.PushAsync(services.GetRequiredService<HistoryPage>());
     }
 
@@ -144,7 +167,7 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
             await ShowLoginAsync();
             throw new UnauthorizedAccessException("Entre novamente para continuar.");
         }
-        session.SignIn(account);
+        session.Refresh(account);
         return account;
     }
 }

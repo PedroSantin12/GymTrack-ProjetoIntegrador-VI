@@ -222,7 +222,7 @@ public sealed class TemplateDetailPage : ContentPage
 
     private async Task ChooseAsync()
     {
-        if (_busy || _session.CurrentUser is not { Role: UserRole.Consumer, IsActive: true } user)
+        if (_busy || !_session.IsPersonalMode || _session.CurrentUser is not { } user)
             return;
 
         _busy = true;

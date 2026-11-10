@@ -24,7 +24,7 @@ public sealed class TemplateManagementPage : WorkspacePage
     private bool _isBusy;
 
     public TemplateManagementPage(IAppNavigator navigator, AppSession session, IWorkoutCatalogService catalog)
-        : base("Treinos prontos", "Rotinas preparadas para seus alunos.", AppSection.AdminWorkouts, navigator, session)
+        : base("Treinos prontos", AppSection.AdminWorkouts, navigator, session)
     {
         _catalog = catalog;
         _navigator = navigator;
@@ -36,17 +36,8 @@ public sealed class TemplateManagementPage : WorkspacePage
             Spacing = 18,
             Children =
             {
-                Ui.Card(new VerticalStackLayout
-                {
-                    Spacing = 12,
-                    Children =
-                    {
-                        Ui.Tag("CATÁLOGO DA ACADEMIA"),
-                        Ui.Text("Um bom treino\ncomeça aqui.", 25, Ui.Foreground, FontAttributes.Bold),
-                        Ui.Text("Crie rotinas com exercícios, séries e repetições para os consumidores.", 14, Ui.Muted),
-                        Ui.Button("Criar treino pronto", CreateTemplateAsync)
-                    }
-                }, new Thickness(22)),
+                Ui.Text("Treinos prontos", 24, Ui.Foreground, FontAttributes.Bold),
+                Ui.Button("Criar treino pronto", CreateTemplateAsync),
                 _search,
                 _summary,
                 _status,

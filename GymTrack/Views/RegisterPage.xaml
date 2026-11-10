@@ -1,139 +1,103 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:components="clr-namespace:GymTrack.Views.Components"
              xmlns:viewModels="clr-namespace:GymTrack.ViewModels"
              x:Class="GymTrack.Views.RegisterPage"
              x:DataType="viewModels:RegisterViewModel"
              Title="Cadastrar-se"
              NavigationPage.HasNavigationBar="False"
-             BackgroundColor="#101010">
+             BackgroundColor="{StaticResource DarkBackground}">
     <Grid>
-        <Image Source="register_background.png" Aspect="AspectFill" />
+        <Image Source="register_background.png" Aspect="AspectFill" InputTransparent="True" />
         <BoxView InputTransparent="True">
             <BoxView.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#80000000" Offset="0" />
-                    <GradientStop Color="#16000000" Offset="0.28" />
-                    <GradientStop Color="#9E101010" Offset="0.51" />
-                    <GradientStop Color="#F5101010" Offset="0.68" />
-                    <GradientStop Color="#FF101010" Offset="0.82" />
+                    <GradientStop Color="#AF0E0E10" Offset="0" />
+                    <GradientStop Color="#450E0E10" Offset="0.24" />
+                    <GradientStop Color="#B90E0E10" Offset="0.48" />
+                    <GradientStop Color="#F90E0E10" Offset="0.68" />
+                    <GradientStop Color="#0E0E10" Offset="1" />
                 </LinearGradientBrush>
             </BoxView.Background>
         </BoxView>
 
-        <Grid RowDefinitions="Auto,*,Auto"
-              Padding="24,24,24,24"
-              MaximumWidthRequest="500">
-            <Border x:Name="BrandHeader"
-                    HorizontalOptions="Center"
-                    Padding="16,6"
-                    BackgroundColor="#990D0D0D"
-                    StrokeThickness="0"
-                    StrokeShape="RoundRectangle 16">
-                <HorizontalStackLayout Spacing="0">
-                    <Label Text="GYM"
-                           FontSize="28"
+        <Grid RowDefinitions="Auto,*" RowSpacing="12"
+              Padding="22,24" MaximumWidthRequest="440">
+            <components:BrandLockup x:Name="BrandHeader" />
+
+            <ScrollView Grid.Row="1" VerticalOptions="End" VerticalScrollBarVisibility="Never">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Crie sua conta"
+                           FontSize="25"
                            FontFamily="OpenSansSemibold"
-                           FontAttributes="Bold"
-                           CharacterSpacing="1"
-                           TextColor="White" />
-                    <Label Text="TRACK"
-                           FontSize="28"
-                           FontFamily="OpenSansSemibold"
-                           FontAttributes="Bold"
-                           CharacterSpacing="1"
-                           TextColor="{StaticResource BrandAccent}" />
-                </HorizontalStackLayout>
-            </Border>
+                           SemanticProperties.HeadingLevel="Level1"
+                           Margin="0,0,0,4" />
 
-            <VerticalStackLayout Grid.Row="2" Spacing="10">
-                <Label Text="Crie sua conta"
-                       FontSize="20"
-                       FontAttributes="Bold"
-                       Margin="0,0,0,2" />
+                <Entry x:Name="NameInput"
+                       Style="{StaticResource AuthEntryStyle}"
+                       Text="{Binding Name}"
+                       Placeholder="Nome completo"
+                       ReturnType="Next"
+                       Completed="OnNameCompleted"
+                       MaxLength="100"
+                       SemanticProperties.Description="Nome completo"
+                       AutomationId="RegisterName" />
 
-                <Border Padding="12,0"
-                        BackgroundColor="#EE272727"
-                        Stroke="#707070"
-                        StrokeShape="RoundRectangle 15">
-                    <Entry x:Name="NameInput"
-                           Text="{Binding Name}"
-                           Placeholder="Nome completo"
-                           ReturnType="Next"
-                           Completed="OnNameCompleted"
-                           MaxLength="100"
-                           SemanticProperties.Description="Nome completo"
-                           AutomationId="RegisterName" />
-                </Border>
+                <Entry x:Name="EmailInput"
+                       Style="{StaticResource AuthEntryStyle}"
+                       Text="{Binding Email}"
+                       Placeholder="E-mail"
+                       Keyboard="Email"
+                       ReturnType="Next"
+                       Completed="OnEmailCompleted"
+                       MaxLength="254"
+                       SemanticProperties.Description="E-mail"
+                       AutomationId="RegisterEmail" />
 
-                <Border Padding="12,0"
-                        BackgroundColor="#EE272727"
-                        Stroke="#707070"
-                        StrokeShape="RoundRectangle 15">
-                    <Entry x:Name="EmailInput"
-                           Text="{Binding Email}"
-                           Placeholder="E-mail"
-                           Keyboard="Email"
-                           ReturnType="Next"
-                           Completed="OnEmailCompleted"
-                           MaxLength="254"
-                           SemanticProperties.Description="E-mail"
-                           AutomationId="RegisterEmail" />
-                </Border>
+                <Entry x:Name="PasswordInput"
+                       Style="{StaticResource AuthEntryStyle}"
+                       Text="{Binding Password}"
+                       Placeholder="Senha (mínimo 8 caracteres)"
+                       IsPassword="True"
+                       ReturnType="Next"
+                       Completed="OnPasswordCompleted"
+                       MaxLength="128"
+                       SemanticProperties.Description="Senha, mínimo de oito caracteres"
+                       AutomationId="RegisterPassword" />
 
-                <Border Padding="12,0"
-                        BackgroundColor="#EE272727"
-                        Stroke="#707070"
-                        StrokeShape="RoundRectangle 15">
-                    <Entry x:Name="PasswordInput"
-                           Text="{Binding Password}"
-                           Placeholder="Senha (mínimo 8 caracteres)"
-                           IsPassword="True"
-                           ReturnType="Next"
-                           Completed="OnPasswordCompleted"
-                           MaxLength="128"
-                           SemanticProperties.Description="Senha, mínimo de oito caracteres"
-                           AutomationId="RegisterPassword" />
-                </Border>
+                <Entry x:Name="ConfirmPasswordInput"
+                       Style="{StaticResource AuthEntryStyle}"
+                       Text="{Binding ConfirmPassword}"
+                       Placeholder="Confirmar senha"
+                       IsPassword="True"
+                       ReturnType="Go"
+                       ReturnCommand="{Binding RegisterCommand}"
+                       MaxLength="128"
+                       SemanticProperties.Description="Confirmar senha"
+                       AutomationId="RegisterConfirmPassword" />
 
-                <Border Padding="12,0"
-                        BackgroundColor="#EE272727"
-                        Stroke="#707070"
-                        StrokeShape="RoundRectangle 15">
-                    <Entry x:Name="ConfirmPasswordInput"
-                           Text="{Binding ConfirmPassword}"
-                           Placeholder="Confirmar senha"
-                           IsPassword="True"
-                           ReturnType="Go"
-                           ReturnCommand="{Binding RegisterCommand}"
-                           MaxLength="128"
-                           SemanticProperties.Description="Confirmar senha"
-                           AutomationId="RegisterConfirmPassword" />
-                </Border>
+                    <Label Text="{Binding ErrorMessage}"
+                           TextColor="{StaticResource Danger}"
+                           FontSize="12"
+                           AutomationId="RegisterError" />
 
-                <Label Text="{Binding ErrorMessage}"
-                       TextColor="{StaticResource Danger}"
-                       FontSize="12"
-                       HorizontalTextAlignment="Center"
-                       AutomationId="RegisterError" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,2,0,0">
+                        <Button Text="Cadastrar"
+                                Command="{Binding RegisterCommand}"
+                                Padding="8,10"
+                                AutomationId="RegisterSubmit" />
+                        <Button Grid.Column="1"
+                                Text="Voltar"
+                                Style="{StaticResource SecondaryButton}"
+                                Padding="8,10"
+                                Clicked="OnBackClicked"
+                                AutomationId="RegisterBack" />
+                    </Grid>
 
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Button Text="Cadastrar"
-                            Command="{Binding RegisterCommand}"
-                            FontSize="14"
-                            Padding="8,10"
-                            AutomationId="RegisterSubmit" />
-                    <Button Grid.Column="1"
-                            Text="Voltar"
-                            Style="{StaticResource SecondaryButton}"
-                            FontSize="14"
-                            Padding="8,10"
-                            Clicked="OnBackClicked"
-                            AutomationId="RegisterBack" />
-                </Grid>
-
-                <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" />
-            </VerticalStackLayout>
+                    <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" />
+                </VerticalStackLayout>
+            </ScrollView>
         </Grid>
     </Grid>
 </ContentPage>

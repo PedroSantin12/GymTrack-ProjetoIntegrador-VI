@@ -1,4 +1,6 @@
+using GymTrack.Services;
 using GymTrack.ViewModels;
+using GymTrack.Views.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -23,6 +25,17 @@ public partial class ExercisesPage : ContentPage
         _logger = logger;
 
         viewModel.EditorRequested += OnEditorRequested;
+    }
+
+    internal ExercisesPage UseWorkspaceNavigation(IAppNavigator navigator, AppSession session)
+    {
+        NavigationPage.SetHasNavigationBar(this, false);
+        ExerciseTitle.IsVisible = true;
+        Content = null;
+        var layout = WorkspacePage.CreateLayout(AppSection.Exercises, navigator, session);
+        layout.Add(ExerciseContent);
+        Content = layout;
+        return this;
     }
 
     protected override async void OnAppearing()

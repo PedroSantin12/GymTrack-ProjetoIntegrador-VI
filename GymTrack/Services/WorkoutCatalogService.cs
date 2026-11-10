@@ -155,8 +155,15 @@ public sealed class WorkoutCatalogService(
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(userId);
         var connection = await database.GetConnectionAsync();
         return await connection.QueryAsync<WorkoutCatalogItem>(
-            CatalogQuery +
-            " WHERE w.OwnerUserId = ? AND w.IsTemplate = 0 AND w.IsArchived = 0 GROUP BY w.Id ORDER BY w.UpdatedAt DESC, w.Id DESC",
+            """
+            SELECT w.Id, w.Name, w.Description, COUNT(we.Id) AS ExerciseCount,
+                   a.WorkoutId IS NOT NULL AS IsAssigned
+            FROM Workout w
+            LEFT JOIN WorkoutExercise we ON we.WorkoutId = w.Id
+            LEFT JOIN WorkoutAssignment a ON a.WorkoutId = w.Id
+            WHERE w.OwnerUserId = ? AND w.IsTemplate = 0 AND w.IsArchived = 0
+            GROUP BY w.Id ORDER BY w.UpdatedAt DESC, w.Id DESC
+            """,
             userId);
     }
 
@@ -187,15 +194,7 @@ public sealed class WorkoutCatalogService(
         var connection = await database.GetConnectionAsync();
         var copiedId = 0;
         await connection.RunInTransactionAsync(transaction =>
-        {
-            var template = transaction.Find<Workout>(templateId);
-            if (template is null || !template.IsTemplate || template.IsArchived)
-            {
-                throw new InvalidOperationException("Treino pronto não encontrado.");
-            }
-
-            copiedId = CloneWorkout(transaction, template, userId, template.Name, true);
-        });
+            copiedId = CopyTemplate(transaction, templateId, userId));
 
         return copiedId;
     }
@@ -225,6 +224,15 @@ public sealed class WorkoutCatalogService(
         FROM Workout w
         LEFT JOIN WorkoutExercise we ON we.WorkoutId = w.Id
         """;
+
+    internal static int CopyTemplate(SQLite.SQLiteConnection transaction, int templateId, int userId)
+    {
+        var template = transaction.Find<Workout>(templateId);
+        if (template is null || !template.IsTemplate || template.IsArchived)
+            throw new InvalidOperationException("Treino pronto não encontrado.");
+
+        return CloneWorkout(transaction, template, userId, template.Name, true);
+    }
 
     private static int CloneWorkout(SQLite.SQLiteConnection transaction, Workout source,
         int userId, string name, bool requireExercises)

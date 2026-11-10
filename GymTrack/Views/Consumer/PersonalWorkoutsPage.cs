@@ -25,8 +25,7 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
 
     public PersonalWorkoutsPage(IAppNavigator navigator, AppSession session,
         IWorkoutCatalogService catalog, IWorkoutDao workouts, IExerciseDao exercises, ISessionDao sessions)
-        : base("Meus treinos", "Pronto para superar seus limites?",
-            AppSection.PersonalWorkouts, navigator, session)
+        : base("Meus treinos", AppSection.PersonalWorkouts, navigator, session)
     {
         _navigator = navigator;
         _session = session;
@@ -228,6 +227,8 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
             ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) }
         };
         var identity = new VerticalStackLayout { Spacing = 3 };
+        if (workout.IsAssigned)
+            identity.Add(Ui.Tag("Atribuído pela equipe"));
         identity.Add(Ui.Text(workout.Name, 17, Ui.Foreground, FontAttributes.Bold));
         identity.Add(Ui.Text(ConsumerUi.ExerciseCount(workout.ExerciseCount), 12, Ui.Muted));
         top.Add(identity);

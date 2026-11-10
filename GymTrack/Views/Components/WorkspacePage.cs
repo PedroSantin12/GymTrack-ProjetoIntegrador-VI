@@ -8,40 +8,31 @@ public class WorkspacePage : ContentPage
     private readonly Grid _layout;
     private View? _body;
 
-    protected WorkspacePage(string title, string subtitle, AppSection activeSection,
+    protected WorkspacePage(string title, AppSection activeSection,
         IAppNavigator navigator, AppSession session)
     {
         Title = title;
         NavigationPage.SetHasNavigationBar(this, false);
         BackgroundColor = Ui.Background;
 
-        var header = new VerticalStackLayout
-        {
-            Spacing = 3,
-            Padding = new Thickness(18, 16, 18, 10),
-            Children =
-            {
-                Ui.Text(session.IsEmployee ? "GYMTRACK  /  GESTÃO" : "GymTrack", 15,
-                    Ui.Accent, FontAttributes.Bold),
-                Ui.Text(title, 24, Ui.Foreground, FontAttributes.Bold),
-                Ui.Text(subtitle, 13, Ui.Muted)
-            }
-        };
+        _layout = CreateLayout(activeSection, navigator, session);
+        Content = _layout;
+    }
 
-        _layout = new Grid
+    internal static Grid CreateLayout(AppSection activeSection, IAppNavigator navigator, AppSession session)
+    {
+        var layout = new Grid
         {
             RowDefinitions =
             {
-                new RowDefinition(GridLength.Auto),
                 new RowDefinition(GridLength.Star),
                 new RowDefinition(GridLength.Auto)
             },
-            MaximumWidthRequest = session.IsEmployee ? 760 : 460,
+            MaximumWidthRequest = session.IsManagementMode ? 760 : 460,
             HorizontalOptions = LayoutOptions.Fill
         };
-        _layout.Add(header, 0, 0);
-        _layout.Add(CreateNavigation(activeSection, navigator, session), 0, 2);
-        Content = _layout;
+        layout.Add(CreateNavigation(activeSection, navigator, session), 0, 1);
+        return layout;
     }
 
     protected void SetBody(View body, bool scroll = true)
@@ -51,18 +42,19 @@ public class WorkspacePage : ContentPage
             Content = body,
             VerticalScrollBarVisibility = ScrollBarVisibility.Never
         } : body;
-        container.Margin = new Thickness(18, 2, 18, 12);
+        container.Margin = new Thickness(18, 14, 18, 12);
         if (_body is not null) _layout.Remove(_body);
-        _layout.Add(container, 0, 1);
+        _layout.Add(container, 0, 0);
         _body = container;
     }
 
     private static View CreateNavigation(AppSection section, IAppNavigator navigator, AppSession session)
     {
-        var items = session.IsEmployee
-            ? new[] { (AppSection.AdminDashboard, "Painel", "home"),
-                (AppSection.Users, "Usuários", "users"),
+        var items = session.IsManagementMode
+            ? new[] { (AppSection.AdminDashboard, "Início", "home"),
+                (AppSection.Students, "Alunos", "users"),
                 (AppSection.AdminWorkouts, "Treinos", "workout"),
+                (AppSection.Exercises, "Exercícios", "exercises"),
                 (AppSection.Profile, "Perfil", "profile") }
             : new[] { (AppSection.PersonalWorkouts, "Treinos", "workout"),
                 (AppSection.Progress, "Evolução", "progress"),
@@ -73,9 +65,13 @@ public class WorkspacePage : ContentPage
         {
             grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
             var (route, label, icon) = items[index];
-            var selected = section == route ||
-                section == AppSection.Templates && route == AppSection.PersonalWorkouts ||
-                session.IsEmployee && section is AppSection.Statistics or AppSection.Exercises && route == AppSection.AdminDashboard;
+            var selectedRoute = section switch
+            {
+                AppSection.Templates => AppSection.PersonalWorkouts,
+                AppSection.Users or AppSection.Statistics => AppSection.Profile,
+                _ => section
+            };
+            var selected = selectedRoute == route;
             var color = selected ? Ui.Accent : Ui.Muted;
             var caption = Ui.Text(label, 10, color, selected ? FontAttributes.Bold : FontAttributes.None);
             caption.HorizontalTextAlignment = TextAlignment.Center;
@@ -98,13 +94,10 @@ public class WorkspacePage : ContentPage
             var button = new Button
             {
                 Text = string.Empty,
-                BackgroundColor = Colors.Transparent,
-                BorderWidth = 0,
-                CornerRadius = 0,
-                Padding = 0,
                 MinimumHeightRequest = 58,
                 AutomationId = $"Navigate{route}"
             };
+            button.SetDynamicResource(VisualElement.StyleProperty, "QuietButton");
             SemanticProperties.SetDescription(button, label + (selected ? ", selecionado" : ""));
             button.Clicked += async (_, _) =>
             {
@@ -135,6 +128,7 @@ public class WorkspacePage : ContentPage
         {
             "home" => "M 3,11 L 12,3 L 21,11 M 5,10 L 5,21 L 10,21 L 10,15 L 14,15 L 14,21 L 19,21 L 19,10",
             "workout" => "M 8,12 L 16,12 M 4,7 L 8,7 L 8,17 L 4,17 Z M 16,7 L 20,7 L 20,17 L 16,17 Z M 2,10 L 4,10 M 20,10 L 22,10 M 2,14 L 4,14 M 20,14 L 22,14",
+            "exercises" => "M 5,4 L 19,4 L 19,21 L 5,21 Z M 8,8 L 16,8 M 8,12 L 16,12 M 8,16 L 13,16",
             "progress" => "M 4,3 L 4,21 L 22,21 M 8,16 L 12,11 L 16,14 L 21,6",
             "users" => "M 14,7 A 4,4 0 1 1 6,7 A 4,4 0 1 1 14,7 M 3,21 C 3,12 17,12 17,21 M 18,4 C 23,4 23,11 18,11 M 19,15 C 23,16 23,19 23,21",
             _ => "M 16,7 A 4,4 0 1 1 8,7 A 4,4 0 1 1 16,7 M 3,22 C 3,10 21,10 21,22"

@@ -2,7 +2,7 @@
 
 Aplicativo acadêmico para organizar treinos de musculação, registrar sessões e acompanhar a evolução. Usa .NET 10, .NET MAUI, C#, XAML, MVVM e SQLite, com Android como plataforma principal.
 
-O aplicativo começa no login e abre a área correspondente à conta: funcionário ou consumidor. A entrada e o cadastro usam fotos de treino, o nome GymTrack e formulários sem rolagem. A interface usa fundo escuro, tons de cinza, destaque laranja `#FF913A` e navegação inferior fixa.
+O aplicativo começa no login e abre a área correspondente à conta: funcionário ou consumidor. A entrada e o cadastro usam fotos de treino, o símbolo GymTrack e formulários que se ajustam à altura disponível. A interface usa fundo escuro, tons de cinza, destaque laranja `#FF913A` e navegação inferior fixa.
 
 ## Acesso de demonstração
 
@@ -17,18 +17,17 @@ Na tela de login, informe o e-mail e a senha e toque em **Entrar**. O direcionam
 
 Para criar uma conta pessoal, toque em **Cadastrar-se**, informe nome, e-mail e senha e confirme a senha. Novas contas recebem o perfil de consumidor e entram automaticamente após o cadastro. Contas de funcionário são gerenciadas pela equipe; o cadastro público não concede esse perfil.
 
-As contas, os exercícios, os treinos e as sessões persistem localmente no SQLite do dispositivo. Este acesso é demonstrativo: ainda não há servidor de autenticação, backend na nuvem ou sincronização entre dispositivos. As credenciais acima não devem ser usadas em produção. Alterações nas contas de demonstração são preservadas nas próximas inicializações.
+As contas, os vínculos, as atribuições, os exercícios, os treinos e as sessões persistem localmente no SQLite do dispositivo. Este acesso é demonstrativo: ainda não há servidor de autenticação, backend na nuvem ou sincronização entre dispositivos. As credenciais acima não devem ser usadas em produção. Alterações nas contas de demonstração são preservadas nas próximas inicializações.
 
 ## Áreas do aplicativo
 
 **Funcionário**
 
-- Painel com resumo de usuários e treinos prontos.
-- Usuários: visualizar, pesquisar, editar e desativar contas.
-- Exercícios: cadastrar nome, grupo muscular e descrição, pesquisar e gerenciar exercícios ativos ou arquivados.
-- Treinos prontos: criar, editar e excluir rotinas com exercícios, séries, repetições e carga planejada.
-- Estatísticas: consultar quantidade de usuários, contas ativas e desativadas, perfis de acesso, total de treinos criados e treinos prontos.
-- Perfil com os dados da conta e opção de sair.
+- **Início** mostra os totais de alunos vinculados e treinos no catálogo, além de atalhos.
+- **Alunos** permite pesquisar alunos vinculados e abrir a ficha individual. O funcionário pode atribuir um treino do catálogo e consultar o histórico autorizado pelo aluno.
+- **Treinos** permite criar, editar e excluir rotinas com exercícios, séries, repetições e carga planejada. A atribuição disponibiliza uma cópia independente em **Meus treinos** na conta do aluno.
+- **Exercícios** reúne cadastro, edição, busca e filtros por grupo muscular, com categorias amplas como Costas, Pernas e Braços.
+- **Perfil** reúne os dados da conta, o gerenciamento de contas, as estatísticas e a alternância para a área pessoal. O funcionário pode treinar e acompanhar sua evolução com a mesma conta.
 
 **Consumidor**
 
@@ -37,8 +36,8 @@ As contas, os exercícios, os treinos e as sessões persistem localmente no SQLi
 - Biblioteca com seis modelos de base (Full Body, Upper Body, Lower Body, Push, Pull e Legs) e treinos prontos de peito, pernas e glúteos. É possível pesquisar e conferir exercícios, séries, repetições e guias de execução antes de copiar o treino para a conta.
 - Meus treinos com criação, edição, duplicação, exclusão confirmada e início de sessão. Ao excluir uma rotina com sessões concluídas, ela sai da lista e o histórico permanece disponível.
 - Execução com imagens demonstrativas dos exercícios, cronômetro, registro de séries, repetições e carga, retomada de sessão e finalização.
-- Evolução com registro manual de treino e data, histórico por dia da semana, sessões concluídas, frequência, tempo e carga das sessões feitas no app.
-- Perfil com nome e e-mail da conta, registros de peso e medidas corporais, gráfico de peso e opção de sair.
+- Evolução com registro manual, histórico, frequência, tempo e carga. O **Calendário** marca os dias com registros manuais e sessões concluídas, agrupando treinos do mesmo dia.
+- Perfil com dados da conta, peso e medidas corporais, gráfico de peso e opção de sair. Em **Vínculos com funcionários**, o aluno pode adicionar um funcionário pelo e-mail e gerenciar o compartilhamento do histórico.
 
 O catálogo inicial inclui 33 exercícios em 20 grupos musculares e três treinos prontos de peito, pernas e glúteos, além dos seis modelos de base. Ao abrir qualquer treino pronto, o consumidor pode examinar a sequência, séries, repetições e o guia de cada exercício antes de adicioná-lo à própria conta. Todos os 33 exercícios iniciais têm imagens anatômicas estáticas incluídas no aplicativo e funcionam sem internet. As imagens, sua origem e os créditos estão documentados em [MEDIA_CREDITS.md](MEDIA_CREDITS.md). Exercícios personalizados sem imagem correspondente exibem uma indicação discreta de mídia indisponível. O consumidor recebe uma cópia independente: alterar ou excluir um treino pronto do catálogo não modifica a cópia. O acesso a treinos pessoais e sessões é restrito ao dono da conta; o catálogo de exercícios é compartilhado.
 
@@ -46,12 +45,12 @@ Na conta de demonstração do consumidor, a aba **Evolução** inclui alguns reg
 
 ## Roteiro de demonstração
 
-1. Entre como **Funcionário** e abra **Painel → Exercícios** para cadastrar os movimentos.
-2. Abra **Treinos**, crie um treino pronto, adicione exercícios e salve sua composição.
-3. Saia da conta pelo **Perfil** e entre como **Consumidor**.
-4. Em **Treinos**, selecione **Explorar treinos prontos**, abra a rotina, confira os exercícios e toque em **Adicionar aos meus treinos** para revisar sua cópia no editor.
-5. De volta a **Treinos**, toque em **Iniciar treino**, registre as séries e finalize a sessão. Se sair antes, use **Continuar treino** para retomá-la.
-6. Consulte **Evolução** para ver o histórico e registrar um treino feito em outra data. Em **Perfil**, cadastre o peso e outras medidas para acompanhar o gráfico. Também é possível criar uma rotina própria pelo botão **+** em Treinos.
+1. Entre como **Consumidor** e abra **Perfil → Vínculos com funcionários**. Vincule o e-mail da conta de funcionário. Nessa mesma tela, escolha se deseja compartilhar o histórico de treino.
+2. Entre como **Funcionário**. Use **Exercícios** para cadastrar movimentos e **Treinos** para criar uma rotina com pelo menos um exercício.
+3. Abra **Alunos**, selecione **Abrir ficha** e atribua o treino ao aluno. Para experimentar a área pessoal da conta de funcionário, use **Perfil → Abrir área pessoal**.
+4. Volte à conta do aluno e localize a rotina atribuída em **Treinos**. Também é possível usar **Explorar treinos prontos** para copiar outro modelo.
+5. Toque em **Iniciar treino**, registre as séries e finalize a sessão. Se sair antes, use **Continuar treino** para retomá-la.
+6. Em **Evolução**, registre também um treino feito em outra data e abra **Calendário** para conferir os dias marcados.
 
 Treinos sem exercícios não podem iniciar. Ao atualizar uma instalação antiga, os treinos existentes sem proprietário passam a ser modelos do catálogo. Seus registros são preservados; o histórico antigo não é atribuído automaticamente a uma das novas contas.
 
@@ -90,11 +89,11 @@ Os testes automatizados e a compilação Android validam a lógica e a geração
 ## Organização do código
 
 - `Views/LoginPage` e `ViewModels/LoginViewModel`: entrada e autenticação local.
-- `Views/Admin`: painel, usuários, treinos prontos e estatísticas do funcionário.
+- `Views/Admin`: início, alunos e fichas, gerenciamento de contas, treinos prontos e estatísticas do funcionário.
 - `Views/Consumer`: treinos pessoais, biblioteca, evolução e perfil.
 - `Views/Components`: componentes visuais e navegação inferior compartilhados.
 - `Views/WorkoutEditPage`, `Views/WorkoutSessionPage` e seus view models: composição e execução de treinos.
-- `Services`: contas, sessão atual, permissões, navegação e catálogo de treinos.
+- `Services`: contas, sessão atual, permissões, navegação, catálogo, vínculos e atribuição de treinos.
 - `Data` e `Models`: banco SQLite, migração dos treinos existentes, DAOs e entidades.
 - `Resources`: cores, estilos e demais recursos visuais.
 - `GymTrack.Tests`: testes de persistência, serviços, permissões e view models.

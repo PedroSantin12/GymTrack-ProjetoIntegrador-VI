@@ -18,11 +18,11 @@ public sealed class DatabaseInitializationTests
         var connection = await context.Database.GetConnectionAsync();
         var version = await connection.ExecuteScalarAsync<int>("PRAGMA user_version");
 
-        Assert.Equal(2, version);
+        Assert.Equal(3, version);
     }
 
     [Fact]
-    public async Task InitializeAsync_CreatesEightTablesAndRequiredIndexes()
+    public async Task InitializeAsync_CreatesExpectedTablesAndIndexes()
     {
         await using var context = await TestDatabase.CreateAsync();
         var connection = await context.Database.GetConnectionAsync();
@@ -39,7 +39,7 @@ public sealed class DatabaseInitializationTests
 
         Assert.Equal(
             ["BodyMeasurement", "Exercise", "ManualWorkoutDemoSeed", "ManualWorkoutLog",
-                "SetRecord", "Workout", "WorkoutExercise", "WorkoutSession"],
+                "SetRecord", "StudentLink", "Workout", "WorkoutAssignment", "WorkoutExercise", "WorkoutSession"],
             tables.Select(item => item.Name).ToArray());
         Assert.Contains(indexes, item => item.Name == "IX_Exercise_Name");
         Assert.Contains(indexes, item => item.Name == "IX_WorkoutExercise_WorkoutId");
@@ -121,7 +121,7 @@ public sealed class DatabaseInitializationTests
             Assert.True(workout.IsTemplate);
             Assert.Equal(1, await connection.ExecuteScalarAsync<int>(
                 "SELECT COUNT(*) FROM WorkoutSession WHERE Id = 1 AND WorkoutId = 1"));
-            Assert.Equal(2, await connection.ExecuteScalarAsync<int>("PRAGMA user_version"));
+            Assert.Equal(3, await connection.ExecuteScalarAsync<int>("PRAGMA user_version"));
             Assert.Equal(1, await connection.ExecuteScalarAsync<int>(
                 "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'ManualWorkoutLog'"));
             Assert.Equal(1, await connection.ExecuteScalarAsync<int>(

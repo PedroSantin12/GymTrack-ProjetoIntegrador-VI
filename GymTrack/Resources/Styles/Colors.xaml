@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <Color x:Key="BrandAccent">#FF913A</Color>
-    <Color x:Key="BrandAccentPressed">#FF9D3D</Color>
 
     <Color x:Key="DarkBackground">#0E0E10</Color>
     <Color x:Key="DarkSurface">#1C1C20</Color>

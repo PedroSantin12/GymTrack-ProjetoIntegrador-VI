@@ -10,13 +10,15 @@ public enum AppSection
     Users,
     Exercises,
     AdminWorkouts,
-    Statistics
+    Statistics,
+    Students
 }
 
 public interface IAppNavigator
 {
     Task ShowLoginAsync();
     Task OpenWorkspaceAsync();
+    Task SwitchWorkspaceAsync();
     Task NavigateAsync(AppSection section);
     Task OpenWorkoutEditorAsync(int? workoutId);
     Task StartWorkoutAsync(int workoutId);

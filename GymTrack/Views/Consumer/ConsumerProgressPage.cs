@@ -16,20 +16,114 @@ public sealed class ConsumerProgressPage : WorkspacePage
     private readonly IManualWorkoutLogService _manualLogs;
     private readonly VerticalStackLayout _content = new() { Spacing = 20 };
     private readonly Label _status = ConsumerUi.Status();
+    private readonly WorkoutCalendar _calendar;
+    private readonly Grid _calendarOverlay = new() { IsVisible = false, ZIndex = 1 };
+    private readonly View _workspace;
+    private readonly ImageButton _calendarButton;
     private Task? _loadTask;
     private bool _reloadRequested;
     private bool _busy;
 
     public ConsumerProgressPage(IAppNavigator navigator, AppSession session,
         ISessionDao sessions, IWorkoutCatalogService catalog, IManualWorkoutLogService manualLogs)
-        : base("Sua evolução", "Acompanhe seu progresso.", AppSection.Progress, navigator, session)
+        : base("Evolução", AppSection.Progress, navigator, session)
     {
         _navigator = navigator;
         _session = session;
         _sessions = sessions;
         _catalog = catalog;
         _manualLogs = manualLogs;
-        SetBody(new VerticalStackLayout { Spacing = 10, Children = { _status, _content } });
+        var header = new Grid
+        {
+            ColumnSpacing = 8,
+            ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) }
+        };
+        var title = Ui.Text("Evolução", 25, Ui.Foreground, FontAttributes.Bold);
+        title.VerticalTextAlignment = TextAlignment.Center;
+        SemanticProperties.SetHeadingLevel(title, SemanticHeadingLevel.Level1);
+        _calendarButton = new ImageButton
+        {
+            Source = "calendar_outline.png",
+            WidthRequest = 44,
+            HeightRequest = 44,
+            Padding = 10,
+            AutomationId = "ToggleWorkoutCalendar"
+        };
+        SemanticProperties.SetDescription(_calendarButton, "Abrir calendário de treinos");
+        _calendarButton.Clicked += (_, _) => SetCalendarOpen(true);
+        header.Add(title);
+        header.Add(_calendarButton, 1);
+
+        var body = new Grid
+        {
+            RowSpacing = 12,
+            RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) }
+        };
+        body.Add(header);
+        body.Add(new ScrollView
+        {
+            VerticalScrollBarVisibility = ScrollBarVisibility.Never,
+            Content = new VerticalStackLayout { Spacing = 12, Children = { _status, _content } }
+        }, 0, 1);
+        SetBody(body, scroll: false);
+
+        _workspace = Content!;
+        _calendar = new WorkoutCalendar(() => SetCalendarOpen(false));
+        ConfigureCalendarOverlay();
+        Content = null;
+        Content = new Grid { Children = { _workspace, _calendarOverlay } };
+    }
+
+    private void ConfigureCalendarOverlay()
+    {
+        var backdrop = new BoxView { Color = Color.FromArgb("#80000000") };
+        var dismiss = new TapGestureRecognizer();
+        dismiss.Tapped += (_, _) => SetCalendarOpen(false);
+        backdrop.GestureRecognizers.Add(dismiss);
+        _calendarOverlay.Add(backdrop);
+        _calendarOverlay.Add(new ScrollView
+        {
+            Content = _calendar,
+            Margin = new Thickness(16, 56, 16, 14),
+            MaximumWidthRequest = 380,
+            VerticalOptions = LayoutOptions.Start,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Never
+        });
+
+#if WINDOWS
+        _calendarOverlay.HandlerChanged += (_, _) =>
+        {
+            if (_calendarOverlay.Handler?.PlatformView is not Microsoft.UI.Xaml.UIElement element) return;
+            var escape = new Microsoft.UI.Xaml.Input.KeyboardAccelerator
+            {
+                Key = global::Windows.System.VirtualKey.Escape
+            };
+            escape.Invoked += (_, args) =>
+            {
+                if (!_calendarOverlay.IsVisible) return;
+                SetCalendarOpen(false);
+                args.Handled = true;
+            };
+            element.KeyboardAccelerators.Add(escape);
+        };
+#endif
+    }
+
+    private void SetCalendarOpen(bool open)
+    {
+        _workspace.IsEnabled = !open;
+        _calendarOverlay.IsVisible = open;
+        if (open)
+            _calendar.FocusCloseButton();
+        else
+            _calendarButton.Focus();
+    }
+
+    protected override bool OnBackButtonPressed()
+    {
+        if (!_calendarOverlay.IsVisible) return base.OnBackButtonPressed();
+        SetCalendarOpen(false);
+        return true;
     }
 
     protected override async void OnAppearing()
@@ -71,6 +165,8 @@ public sealed class ConsumerProgressPage : WorkspacePage
                 .OrderByDescending(item => item.StartedAt).ToList();
             var manual = await _manualLogs.GetForUserAsync(user.Id);
             var recordedManual = manual.Where(item => !item.IsExample).ToList();
+            _calendar.SetDates(sessions.Select(item => item.StartedAt.ToLocalTime().Date)
+                .Concat(recordedManual.Select(item => item.PerformedOn.Date)));
             var routines = await _catalog.GetPersonalAsync(user.Id);
 
             _content.Clear();
@@ -107,6 +203,7 @@ public sealed class ConsumerProgressPage : WorkspacePage
         var name = new Entry
         {
             Placeholder = "Nome do treino",
+            BackgroundColor = Ui.Elevated,
             MaxLength = 100,
             ReturnType = ReturnType.Done
         };
@@ -118,6 +215,7 @@ public sealed class ConsumerProgressPage : WorkspacePage
             var routine = new Picker
             {
                 Title = "Usar uma rotina pessoal (opcional)",
+                BackgroundColor = Ui.Elevated,
                 ItemsSource = routineNames
             };
             routine.SelectedIndexChanged += (_, _) =>
@@ -125,25 +223,33 @@ public sealed class ConsumerProgressPage : WorkspacePage
                 if (routine.SelectedItem is string selected) name.Text = selected;
             };
             form.Add(Ui.Text("Minha rotina", 12, Ui.Muted));
-            form.Add(Ui.Card(routine, new Thickness(8, 0)));
+            form.Add(routine);
         }
 
         form.Add(Ui.Text("Nome", 12, Ui.Muted));
-        form.Add(Ui.Card(name, new Thickness(8, 0)));
+        form.Add(name);
 
-        var date = new DatePicker { Date = DateTime.Today, MaximumDate = DateTime.Today };
+        var date = new DatePicker
+        {
+            Date = DateTime.Today,
+            MaximumDate = DateTime.Today,
+            MinimumHeightRequest = 44,
+            BackgroundColor = Ui.Elevated
+        };
         form.Add(Ui.Text("Dia do treino", 12, Ui.Muted));
-        form.Add(Ui.Card(date, new Thickness(8, 0)));
+        form.Add(date);
 
         var notes = new Editor
         {
             Placeholder = "Observações (opcional)",
+            BackgroundColor = Ui.Elevated,
+            MinimumHeightRequest = 56,
             AutoSize = EditorAutoSizeOption.TextChanges,
             MaxLength = 500,
             MaximumHeightRequest = 120
         };
         form.Add(Ui.Text("Observações", 12, Ui.Muted));
-        form.Add(Ui.Card(notes, new Thickness(8)));
+        form.Add(notes);
 
         form.Add(Ui.Button("Salvar treino feito", () => SaveManualAsync(name, date, notes)));
         _content.Add(Ui.Card(form));

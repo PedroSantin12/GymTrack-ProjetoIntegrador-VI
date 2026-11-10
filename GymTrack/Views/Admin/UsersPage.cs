@@ -24,7 +24,7 @@ public sealed class UsersPage : WorkspacePage
     private bool _isEditing;
 
     public UsersPage(IAppNavigator navigator, AppSession session, IAccountService accounts)
-        : base("Usuários", "Pessoas e acessos em um só lugar.", AppSection.Users, navigator, session)
+        : base("Gerenciar contas", AppSection.Users, navigator, session)
     {
         _accounts = accounts;
         _session = session;
@@ -33,7 +33,8 @@ public sealed class UsersPage : WorkspacePage
         SetBody(new VerticalStackLayout
         {
             Spacing = 18,
-            Children = { _search, _summary, _status, _users }
+            Children = { Ui.Text("Gerenciar contas", 24, Ui.Foreground, FontAttributes.Bold),
+                _search, _summary, _status, _users }
         });
     }
 

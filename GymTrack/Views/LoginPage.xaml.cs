@@ -13,11 +13,7 @@ public partial class LoginPage : ContentPage
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
         _services = services;
-        SizeChanged += (_, _) =>
-        {
-            BrandHeader.IsVisible = Height >= 460;
-            FeatureCards.IsVisible = Height >= 700;
-        };
+        SizeChanged += (_, _) => BrandHeader.IsVisible = Height >= 355;
     }
 
     private void OnEmailCompleted(object? sender, EventArgs e) => PasswordInput.Focus();

@@ -63,7 +63,9 @@
         <Setter Property="TextColor" Value="{StaticResource DarkBackground}" />
         <Setter Property="FontFamily" Value="OpenSansSemibold" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="BorderWidth" Value="0" />
         <Setter Property="MinimumHeightRequest" Value="48" />
         <Setter Property="MinimumWidthRequest" Value="44" />
         <Setter Property="Padding" Value="14,9" />
@@ -73,7 +75,7 @@
                     <VisualState x:Name="Normal" />
                     <VisualState x:Name="Pressed">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{StaticResource BrandAccentPressed}" />
+                            <Setter Property="Opacity" Value="0.78" />
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="Disabled">
@@ -93,8 +95,20 @@
                 Value="{AppThemeBinding Light={StaticResource LightSurfaceElevated}, Dark={StaticResource DarkSurfaceElevated}}" />
         <Setter Property="TextColor"
                 Value="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}" />
-        <Setter Property="BorderColor" Value="{StaticResource DarkBorder}" />
-        <Setter Property="BorderWidth" Value="1" />
+    </Style>
+
+    <Style x:Key="QuietButton" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource DarkTextPrimary}" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+
+    <Style TargetType="ImageButton">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="CornerRadius" Value="10" />
     </Style>
 
     <Style TargetType="Border">
@@ -107,7 +121,7 @@
         <Setter Property="Padding" Value="16" />
     </Style>
 
-    <Style TargetType="Entry">
+    <Style x:Key="EntryStyle" TargetType="Entry">
         <Setter Property="TextColor"
                 Value="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}" />
         <Setter Property="PlaceholderColor"
@@ -115,6 +129,13 @@
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="MinimumHeightRequest" Value="50" />
         <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <Style TargetType="Entry" BasedOn="{StaticResource EntryStyle}" />
+
+    <Style x:Key="AuthEntryStyle" TargetType="Entry" BasedOn="{StaticResource EntryStyle}">
+        <Setter Property="BackgroundColor" Value="#EB1C1C20" />
+        <Setter Property="MinimumHeightRequest" Value="52" />
     </Style>
 
     <Style TargetType="Editor">

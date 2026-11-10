@@ -43,7 +43,7 @@ public partial class ExercisesViewModel : BaseViewModel
     public ObservableCollection<ExerciseListItemViewModel> Exercises { get; } = [];
 
     public IReadOnlyList<string> MuscleGroups { get; } =
-        ["Todos", .. MuscleGroupCatalog.AllForEditing];
+        ["Todos", "Peito", .. MuscleGroupCatalog.Legacy, .. MuscleGroupCatalog.All.Where(group => group != "Peito")];
 
     [ObservableProperty]
     private string searchText = string.Empty;
@@ -85,10 +85,14 @@ public partial class ExercisesViewModel : BaseViewModel
             var muscleGroup = SelectedMuscleGroup == "Todos"
                 ? null
                 : SelectedMuscleGroup;
+            var relatedGroups = MuscleGroupCatalog.GetRelatedFilterGroups(muscleGroup);
             var exercises = await _exerciseDao.SearchAsync(
                 SearchText,
-                muscleGroup,
+                relatedGroups is null ? muscleGroup : null,
                 ShowInactive);
+            if (relatedGroups is not null)
+                exercises = exercises.Where(exercise =>
+                    relatedGroups.Contains(exercise.MuscleGroup, StringComparer.CurrentCultureIgnoreCase)).ToArray();
 
             if (request != Volatile.Read(ref _latestLoadRequest))
             {

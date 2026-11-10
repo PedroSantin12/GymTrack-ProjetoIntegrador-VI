@@ -7,18 +7,22 @@
     x:DataType="viewModels:ExercisesViewModel"
     Title="{Binding Title}">
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Novo"
-                     Command="{Binding AddExerciseCommand}" />
-    </ContentPage.ToolbarItems>
+    <Grid x:Name="ExerciseContent"
+          Padding="18,14,18,12"
+          RowDefinitions="Auto,Auto,Auto,Auto,*,Auto"
+          RowSpacing="8">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Label x:Name="ExerciseTitle" Text="Exercícios" FontSize="24"
+                   FontFamily="OpenSansSemibold" VerticalTextAlignment="Center"
+                   IsVisible="False" />
+            <Button Grid.Column="1" Text="Novo exercício"
+                    Command="{Binding AddExerciseCommand}" />
+        </Grid>
 
-    <Grid Padding="{StaticResource PagePadding}"
-          RowDefinitions="Auto,Auto,Auto,*,Auto"
-          RowSpacing="{StaticResource Spacing12}">
-        <SearchBar Placeholder="Buscar por nome"
+        <SearchBar Grid.Row="1" Placeholder="Buscar por nome"
                    Text="{Binding SearchText, Mode=TwoWay}" />
 
-        <Grid Grid.Row="1"
+        <Grid Grid.Row="2"
               ColumnDefinitions="*,Auto"
               ColumnSpacing="{StaticResource Spacing8}">
             <Picker Title="Grupo muscular"
@@ -30,7 +34,7 @@
                     Command="{Binding ClearFiltersCommand}" />
         </Grid>
 
-        <Grid Grid.Row="2"
+        <Grid Grid.Row="3"
               ColumnDefinitions="Auto,*"
               ColumnSpacing="{StaticResource Spacing8}">
             <CheckBox IsChecked="{Binding ShowInactive, Mode=TwoWay}" />
@@ -39,7 +43,7 @@
                    VerticalTextAlignment="Center" />
         </Grid>
 
-        <RefreshView Grid.Row="3"
+        <RefreshView Grid.Row="4"
                      Command="{Binding LoadCommand}"
                      IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}">
             <CollectionView ItemsSource="{Binding Exercises}"
@@ -90,7 +94,7 @@
 
                                     <Label Text="{Binding Name}"
                                            Style="{StaticResource SectionTitle}" />
-                                    <HorizontalStackLayout Spacing="8">
+                                    <VerticalStackLayout Spacing="2">
                                         <Label Text="{Binding MuscleGroup}"
                                                Style="{StaticResource SecondaryText}" />
                                         <Label Text="{Binding StateText}"
@@ -104,7 +108,7 @@
                                                 </DataTrigger>
                                             </Label.Triggers>
                                         </Label>
-                                    </HorizontalStackLayout>
+                                    </VerticalStackLayout>
                                 </VerticalStackLayout>
 
                                 <Button Grid.Column="2"
@@ -118,7 +122,7 @@
             </CollectionView>
         </RefreshView>
 
-        <Label Grid.Row="4"
+        <Label Grid.Row="5"
                Text="{Binding StatusMessage}"
                TextColor="{StaticResource Danger}"
                HorizontalTextAlignment="Center" />

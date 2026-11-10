@@ -33,7 +33,7 @@ public sealed class ProfilePage : WorkspacePage
 
     public ProfilePage(IAppNavigator navigator, AppSession session,
         IAccountService accounts, IBodyMeasurementService measurements, IServiceProvider services)
-        : base("Meu perfil", "Sua conta e preferências.", AppSection.Profile, navigator, session)
+        : base("Meu perfil", AppSection.Profile, navigator, session)
     {
         _navigator = navigator;
         _session = session;
@@ -60,7 +60,7 @@ public sealed class ProfilePage : WorkspacePage
         _measurementMessage = string.Empty;
         _status.Text = string.Empty;
         Render();
-        if (_session.IsEmployee) return;
+        if (!_session.IsPersonalMode) return;
         try { await LoadMeasurementsAsync(user.Id); }
         catch { SetMeasurementStatus("Não foi possível carregar suas medidas. Tente salvar novamente."); }
     }
@@ -69,7 +69,7 @@ public sealed class ProfilePage : WorkspacePage
     {
         _content.Clear();
         if (_session.CurrentUser is not { } user) return;
-        var role = _session.IsEmployee ? "Funcionário" : "Consumidor";
+        var role = _session.IsEmployee ? "Funcionário" : "Aluno";
 
         var identity = new Grid
         {
@@ -104,11 +104,22 @@ public sealed class ProfilePage : WorkspacePage
         account.Add(DetailRow("Tipo de conta", role));
         _content.Add(account);
 
-        if (!_session.IsEmployee)
+        if (_session.IsPersonalMode)
             _content.Add(BodyMeasurements());
 
         _content.Add(Ui.Text("Configurações", 17, Ui.Foreground, FontAttributes.Bold));
         var settings = new VerticalStackLayout { Spacing = 0 };
+        if (_session.IsEmployee)
+            settings.Add(ActionRow(_session.IsManagementMode ? "Abrir área pessoal" : "Voltar à gestão",
+                _navigator.SwitchWorkspaceAsync));
+        if (_session.IsManagementMode)
+        {
+            settings.Add(ActionRow("Gerenciar contas", () => _navigator.NavigateAsync(AppSection.Users)));
+            settings.Add(ActionRow("Estatísticas", () => _navigator.NavigateAsync(AppSection.Statistics)));
+        }
+        if (user.Role == UserRole.Consumer)
+            settings.Add(ActionRow("Vínculos com funcionários", () =>
+                Navigation.PushAsync(_services.GetRequiredService<StudentConnectionsPage>())));
         settings.Add(ActionRow("Editar perfil", EditProfileAsync));
         settings.Add(ActionRow("Sobre o GymTrack", async () =>
             await Navigation.PushAsync(_services.GetRequiredService<AboutPage>())));
@@ -119,7 +130,7 @@ public sealed class ProfilePage : WorkspacePage
     private async Task LoadMeasurementsAsync(int userId)
     {
         var history = await _measurements.GetForUserAsync(userId);
-        if (_session.IsEmployee || _session.CurrentUser?.Id != userId) return;
+        if (!_session.IsPersonalMode || _session.CurrentUser?.Id != userId) return;
         _history = history.OrderByDescending(item => item.MeasuredOn).ThenByDescending(item => item.Id).ToArray();
         Render();
     }
@@ -316,7 +327,7 @@ public sealed class ProfilePage : WorkspacePage
 
     private async Task EditMeasurementAsync(BodyMeasurement item)
     {
-        if (_session.IsEmployee || _measurementDate is null || _formAnchor is null) return;
+        if (!_session.IsPersonalMode || _measurementDate is null || _formAnchor is null) return;
         _measurementDate.Date = item.MeasuredOn.Date;
         FillForm(item);
         SetMeasurementStatus($"Editando as medidas de {DateText(item.MeasuredOn)}. Toque em salvar para atualizar.");
@@ -325,7 +336,7 @@ public sealed class ProfilePage : WorkspacePage
 
     private async Task SaveMeasurementAsync()
     {
-        if (_busy || _session.IsEmployee || _session.CurrentUser is not { } user) return;
+        if (_busy || !_session.IsPersonalMode || _session.CurrentUser is not { } user) return;
         try
         {
             var weight = ReadMeasure(_weightEntry, "peso", true)!.Value;
@@ -348,7 +359,7 @@ public sealed class ProfilePage : WorkspacePage
 
     private async Task DeleteMeasurementAsync(BodyMeasurement item)
     {
-        if (_busy || _session.IsEmployee || _session.CurrentUser is not { } user) return;
+        if (_busy || !_session.IsPersonalMode || _session.CurrentUser is not { } user) return;
         if (!await DisplayAlertAsync("Excluir medidas?",
                 $"O registro de {DateText(item.MeasuredOn)} será excluído do seu histórico.",
                 "Excluir", "Cancelar")) return;
@@ -442,16 +453,17 @@ public sealed class ProfilePage : WorkspacePage
         row.Add(Ui.Text("›", 20, Ui.Muted), 1);
         var button = new Button
         {
-            Text = string.Empty, BackgroundColor = Colors.Transparent,
-            BorderWidth = 0, Padding = 0, CornerRadius = 0,
+            Text = string.Empty,
             AutomationId = label.Replace(" ", string.Empty)
         };
+        button.SetDynamicResource(VisualElement.StyleProperty, "QuietButton");
         SemanticProperties.SetDescription(button, label);
         button.Clicked += async (_, _) =>
         {
             if (!button.IsEnabled) return;
             button.IsEnabled = false;
             try { await action(); }
+            catch { await Ui.ShowErrorAsync("Não foi possível concluir", "Tente novamente em instantes."); }
             finally { button.IsEnabled = true; }
         };
         Grid.SetColumnSpan(button, 2);
@@ -488,7 +500,7 @@ public sealed class ProfilePage : WorkspacePage
                 IsActive = user.IsActive, CreatedAt = user.CreatedAt
             };
             await _accounts.UpdateUserAsync(updated);
-            _session.SignIn(updated);
+            _session.Refresh(updated);
             _status.Text = "Perfil atualizado.";
             var draft = CaptureDraft();
             Render();

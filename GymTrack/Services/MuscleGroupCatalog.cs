@@ -25,4 +25,13 @@ public static class MuscleGroupCatalog
 
     public static IReadOnlyList<string> AllForEditing { get; } =
         [.. All, .. Legacy];
+
+    public static IReadOnlyList<string>? GetRelatedFilterGroups(string? group) => group switch
+    {
+        "Costas" => ["Costas", "Costas superiores", "Dorsais", "Lombar", "Trapézio"],
+        "Pernas" => ["Pernas", .. LowerBody],
+        "Braços" => ["Braços", "Antebraços", "Bíceps", "Tríceps"],
+        "Core" => ["Core", "Abdominais", "Lombar"],
+        _ => null
+    };
 }

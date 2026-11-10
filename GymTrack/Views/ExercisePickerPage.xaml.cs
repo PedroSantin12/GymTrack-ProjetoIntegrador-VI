@@ -28,7 +28,7 @@ public partial class ExercisePickerPage : ContentPage
         _viewModel = viewModel;
         _services = services;
         _logger = logger;
-        ManageExercisesButton.IsVisible = session.IsEmployee;
+        ManageExercisesButton.IsVisible = session.IsManagementMode;
         BuildGroupSections();
 
         viewModel.ExerciseSelected += OnExerciseSelected;

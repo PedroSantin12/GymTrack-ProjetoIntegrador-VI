@@ -25,7 +25,7 @@ public sealed class StatisticsPage : WorkspacePage
 
     public StatisticsPage(IAppNavigator navigator, AppSession session,
         IAccountService accounts, IWorkoutCatalogService catalog, IWorkoutDao workouts)
-        : base("Estatísticas", "Os números atuais da sua academia.", AppSection.Statistics, navigator, session)
+        : base("Estatísticas", AppSection.Statistics, navigator, session)
     {
         _accounts = accounts;
         _catalog = catalog;

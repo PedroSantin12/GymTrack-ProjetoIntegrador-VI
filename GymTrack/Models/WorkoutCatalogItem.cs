@@ -9,4 +9,6 @@ public sealed class WorkoutCatalogItem
     public string? Description { get; set; }
 
     public int ExerciseCount { get; set; }
+
+    public bool IsAssigned { get; set; }
 }

@@ -36,19 +36,9 @@ public static class Ui
 
     public static Button Button(string text, Func<Task> action, bool secondary = false)
     {
-        var button = new Button
-        {
-            Text = text,
-            BackgroundColor = secondary ? Surface : Accent,
-            TextColor = secondary ? Foreground : Background,
-            BorderColor = secondary ? Border : Colors.Transparent,
-            BorderWidth = secondary ? 1 : 0,
-            CornerRadius = 12,
-            Padding = new Thickness(14, 9),
-            MinimumHeightRequest = 48,
-            FontFamily = "OpenSansSemibold",
-            FontSize = 14
-        };
+        var button = new Button { Text = text };
+        if (secondary)
+            button.SetDynamicResource(VisualElement.StyleProperty, "SecondaryButton");
         button.Clicked += async (_, _) =>
         {
             if (!button.IsEnabled) return;

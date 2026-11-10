@@ -20,7 +20,7 @@ public sealed class TemplateLibraryPage : WorkspacePage
     public TemplateLibraryPage(IAppNavigator navigator, AppSession session,
         IWorkoutCatalogService catalog, IStarterCatalogService starterCatalog,
         IServiceProvider services)
-        : base("Treinos prontos", "Escolha uma rotina e faça dela a sua.", AppSection.Templates, navigator, session)
+        : base("Treinos prontos", AppSection.Templates, navigator, session)
     {
         _navigator = navigator;
         _catalog = catalog;
