@@ -107,6 +107,7 @@ public sealed class SessionDao(GymTrackDatabase database, AppSession? appSession
                    ws.StartedAt,
                    ws.FinishedAt,
                    COUNT(sr.Id) AS SetCount,
+                   COALESCE(SUM(sr.Reps), 0) AS TotalRepetitions,
                    COALESCE(SUM(sr.Reps * sr.LoadKg), 0) AS TotalVolume
             FROM WorkoutSession ws
             INNER JOIN Workout w ON w.Id = ws.WorkoutId

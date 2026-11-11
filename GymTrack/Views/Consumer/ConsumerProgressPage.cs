@@ -19,10 +19,12 @@ public sealed class ConsumerProgressPage : WorkspacePage
     private readonly WorkoutCalendar _calendar;
     private readonly Grid _calendarOverlay = new() { IsVisible = false, ZIndex = 1 };
     private readonly View _workspace;
+    private readonly Grid _header;
     private readonly ImageButton _calendarButton;
     private Task? _loadTask;
     private bool _reloadRequested;
     private bool _busy;
+    private bool _statisticsFirst;
 
     public ConsumerProgressPage(IAppNavigator navigator, AppSession session,
         ISessionDao sessions, IWorkoutCatalogService catalog, IManualWorkoutLogService manualLogs)
@@ -33,7 +35,7 @@ public sealed class ConsumerProgressPage : WorkspacePage
         _sessions = sessions;
         _catalog = catalog;
         _manualLogs = manualLogs;
-        var header = new Grid
+        _header = new Grid
         {
             ColumnSpacing = 8,
             ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) }
@@ -51,18 +53,19 @@ public sealed class ConsumerProgressPage : WorkspacePage
         };
         SemanticProperties.SetDescription(_calendarButton, "Abrir calendário de treinos");
         _calendarButton.Clicked += (_, _) => SetCalendarOpen(true);
-        header.Add(title);
-        header.Add(_calendarButton, 1);
+        _header.Add(title);
+        _header.Add(_calendarButton, 1);
 
         var body = new Grid
         {
             RowSpacing = 12,
             RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) }
         };
-        body.Add(header);
+        body.Add(_header);
         body.Add(new ScrollView
         {
             VerticalScrollBarVisibility = ScrollBarVisibility.Never,
+            Padding = new Thickness(0, 0, 0, NavigationContentInset),
             Content = new VerticalStackLayout { Spacing = 12, Children = { _status, _content } }
         }, 0, 1);
         SetBody(body, scroll: false);
@@ -72,6 +75,14 @@ public sealed class ConsumerProgressPage : WorkspacePage
         ConfigureCalendarOverlay();
         Content = null;
         Content = new Grid { Children = { _workspace, _calendarOverlay } };
+    }
+
+    internal void ShowStatisticsFirst()
+    {
+        _statisticsFirst = true;
+        Title = "Estatísticas";
+        _header.IsVisible = false;
+        NavigationPage.SetHasNavigationBar(this, true);
     }
 
     private void ConfigureCalendarOverlay()
@@ -170,28 +181,43 @@ public sealed class ConsumerProgressPage : WorkspacePage
             var routines = await _catalog.GetPersonalAsync(user.Id);
 
             _content.Clear();
+            var hasActivity = sessions.Count + recordedManual.Count > 0;
+            if (_statisticsFirst)
+            {
+                if (hasActivity)
+                    await AddProgressAsync(sessions, recordedManual);
+                else
+                    AddEmptyProgress();
+            }
+
             AddManualForm(routines);
             if (manual.Any(item => item.IsExample))
                 _content.Add(Ui.Text("Os registros marcados como Exemplo aparecem no histórico, mas não entram nas estatísticas.",
                     12, Ui.Muted));
 
-            if (sessions.Count + recordedManual.Count == 0)
+            if (!hasActivity)
             {
-                _content.Add(ConsumerUi.Empty("Ainda não há treinos realizados.",
-                    "Registre um treino feito ou conclua uma sessão pelo aplicativo para acompanhar sua evolução."));
-                _content.Add(Ui.Button("Escolher treino",
-                    () => _navigator.NavigateAsync(AppSection.PersonalWorkouts)));
+                if (!_statisticsFirst)
+                    AddEmptyProgress();
                 if (manual.Count > 0) AddTimeline(sessions, manual);
                 return;
             }
 
-            await AddProgressAsync(sessions, recordedManual);
+            if (!_statisticsFirst)
+                await AddProgressAsync(sessions, recordedManual);
             AddTimeline(sessions, manual);
         }
         catch
         {
             _status.Text = "Não foi possível carregar sua evolução. Volte a esta página para tentar novamente.";
         }
+    }
+
+    private void AddEmptyProgress()
+    {
+        _content.Add(ConsumerUi.Empty("Ainda não há treinos realizados.",
+            "Registre um treino feito ou conclua uma sessão pelo aplicativo para acompanhar sua evolução."));
+        _content.Add(Ui.Button("Escolher treino", () => _navigator.NavigateAsync(AppSection.PersonalWorkouts)));
     }
 
     private void AddManualForm(IReadOnlyList<WorkoutCatalogItem> routines)

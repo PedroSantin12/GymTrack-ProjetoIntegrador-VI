@@ -25,6 +25,7 @@ public partial class ExercisePickerViewModel : BaseViewModel
     private CancellationTokenSource? _searchDebounce;
     private int _latestLoadRequest;
     private int _selectionSent;
+    private bool _allowSelection = true;
 
     public ExercisePickerViewModel(
         IExerciseDao exerciseDao,
@@ -80,11 +81,12 @@ public partial class ExercisePickerViewModel : BaseViewModel
     partial void OnIsGroupSelectionVisibleChanged(bool value) =>
         OnPropertyChanged(nameof(IsExerciseListVisible));
 
-    public async Task InitializeAsync(IReadOnlyCollection<int> excludedIds)
+    public async Task InitializeAsync(IReadOnlyCollection<int> excludedIds, bool allowSelection = true)
     {
         ArgumentNullException.ThrowIfNull(excludedIds);
 
         CancelPendingDebounce();
+        _allowSelection = allowSelection;
         Volatile.Write(ref _selectionSent, 0);
         _excludedExerciseIds.Clear();
 
@@ -150,7 +152,8 @@ public partial class ExercisePickerViewModel : BaseViewModel
                     Exercises.Add(new ExercisePickerItemViewModel(
                         exercise,
                         SelectExercise,
-                        PreviewExercise));
+                        PreviewExercise,
+                        _allowSelection));
                 }
             }
         }
@@ -193,7 +196,7 @@ public partial class ExercisePickerViewModel : BaseViewModel
 
     private void SelectExercise(Exercise exercise)
     {
-        if (IsBusy ||
+        if (!_allowSelection || IsBusy ||
             _excludedExerciseIds.Contains(exercise.Id) ||
             Interlocked.Exchange(ref _selectionSent, 1) == 1)
         {
