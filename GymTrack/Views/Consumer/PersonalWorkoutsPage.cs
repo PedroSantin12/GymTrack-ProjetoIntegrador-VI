@@ -1,4 +1,3 @@
-using System.Globalization;
 using GymTrack.Data.Dao;
 using GymTrack.Models;
 using GymTrack.Services;
@@ -62,9 +61,6 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
             _status.Text = string.Empty;
             var workouts = await _catalog.GetPersonalAsync(user.Id);
             var ownIds = workouts.Select(item => item.Id).ToHashSet();
-            var completed = (await _sessions.GetSummariesAsync())
-                .Where(item => item.FinishedAt is not null)
-                .OrderByDescending(item => item.StartedAt).ToList();
             var active = await _sessions.GetActiveAsync();
             if (active is not null && !ownIds.Contains(active.WorkoutId)) active = null;
 
@@ -82,7 +78,6 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
             _content.Clear();
             _activeStartedAt = active?.StartedAt;
             _elapsedLabel = null;
-            AddSummary(completed);
             if (active is not null)
                 AddActiveSession(active, workouts.First(item => item.Id == active.WorkoutId));
             AddWorkoutList(workouts, previews, active);
@@ -92,39 +87,6 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
             _status.Text = "Não foi possível carregar seus treinos. Volte a esta página para tentar novamente.";
         }
         finally { _loading = false; }
-    }
-
-    private void AddSummary(IReadOnlyList<SessionSummary> completed)
-    {
-        var monday = DateTime.Today.AddDays(-(((int)DateTime.Today.DayOfWeek + 6) % 7));
-        var weekly = completed.Count(item => ToLocal(item.StartedAt).Date >= monday);
-        var minutes = (int)Math.Round(completed.Sum(item =>
-            Math.Max(0, (item.FinishedAt!.Value - item.StartedAt).TotalMinutes)));
-        var time = minutes >= 60 ? $"{minutes / 60}h {minutes % 60:00}min" : $"{minutes} min";
-        var last = completed.FirstOrDefault()?.StartedAt;
-        var lastText = last is DateTime date
-            ? ToLocal(date).ToString("dd MMM", CultureInfo.GetCultureInfo("pt-BR")) : "—";
-        var grid = new Grid
-        {
-            ColumnSpacing = 8,
-            ColumnDefinitions =
-            {
-                new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Star),
-                new ColumnDefinition(GridLength.Star)
-            }
-        };
-        grid.Add(SummaryMetric(weekly.ToString(CultureInfo.CurrentCulture), "Na semana"), 0);
-        grid.Add(SummaryMetric(time, "Tempo total"), 1);
-        grid.Add(SummaryMetric(lastText, "Último treino"), 2);
-        _content.Add(Ui.Card(grid, new Thickness(12, 14)));
-    }
-
-    private static View SummaryMetric(string value, string caption)
-    {
-        var column = new VerticalStackLayout { Spacing = 4 };
-        column.Add(Ui.Text(value, 17, Ui.Foreground, FontAttributes.Bold));
-        column.Add(Ui.Text(caption, 11, Ui.Muted));
-        return column;
     }
 
     private void AddActiveSession(WorkoutSession active, WorkoutCatalogItem workout)
@@ -309,8 +271,4 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
         catch { _status.Text = "Não foi possível concluir esta ação. Tente novamente."; }
         finally { _busy = false; }
     }
-
-    private static DateTime ToLocal(DateTime value) =>
-        (value.Kind == DateTimeKind.Unspecified
-            ? DateTime.SpecifyKind(value, DateTimeKind.Utc) : value).ToLocalTime();
 }

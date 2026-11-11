@@ -274,15 +274,20 @@ public sealed class ConsumerProgressPage : WorkspacePage
     {
         var toggle = new Button
         {
-            Text = "Registrar treino feito",
             AutomationId = "ToggleManualWorkoutForm",
             BackgroundColor = Ui.Elevated,
-            TextColor = Ui.Foreground,
             CornerRadius = 14,
-            Padding = new Thickness(48, 0, 14, 0)
+            Padding = 0
         };
         toggle.SetDynamicResource(VisualElement.StyleProperty, "SecondaryButton");
+        const string caption = "Registrar treino feito";
+        SemanticProperties.SetDescription(toggle, caption);
         SemanticProperties.SetHint(toggle, "Abre o formulário de treino");
+
+        var title = Ui.Text(caption, 14, Ui.Foreground, FontAttributes.Bold);
+        title.HorizontalTextAlignment = TextAlignment.Start;
+        title.VerticalTextAlignment = TextAlignment.Center;
+        AutomationProperties.SetIsInAccessibleTree(title, false);
 
         var glyph = Ui.Text("+", 21, Ui.Background, FontAttributes.Bold);
         glyph.HorizontalTextAlignment = TextAlignment.Center;
@@ -293,8 +298,6 @@ public sealed class ConsumerProgressPage : WorkspacePage
             WidthRequest = 30,
             HeightRequest = 30,
             Padding = 0,
-            Margin = new Thickness(8, 0, 0, 0),
-            HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             BackgroundColor = Ui.Accent,
             StrokeThickness = 0,
@@ -302,6 +305,16 @@ public sealed class ConsumerProgressPage : WorkspacePage
             InputTransparent = true,
             Content = glyph
         };
+
+        var face = new Grid
+        {
+            Padding = new Thickness(14, 8, 8, 8),
+            ColumnSpacing = 10,
+            ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) },
+            InputTransparent = true
+        };
+        face.Add(title, 0);
+        face.Add(badge, 1);
 
         toggle.Clicked += (_, _) =>
         {
@@ -314,8 +327,8 @@ public sealed class ConsumerProgressPage : WorkspacePage
 
         return new Grid
         {
-            HorizontalOptions = LayoutOptions.Start,
-            Children = { toggle, badge }
+            HorizontalOptions = LayoutOptions.Fill,
+            Children = { toggle, face }
         };
     }
 
