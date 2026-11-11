@@ -9,6 +9,7 @@ internal sealed class WorkoutCalendar : ContentView
 {
     private static readonly CultureInfo Portuguese = CultureInfo.GetCultureInfo("pt-BR");
     private static readonly string[] Weekdays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+    private static readonly DateOnly LastMonth = StartOfMonth(DateOnly.MaxValue);
     private readonly Label _monthTitle = Ui.Text(string.Empty, 16, Ui.Foreground, FontAttributes.Bold);
     private readonly Label _empty = Ui.Text("Seus treinos registrados aparecerão aqui.", 12, Ui.Muted);
     private readonly Label _dayDetails = Ui.Text(string.Empty, 12);
@@ -89,15 +90,12 @@ internal sealed class WorkoutCalendar : ContentView
                 .Select(workout => (Date: DateOnly.FromDateTime(workout.PerformedOn), workout.WorkoutName)))
             .GroupBy(workout => workout.Date)
             .ToDictionary(day => day.Key, day => day.Select(workout => workout.WorkoutName).ToArray());
-        var currentMonth = StartOfMonth(DateOnly.FromDateTime(DateTime.Today));
-        var firstMonth = FirstMonth(currentMonth);
-        if (_month < firstMonth) _month = firstMonth;
-        if (_month > currentMonth) _month = currentMonth;
         RenderMonth();
     }
 
     private void ChangeMonth(int direction)
     {
+        if (direction < 0 ? _month == DateOnly.MinValue : _month == LastMonth) return;
         _month = _month.AddMonths(direction);
         RenderMonth();
     }
@@ -105,10 +103,9 @@ internal sealed class WorkoutCalendar : ContentView
     private void RenderMonth()
     {
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var currentMonth = StartOfMonth(today);
         _monthTitle.Text = Portuguese.TextInfo.ToTitleCase(_month.ToString("MMMM yyyy", Portuguese));
-        _previous.IsEnabled = _month > FirstMonth(currentMonth);
-        _next.IsEnabled = _month < currentMonth;
+        _previous.IsEnabled = _month > DateOnly.MinValue;
+        _next.IsEnabled = _month < LastMonth;
         _empty.IsVisible = _workoutsByDate.Count == 0;
         _dayDetails.IsVisible = false;
 
@@ -185,9 +182,6 @@ internal sealed class WorkoutCalendar : ContentView
         button.Clicked += (_, _) => action();
         return button;
     }
-
-    private DateOnly FirstMonth(DateOnly currentMonth) =>
-        _workoutsByDate.Count == 0 ? currentMonth : StartOfMonth(_workoutsByDate.Keys.Min());
 
     private static DateOnly StartOfMonth(DateOnly date) => new(date.Year, date.Month, 1);
 
