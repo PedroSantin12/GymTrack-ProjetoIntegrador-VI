@@ -5,6 +5,11 @@ namespace GymTrack.Views.Components;
 
 public class WorkspacePage : ContentPage
 {
+    private const int NavigationTileHeight = 56;
+    private const int NavigationHeight = 68;
+    private const int NavigationBottomMargin = 12;
+    internal const int NavigationContentInset = NavigationHeight + NavigationBottomMargin + 12;
+
     private readonly Grid _layout;
     private View? _body;
 
@@ -23,15 +28,11 @@ public class WorkspacePage : ContentPage
     {
         var layout = new Grid
         {
-            RowDefinitions =
-            {
-                new RowDefinition(GridLength.Star),
-                new RowDefinition(GridLength.Auto)
-            },
             MaximumWidthRequest = session.IsManagementMode ? 760 : 460,
-            HorizontalOptions = LayoutOptions.Fill
+            HorizontalOptions = LayoutOptions.Fill,
+            SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container)
         };
-        layout.Add(CreateNavigation(activeSection, navigator, session), 0, 1);
+        layout.Add(CreateNavigation(activeSection, navigator, session));
         return layout;
     }
 
@@ -42,9 +43,15 @@ public class WorkspacePage : ContentPage
             Content = body,
             VerticalScrollBarVisibility = ScrollBarVisibility.Never
         } : body;
-        container.Margin = new Thickness(18, 14, 18, 12);
+        container.Margin = new Thickness(18, 14, 18, 0);
+        if (container is ScrollView scrollView)
+        {
+            var padding = scrollView.Padding;
+            scrollView.Padding = new Thickness(padding.Left, padding.Top, padding.Right,
+                Math.Max(padding.Bottom, NavigationContentInset));
+        }
         if (_body is not null) _layout.Remove(_body);
-        _layout.Add(container, 0, 0);
+        _layout.Add(container);
         _body = container;
     }
 
@@ -60,41 +67,37 @@ public class WorkspacePage : ContentPage
                 (AppSection.Progress, "Evolução", "progress"),
                 (AppSection.Profile, "Perfil", "profile") };
 
-        var grid = new Grid { ColumnSpacing = 0 };
+        var selectedRoute = section switch
+        {
+            AppSection.Templates => AppSection.PersonalWorkouts,
+            AppSection.Users or AppSection.Statistics => AppSection.Profile,
+            _ => section
+        };
+        var grid = new Grid { ColumnSpacing = 2 };
         for (var index = 0; index < items.Length; index++)
         {
             grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
             var (route, label, icon) = items[index];
-            var selectedRoute = section switch
-            {
-                AppSection.Templates => AppSection.PersonalWorkouts,
-                AppSection.Users or AppSection.Statistics => AppSection.Profile,
-                _ => section
-            };
             var selected = selectedRoute == route;
-            var color = selected ? Ui.Accent : Ui.Muted;
-            var caption = Ui.Text(label, 10, color, selected ? FontAttributes.Bold : FontAttributes.None);
+            var color = selected ? Ui.Accent : Ui.Foreground;
+            var caption = Ui.Text(label, session.IsManagementMode ? 10 : 11, color,
+                selected ? FontAttributes.Bold : FontAttributes.None);
             caption.HorizontalTextAlignment = TextAlignment.Center;
+            caption.LineBreakMode = LineBreakMode.TailTruncation;
+            caption.MaxLines = 1;
             var content = new VerticalStackLayout
             {
                 Spacing = 3,
                 VerticalOptions = LayoutOptions.Center,
-                HorizontalOptions = LayoutOptions.Center,
                 InputTransparent = true,
                 Children = { CreateIcon(icon, color), caption }
             };
-            var tile = new Grid { HeightRequest = 58 };
-            tile.Add(content);
-            if (selected)
-                tile.Add(new BoxView
-                {
-                    Color = Ui.Accent, HeightRequest = 2, WidthRequest = 44,
-                    VerticalOptions = LayoutOptions.End, HorizontalOptions = LayoutOptions.Center
-                });
             var button = new Button
             {
                 Text = string.Empty,
-                MinimumHeightRequest = 58,
+                HeightRequest = NavigationTileHeight,
+                CornerRadius = NavigationTileHeight / 2,
+                BackgroundColor = selected ? Color.FromArgb("#3A3A3F") : Colors.Transparent,
                 AutomationId = $"Navigate{route}"
             };
             button.SetDynamicResource(VisualElement.StyleProperty, "QuietButton");
@@ -107,17 +110,23 @@ public class WorkspacePage : ContentPage
                 catch { await Ui.ShowErrorAsync("Navegação indisponível", "Confira seu acesso e tente novamente."); }
                 finally { button.IsEnabled = true; }
             };
-            tile.Add(button);
-            grid.Add(tile, index);
+            grid.Add(new Grid { Children = { button, content } }, index);
         }
 
+        var sideMargin = session.IsManagementMode ? 12 : 32;
         return new Border
         {
-            Padding = new Thickness(4, 3, 4, 4),
-            BackgroundColor = Ui.Secondary,
-            Stroke = new SolidColorBrush(Ui.Border),
+            ZIndex = 1,
+            HeightRequest = NavigationHeight,
+            MaximumWidthRequest = session.IsManagementMode ? 500 : 356,
+            Margin = new Thickness(sideMargin, 0, sideMargin, NavigationBottomMargin),
+            VerticalOptions = LayoutOptions.End,
+            Padding = new Thickness(5),
+            BackgroundColor = Ui.Secondary.WithAlpha(0.92f),
+            Stroke = new SolidColorBrush(Color.FromArgb("#45454B")),
             StrokeThickness = 1,
-            StrokeShape = new RoundRectangle { CornerRadius = 0 },
+            StrokeShape = new RoundRectangle { CornerRadius = NavigationHeight / 2 },
+            Shadow = new Shadow { Brush = Colors.Black, Offset = new Point(0, 5), Radius = 14, Opacity = 0.5f },
             Content = grid
         };
     }

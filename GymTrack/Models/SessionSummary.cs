@@ -14,5 +14,7 @@ public sealed class SessionSummary
 
     public int SetCount { get; set; }
 
+    public long TotalRepetitions { get; set; }
+
     public double TotalVolume { get; set; }
 }

@@ -33,6 +33,7 @@ public partial class ExercisesPage : ContentPage
         ExerciseTitle.IsVisible = true;
         Content = null;
         var layout = WorkspacePage.CreateLayout(AppSection.Exercises, navigator, session);
+        ExerciseContent.Margin = new Thickness(0, 0, 0, WorkspacePage.NavigationContentInset - ExerciseContent.Padding.Bottom);
         layout.Add(ExerciseContent);
         Content = layout;
         return this;

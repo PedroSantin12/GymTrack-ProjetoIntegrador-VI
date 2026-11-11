@@ -202,6 +202,8 @@ public sealed class SessionDaoTests
         var summary = Assert.Single(filtered);
         Assert.Equal("Empurrar", summary.WorkoutName);
         Assert.Equal(500, summary.TotalVolume);
+        Assert.Equal(10, summary.TotalRepetitions);
+        Assert.Equal(0, all[1].TotalRepetitions);
         var detail = Assert.Single(details);
         Assert.Equal("Supino", detail.ExerciseName);
         Assert.Equal(10, detail.Reps);

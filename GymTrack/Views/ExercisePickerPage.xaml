@@ -114,9 +114,16 @@
                                             Style="{StaticResource SecondaryButton}"
                                             Command="{Binding PreviewCommand}"
                                             FontSize="13"
-                                            Padding="6,8" />
+                                            Padding="6,8">
+                                        <Button.Triggers>
+                                            <DataTrigger TargetType="Button" Binding="{Binding CanSelect}" Value="False">
+                                                <Setter Property="Grid.ColumnSpan" Value="2" />
+                                            </DataTrigger>
+                                        </Button.Triggers>
+                                    </Button>
                                     <Button Grid.Column="1"
                                             Text="Adicionar"
+                                            IsVisible="{Binding CanSelect}"
                                             Command="{Binding SelectCommand}"
                                             FontSize="13"
                                             Padding="6,8" />
