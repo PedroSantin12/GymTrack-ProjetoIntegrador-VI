@@ -3,6 +3,7 @@ using GymTrack.Data.Dao;
 using GymTrack.Models;
 using GymTrack.Services;
 using GymTrack.Views.Components;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace GymTrack.Views.Consumer;
 
@@ -255,24 +256,84 @@ public sealed class ConsumerProgressPage : WorkspacePage
         form.Add(Ui.Text("Observações", 12, Ui.Muted));
         form.Add(notes);
 
-        form.Add(Ui.Button("Salvar treino feito", () => SaveManualAsync(name, date, notes)));
-        _content.Add(Ui.Card(form));
+        var formStatus = ConsumerUi.Status();
+        formStatus.IsVisible = false;
+        form.Add(formStatus);
+        form.Add(Ui.Button("Salvar treino feito", () => SaveManualAsync(name, date, notes, formStatus)));
+
+        var formCard = Ui.Card(form);
+        formCard.IsVisible = false;
+        _content.Add(new VerticalStackLayout
+        {
+            Spacing = 10,
+            Children = { CreateManualFormToggle(formCard), formCard }
+        });
     }
 
-    private async Task SaveManualAsync(Entry name, DatePicker date, Editor notes)
+    private static View CreateManualFormToggle(View formCard)
+    {
+        var toggle = new Button
+        {
+            Text = "Registrar treino feito",
+            AutomationId = "ToggleManualWorkoutForm",
+            BackgroundColor = Ui.Elevated,
+            TextColor = Ui.Foreground,
+            CornerRadius = 14,
+            Padding = new Thickness(48, 0, 14, 0)
+        };
+        toggle.SetDynamicResource(VisualElement.StyleProperty, "SecondaryButton");
+        SemanticProperties.SetHint(toggle, "Abre o formulário de treino");
+
+        var glyph = Ui.Text("+", 21, Ui.Background, FontAttributes.Bold);
+        glyph.HorizontalTextAlignment = TextAlignment.Center;
+        glyph.VerticalTextAlignment = TextAlignment.Center;
+        AutomationProperties.SetIsInAccessibleTree(glyph, false);
+        var badge = new Border
+        {
+            WidthRequest = 30,
+            HeightRequest = 30,
+            Padding = 0,
+            Margin = new Thickness(8, 0, 0, 0),
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            BackgroundColor = Ui.Accent,
+            StrokeThickness = 0,
+            StrokeShape = new RoundRectangle { CornerRadius = 7 },
+            InputTransparent = true,
+            Content = glyph
+        };
+
+        toggle.Clicked += (_, _) =>
+        {
+            formCard.IsVisible = !formCard.IsVisible;
+            glyph.Text = formCard.IsVisible ? "−" : "+";
+            SemanticProperties.SetHint(toggle, formCard.IsVisible
+                ? "Recolhe o formulário de treino"
+                : "Abre o formulário de treino");
+        };
+
+        return new Grid
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            Children = { toggle, badge }
+        };
+    }
+
+    private async Task SaveManualAsync(Entry name, DatePicker date, Editor notes, Label formStatus)
     {
         if (_busy || _session.CurrentUser is not { } user) return;
         if (string.IsNullOrWhiteSpace(name.Text))
         {
-            _status.Text = "Informe o nome do treino para salvar.";
+            ShowFormError("Informe o nome do treino para salvar.");
             return;
         }
         if (date.Date is not { } performedOn)
         {
-            _status.Text = "Selecione o dia do treino.";
+            ShowFormError("Selecione o dia do treino.");
             return;
         }
 
+        formStatus.IsVisible = false;
         _busy = true;
         try
         {
@@ -282,13 +343,19 @@ public sealed class ConsumerProgressPage : WorkspacePage
         }
         catch (ArgumentException exception)
         {
-            _status.Text = exception.Message.Split('\n', StringSplitOptions.TrimEntries)[0];
+            ShowFormError(exception.Message.Split('\n', StringSplitOptions.TrimEntries)[0]);
         }
         catch
         {
-            _status.Text = "Não foi possível registrar o treino. Tente novamente.";
+            ShowFormError("Não foi possível registrar o treino. Tente novamente.");
         }
         finally { _busy = false; }
+
+        void ShowFormError(string message)
+        {
+            formStatus.Text = message;
+            formStatus.IsVisible = true;
+        }
     }
 
     private async Task AddProgressAsync(IReadOnlyList<SessionSummary> sessions,
