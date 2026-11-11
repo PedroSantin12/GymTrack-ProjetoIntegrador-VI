@@ -19,12 +19,10 @@ public sealed class ConsumerProgressPage : WorkspacePage
     private readonly WorkoutCalendar _calendar;
     private readonly Grid _calendarOverlay = new() { IsVisible = false, ZIndex = 1 };
     private readonly View _workspace;
-    private readonly Grid _header;
     private readonly ImageButton _calendarButton;
     private Task? _loadTask;
     private bool _reloadRequested;
     private bool _busy;
-    private bool _statisticsFirst;
 
     public ConsumerProgressPage(IAppNavigator navigator, AppSession session,
         ISessionDao sessions, IWorkoutCatalogService catalog, IManualWorkoutLogService manualLogs)
@@ -35,7 +33,7 @@ public sealed class ConsumerProgressPage : WorkspacePage
         _sessions = sessions;
         _catalog = catalog;
         _manualLogs = manualLogs;
-        _header = new Grid
+        var header = new Grid
         {
             ColumnSpacing = 8,
             ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) }
@@ -53,15 +51,15 @@ public sealed class ConsumerProgressPage : WorkspacePage
         };
         SemanticProperties.SetDescription(_calendarButton, "Abrir calendário de treinos");
         _calendarButton.Clicked += (_, _) => SetCalendarOpen(true);
-        _header.Add(title);
-        _header.Add(_calendarButton, 1);
+        header.Add(title);
+        header.Add(_calendarButton, 1);
 
         var body = new Grid
         {
             RowSpacing = 12,
             RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) }
         };
-        body.Add(_header);
+        body.Add(header);
         body.Add(new ScrollView
         {
             VerticalScrollBarVisibility = ScrollBarVisibility.Never,
@@ -75,14 +73,6 @@ public sealed class ConsumerProgressPage : WorkspacePage
         ConfigureCalendarOverlay();
         Content = null;
         Content = new Grid { Children = { _workspace, _calendarOverlay } };
-    }
-
-    internal void ShowStatisticsFirst()
-    {
-        _statisticsFirst = true;
-        Title = "Estatísticas";
-        _header.IsVisible = false;
-        NavigationPage.SetHasNavigationBar(this, true);
     }
 
     private void ConfigureCalendarOverlay()
@@ -176,35 +166,23 @@ public sealed class ConsumerProgressPage : WorkspacePage
                 .OrderByDescending(item => item.StartedAt).ToList();
             var manual = await _manualLogs.GetForUserAsync(user.Id);
             var recordedManual = manual.Where(item => !item.IsExample).ToList();
-            _calendar.SetDates(sessions.Select(item => item.StartedAt.ToLocalTime().Date)
-                .Concat(recordedManual.Select(item => item.PerformedOn.Date)));
+            _calendar.SetWorkouts(sessions, manual);
             var routines = await _catalog.GetPersonalAsync(user.Id);
 
             _content.Clear();
-            var hasActivity = sessions.Count + recordedManual.Count > 0;
-            if (_statisticsFirst)
-            {
-                if (hasActivity)
-                    await AddProgressAsync(sessions, recordedManual);
-                else
-                    AddEmptyProgress();
-            }
-
             AddManualForm(routines);
             if (manual.Any(item => item.IsExample))
                 _content.Add(Ui.Text("Os registros marcados como Exemplo aparecem no histórico, mas não entram nas estatísticas.",
                     12, Ui.Muted));
 
-            if (!hasActivity)
+            if (sessions.Count + recordedManual.Count == 0)
             {
-                if (!_statisticsFirst)
-                    AddEmptyProgress();
+                AddEmptyProgress();
                 if (manual.Count > 0) AddTimeline(sessions, manual);
                 return;
             }
 
-            if (!_statisticsFirst)
-                await AddProgressAsync(sessions, recordedManual);
+            await AddProgressAsync(sessions, recordedManual);
             AddTimeline(sessions, manual);
         }
         catch

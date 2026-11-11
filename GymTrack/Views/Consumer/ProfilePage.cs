@@ -26,6 +26,7 @@ public sealed class ProfilePage : WorkspacePage
     private readonly Dictionary<TrainingMetric, Button> _metricButtons = [];
     private IReadOnlyList<SessionSummary> _completedSessions = [];
     private IReadOnlyList<ManualWorkoutLog> _manualWorkouts = [];
+    private Task _trainingLoad = Task.CompletedTask;
     private TrainingMetric _selectedMetric;
     private bool _busy;
 
@@ -72,16 +73,20 @@ public sealed class ProfilePage : WorkspacePage
         SetBody(content);
     }
 
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
         if (!_session.IsPersonalMode || _session.CurrentUser is not { } user) return;
+        _trainingLoad = LoadTrainingAsync(user.Id);
+    }
 
+    private async Task LoadTrainingAsync(int userId)
+    {
         try
         {
             var sessions = await _sessions.GetSummariesAsync();
-            var manual = await _manualLogs.GetForUserAsync(user.Id);
-            if (!_session.IsPersonalMode || _session.CurrentUser?.Id != user.Id) return;
+            var manual = await _manualLogs.GetForUserAsync(userId);
+            if (!_session.IsPersonalMode || _session.CurrentUser?.Id != userId) return;
 
             _completedSessions = sessions.Where(item => item.FinishedAt.HasValue).ToArray();
             _manualWorkouts = manual.Where(item => !item.IsExample).ToArray();
@@ -230,21 +235,20 @@ public sealed class ProfilePage : WorkspacePage
         var panel = new Grid
         {
             ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Star) },
-            RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto) },
+            RowDefinitions = { new RowDefinition(GridLength.Auto) },
             RowSpacing = 8,
             ColumnSpacing = 8
         };
 
         if (_session.IsPersonalMode)
         {
-            panel.Add(PanelAction("Estatísticas", "statistics", OpenStatisticsAsync), 0, 0);
-            panel.Add(PanelAction("Exercícios", "workout", OpenExerciseCatalogAsync), 1, 0);
             panel.Add(PanelAction("Medidas", "measurements", () =>
-                Navigation.PushAsync(new BodyMeasurementsPage(_session, _measurements))), 0, 1);
-            panel.Add(PanelAction("Calendário", "calendar", OpenCalendarAsync), 1, 1);
+                Navigation.PushAsync(new BodyMeasurementsPage(_session, _measurements))), 0);
+            panel.Add(PanelAction("Calendário", "calendar", OpenCalendarAsync), 1);
         }
         else
         {
+            panel.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
             panel.Add(PanelAction("Estatísticas", "statistics", () =>
                 _navigator.NavigateAsync(AppSection.Statistics)), 0, 0);
             panel.Add(PanelAction("Exercícios", "workout", () =>
@@ -355,31 +359,18 @@ public sealed class ProfilePage : WorkspacePage
         _ => session.TotalRepetitions
     };
 
-    private Task OpenStatisticsAsync()
+    private async Task OpenCalendarAsync()
     {
-        var page = _services.GetRequiredService<ConsumerProgressPage>();
-        page.ShowStatisticsFirst();
-        return Navigation.PushAsync(page);
-    }
-
-    private async Task OpenExerciseCatalogAsync()
-    {
-        var page = _services.GetRequiredService<ExercisePickerPage>();
-        await page.InitializeCatalogAsync();
-        await Navigation.PushAsync(page);
-    }
-
-    private Task OpenCalendarAsync()
-    {
+        await _trainingLoad;
         var page = new ContentPage { Title = "Calendário", BackgroundColor = Ui.Background };
         var calendar = new WorkoutCalendar(() => _ = page.Navigation.PopAsync());
-        calendar.SetDates(TrainingDates());
+        calendar.SetWorkouts(_completedSessions, _manualWorkouts);
         page.Content = new ScrollView
         {
             Padding = new Thickness(18, 14, 18, 16),
             Content = calendar
         };
-        return Navigation.PushAsync(page);
+        await Navigation.PushAsync(page);
     }
 
     private Task OpenSettingsAsync()

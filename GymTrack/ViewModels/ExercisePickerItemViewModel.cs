@@ -11,15 +11,13 @@ public sealed class ExercisePickerItemViewModel
     public ExercisePickerItemViewModel(
         Exercise exercise,
         Action<Exercise> select,
-        Action<Exercise> preview,
-        bool canSelect = true)
+        Action<Exercise> preview)
     {
         ArgumentNullException.ThrowIfNull(exercise);
         ArgumentNullException.ThrowIfNull(select);
         ArgumentNullException.ThrowIfNull(preview);
 
         _exercise = exercise;
-        CanSelect = canSelect;
         SelectCommand = new RelayCommand(() => select(_exercise));
         PreviewCommand = new RelayCommand(() => preview(_exercise));
     }
@@ -39,8 +37,6 @@ public sealed class ExercisePickerItemViewModel
     public bool HasPreview => PreviewSource is not null;
 
     public bool HasNoPreview => !HasPreview;
-
-    public bool CanSelect { get; }
 
     public IRelayCommand SelectCommand { get; }
 

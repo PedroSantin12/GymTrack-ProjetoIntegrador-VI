@@ -1,4 +1,5 @@
 using System.Globalization;
+using GymTrack.Models;
 using GymTrack.Views.Components;
 using Microsoft.Maui.Controls.Shapes;
 
@@ -10,11 +11,12 @@ internal sealed class WorkoutCalendar : ContentView
     private static readonly string[] Weekdays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
     private readonly Label _monthTitle = Ui.Text(string.Empty, 16, Ui.Foreground, FontAttributes.Bold);
     private readonly Label _empty = Ui.Text("Seus treinos registrados aparecerão aqui.", 12, Ui.Muted);
+    private readonly Label _dayDetails = Ui.Text(string.Empty, 12);
     private readonly ContentView _dayGrid = new();
     private readonly Button _close;
     private readonly Button _previous;
     private readonly Button _next;
-    private HashSet<DateOnly> _trainedDays = [];
+    private Dictionary<DateOnly, string[]> _workoutsByDate = [];
     private DateOnly _month = StartOfMonth(DateOnly.FromDateTime(DateTime.Today));
 
     public WorkoutCalendar(Action dismiss)
@@ -68,7 +70,7 @@ internal sealed class WorkoutCalendar : ContentView
         var card = Ui.Card(new VerticalStackLayout
         {
             Spacing = 6,
-            Children = { heading, monthNavigation, _dayGrid, legend, _empty }
+            Children = { heading, monthNavigation, _dayGrid, legend, _empty, _dayDetails }
         }, new Thickness(12, 8, 12, 12));
         card.StrokeThickness = 0;
         Content = card;
@@ -77,9 +79,16 @@ internal sealed class WorkoutCalendar : ContentView
 
     public void FocusCloseButton() => _close.Focus();
 
-    public void SetDates(IEnumerable<DateTime> workoutDates)
+    public void SetWorkouts(IEnumerable<SessionSummary> sessions, IEnumerable<ManualWorkoutLog> manualWorkouts)
     {
-        _trainedDays = workoutDates.Select(DateOnly.FromDateTime).ToHashSet();
+        _workoutsByDate = sessions
+            .Where(session => session.FinishedAt is not null)
+            .Select(session => (Date: DateOnly.FromDateTime(session.StartedAt.ToLocalTime()), session.WorkoutName))
+            .Concat(manualWorkouts
+                .Where(workout => !workout.IsExample)
+                .Select(workout => (Date: DateOnly.FromDateTime(workout.PerformedOn), workout.WorkoutName)))
+            .GroupBy(workout => workout.Date)
+            .ToDictionary(day => day.Key, day => day.Select(workout => workout.WorkoutName).ToArray());
         var currentMonth = StartOfMonth(DateOnly.FromDateTime(DateTime.Today));
         var firstMonth = FirstMonth(currentMonth);
         if (_month < firstMonth) _month = firstMonth;
@@ -100,7 +109,8 @@ internal sealed class WorkoutCalendar : ContentView
         _monthTitle.Text = Portuguese.TextInfo.ToTitleCase(_month.ToString("MMMM yyyy", Portuguese));
         _previous.IsEnabled = _month > FirstMonth(currentMonth);
         _next.IsEnabled = _month < currentMonth;
-        _empty.IsVisible = _trainedDays.Count == 0;
+        _empty.IsVisible = _workoutsByDate.Count == 0;
+        _dayDetails.IsVisible = false;
 
         var days = new Grid { ColumnSpacing = 3, RowSpacing = 3 };
         days.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
@@ -127,25 +137,44 @@ internal sealed class WorkoutCalendar : ContentView
 
     private View CreateDay(DateOnly date, DateOnly today)
     {
-        var trained = _trainedDays.Contains(date);
-        var color = trained ? Ui.Background : date == today ? Ui.Accent : date > today ? Ui.Muted : Ui.Foreground;
-        var label = Centered(date.Day.ToString(Portuguese), 12, color);
-        if (trained || date == today) label.FontAttributes = FontAttributes.Bold;
-        SemanticProperties.SetDescription(label, date.ToString("dd 'de' MMMM", Portuguese) +
-            (date == today ? ", hoje" : string.Empty) + (trained ? ", treino registrado" : string.Empty));
-        if (!trained) return label;
+        var description = date.ToString("dd 'de' MMMM", Portuguese) +
+            (date == today ? ", hoje" : string.Empty);
+        if (_workoutsByDate.TryGetValue(date, out var workouts))
+            return CreateWorkoutDay(date, description, workouts);
 
-        return new Border
+        var color = date == today ? Ui.Accent : date > today ? Ui.Muted : Ui.Foreground;
+        var label = Centered(date.Day.ToString(Portuguese), 12, color);
+        if (date == today) label.FontAttributes = FontAttributes.Bold;
+        SemanticProperties.SetDescription(label, description);
+        return label;
+    }
+
+    private Button CreateWorkoutDay(DateOnly date, string description, string[] workouts)
+    {
+        var button = new Button
         {
-            Padding = 0,
+            Text = date.Day.ToString(Portuguese),
+            FontSize = 12,
             WidthRequest = 28,
             HeightRequest = 28,
+            MinimumWidthRequest = 28,
+            MinimumHeightRequest = 28,
+            Padding = 0,
             HorizontalOptions = LayoutOptions.Center,
-            StrokeShape = new RoundRectangle { CornerRadius = 14 },
-            StrokeThickness = 0,
+            VerticalOptions = LayoutOptions.Center,
+            CornerRadius = 14,
             BackgroundColor = Ui.Accent,
-            Content = label
+            TextColor = Ui.Background
         };
+        var workoutNames = string.Join(Environment.NewLine, workouts);
+        ToolTipProperties.SetText(button, workoutNames);
+        SemanticProperties.SetDescription(button, $"{description}. {string.Join(", ", workouts)}");
+        button.Clicked += (_, _) =>
+        {
+            _dayDetails.Text = $"{date.ToString("dd/MM", Portuguese)}\n{workoutNames}";
+            _dayDetails.IsVisible = true;
+        };
+        return button;
     }
 
     private static Button IconButton(string glyph, string description, Action action)
@@ -158,7 +187,7 @@ internal sealed class WorkoutCalendar : ContentView
     }
 
     private DateOnly FirstMonth(DateOnly currentMonth) =>
-        _trainedDays.Count == 0 ? currentMonth : StartOfMonth(_trainedDays.Min());
+        _workoutsByDate.Count == 0 ? currentMonth : StartOfMonth(_workoutsByDate.Keys.Min());
 
     private static DateOnly StartOfMonth(DateOnly date) => new(date.Year, date.Month, 1);
 

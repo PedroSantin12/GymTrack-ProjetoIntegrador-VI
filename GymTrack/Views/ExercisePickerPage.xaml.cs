@@ -47,13 +47,6 @@ public partial class ExercisePickerPage : ContentPage
         _isInitialized = true;
     }
 
-    internal async Task InitializeCatalogAsync()
-    {
-        Title = "Exercícios";
-        await _viewModel.InitializeAsync([], allowSelection: false);
-        _isInitialized = true;
-    }
-
     protected override async void OnAppearing()
     {
         base.OnAppearing();
