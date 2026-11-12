@@ -96,3 +96,8 @@ Os testes automatizados e a compilação Android validam a lógica e a geração
 - `Data` e `Models`: banco SQLite, migração dos treinos existentes, DAOs e entidades.
 - `Resources`: cores, estilos e demais recursos visuais.
 - `GymTrack.Tests`: testes de persistência, serviços, permissões e view models.
+
+
+ideias futuras:
+
+um tipo de premiação dentro do aplicativo, que funcione por metas 
