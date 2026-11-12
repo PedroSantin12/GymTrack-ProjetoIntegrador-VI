@@ -13,9 +13,9 @@
         <BoxView InputTransparent="True">
             <BoxView.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#AF0E0E10" Offset="0" />
-                    <GradientStop Color="#450E0E10" Offset="0.24" />
-                    <GradientStop Color="#B90E0E10" Offset="0.48" />
+                    <GradientStop Color="#A80E0E10" Offset="0" />
+                    <GradientStop Color="#3A0E0E10" Offset="0.24" />
+                    <GradientStop Color="#AD0E0E10" Offset="0.48" />
                     <GradientStop Color="#F90E0E10" Offset="0.68" />
                     <GradientStop Color="#0E0E10" Offset="1" />
                 </LinearGradientBrush>
@@ -27,15 +27,16 @@
             <components:BrandLockup x:Name="BrandHeader" />
 
             <ScrollView Grid.Row="1" VerticalOptions="End" VerticalScrollBarVisibility="Never">
-                <VerticalStackLayout Spacing="10">
+                <VerticalStackLayout Spacing="6">
                     <Label Text="Crie sua conta"
-                           FontSize="25"
+                           FontSize="20"
                            FontFamily="OpenSansSemibold"
                            SemanticProperties.HeadingLevel="Level1"
-                           Margin="0,0,0,4" />
+                           Margin="0,0,0,2" />
 
                 <Entry x:Name="NameInput"
                        Style="{StaticResource AuthEntryStyle}"
+                       MinimumHeightRequest="40"
                        Text="{Binding Name}"
                        Placeholder="Nome completo"
                        ReturnType="Next"
@@ -46,6 +47,7 @@
 
                 <Entry x:Name="EmailInput"
                        Style="{StaticResource AuthEntryStyle}"
+                       MinimumHeightRequest="40"
                        Text="{Binding Email}"
                        Placeholder="E-mail"
                        Keyboard="Email"
@@ -57,6 +59,7 @@
 
                 <Entry x:Name="PasswordInput"
                        Style="{StaticResource AuthEntryStyle}"
+                       MinimumHeightRequest="40"
                        Text="{Binding Password}"
                        Placeholder="Senha (mínimo 8 caracteres)"
                        IsPassword="True"
@@ -68,6 +71,7 @@
 
                 <Entry x:Name="ConfirmPasswordInput"
                        Style="{StaticResource AuthEntryStyle}"
+                       MinimumHeightRequest="40"
                        Text="{Binding ConfirmPassword}"
                        Placeholder="Confirmar senha"
                        IsPassword="True"
@@ -78,19 +82,22 @@
                        AutomationId="RegisterConfirmPassword" />
 
                     <Label Text="{Binding ErrorMessage}"
+                           IsVisible="{Binding HasErrorMessage}"
                            TextColor="{StaticResource Danger}"
                            FontSize="12"
                            AutomationId="RegisterError" />
 
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,2,0,0">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Button Text="Cadastrar"
                                 Command="{Binding RegisterCommand}"
-                                Padding="8,10"
+                                MinimumHeightRequest="40"
+                                Padding="8,4"
                                 AutomationId="RegisterSubmit" />
                         <Button Grid.Column="1"
                                 Text="Voltar"
                                 Style="{StaticResource SecondaryButton}"
-                                Padding="8,10"
+                                MinimumHeightRequest="40"
+                                Padding="8,4"
                                 Clicked="OnBackClicked"
                                 AutomationId="RegisterBack" />
                     </Grid>

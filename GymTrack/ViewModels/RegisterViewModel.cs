@@ -12,8 +12,12 @@ public partial class RegisterViewModel(IAccountService accounts, AppSession sess
     [ObservableProperty] private string email = string.Empty;
     [ObservableProperty] private string password = string.Empty;
     [ObservableProperty] private string confirmPassword = string.Empty;
-    [ObservableProperty] private string? errorMessage;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasErrorMessage))]
+    private string? errorMessage;
     [ObservableProperty] private bool isBusy;
+
+    public bool HasErrorMessage => !string.IsNullOrWhiteSpace(ErrorMessage);
 
     [RelayCommand]
     private async Task RegisterAsync()
