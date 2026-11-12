@@ -7,6 +7,7 @@ namespace GymTrack.Views.Consumer;
 
 internal sealed class ProfileSettingsPage : ContentPage
 {
+    private const int NotificationSwitchWidth = 56;
     private readonly Label _status = ConsumerUi.Status();
 
     public ProfileSettingsPage(AppUser user, AppSession session, IAccountService accounts,
@@ -19,8 +20,22 @@ internal sealed class ProfileSettingsPage : ContentPage
         {
             IsToggled = user.NotificationsEnabled,
             OnColor = Ui.Accent,
+            WidthRequest = NotificationSwitchWidth,
+            MinimumWidthRequest = 0,
+            HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center
         };
+#if WINDOWS
+        notifications.HandlerChanged += (_, _) =>
+        {
+            if (notifications.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.ToggleSwitch toggle)
+            {
+                toggle.MinWidth = 0;
+                toggle.OnContent = null;
+                toggle.OffContent = null;
+            }
+        };
+#endif
         SemanticProperties.SetDescription(notifications, "Notificações no app");
         notifications.Toggled += async (_, args) =>
         {
@@ -56,16 +71,11 @@ internal sealed class ProfileSettingsPage : ContentPage
                     ActionRow("Alterar senha", "Segurança da conta", "password",
                         () => OpenChangePasswordAsync(user.Id, accounts))),
                 Section("Preferências",
-                    Row("Notificações", "Avisos no aplicativo", "notifications", notifications),
+                    Row("Notificações", "Avisos no aplicativo", "notifications", notifications,
+                        new GridLength(NotificationSwitchWidth)),
                     Row("Modo escuro", null, "theme", darkMode))
             }
         };
-        if (user.Role == UserRole.Employee)
-        {
-            sections.Add(Section("Administração",
-                ActionRow("Gerenciar contas", null, "personal", () => navigator.NavigateAsync(AppSection.Users)),
-                ActionRow("Estatísticas", null, "statistics", () => navigator.NavigateAsync(AppSection.Statistics))));
-        }
         sections.Add(Group(ActionRow("Sobre o GymTrack", null, "about", () => Navigation.PushAsync(aboutPage()))));
 
         var signOut = Ui.Button("Sair da conta", async () =>
@@ -167,7 +177,7 @@ internal sealed class ProfileSettingsPage : ContentPage
                 if (page.Navigation.NavigationStack.LastOrDefault() == page)
                     await page.Navigation.PopAsync();
             }
-            catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
+            catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or UnauthorizedAccessException)
             {
                 status.Text = exception.Message;
             }
@@ -228,7 +238,8 @@ internal sealed class ProfileSettingsPage : ContentPage
         return new Grid { Children = { button, visual } };
     }
 
-    private static Grid Row(string title, string? description, string icon, View trailing)
+    private static Grid Row(string title, string? description, string icon, View trailing,
+        GridLength? trailingWidth = null)
     {
         var text = new VerticalStackLayout
         {
@@ -242,7 +253,7 @@ internal sealed class ProfileSettingsPage : ContentPage
         {
             ColumnDefinitions =
             {
-                new ColumnDefinition(24), new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto)
+                new ColumnDefinition(24), new ColumnDefinition(GridLength.Star), new ColumnDefinition(trailingWidth ?? GridLength.Auto)
             },
             ColumnSpacing = 10,
             MinimumHeightRequest = description is null ? 52 : 66,
@@ -262,7 +273,6 @@ internal sealed class ProfileSettingsPage : ContentPage
             "password" => "M 5,10 L 19,10 L 19,22 L 5,22 Z M 8,10 L 8,6 A 4,4 0 1 1 16,6 L 16,10 M 12,15 L 12,18",
             "notifications" => "M 4,17 L 6,14 L 6,8 A 6,6 0 1 1 18,8 L 18,14 L 20,17 Z M 9,20 C 10,23 14,23 15,20",
             "theme" => "M 21,14 C 19,21 10,24 5,18 C 0,12 4,4 11,3 C 7,10 14,17 21,14 Z",
-            "statistics" => "M 3,3 L 3,21 L 22,21 M 7,16 L 12,11 L 15,14 L 21,7 M 16,7 L 21,7 L 21,12",
             "about" => "M 22,12 A 10,10 0 1 1 2,12 A 10,10 0 1 1 22,12 M 12,11 L 12,17 M 12,7 L 12,8",
             _ => "M 9,5 L 15,12 L 9,19"
         };

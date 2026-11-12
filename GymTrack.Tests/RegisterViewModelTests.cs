@@ -114,6 +114,9 @@ public sealed class RegisterViewModelTests
         public Task<AppUser> UpdatePersonalDetailsAsync(int accountId, string name, string email, string? phone) =>
             throw new NotSupportedException();
 
+        public Task<AppUser> UpdateStudentDetailsAsync(int employeeId, int studentId, string name, string email, string? phone) =>
+            throw new NotSupportedException();
+
         public Task<AppUser> UpdateProfessionalDetailsAsync(int accountId, string? jobTitle, string? gymName) =>
             throw new NotSupportedException();
 

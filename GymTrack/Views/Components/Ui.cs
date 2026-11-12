@@ -4,6 +4,8 @@ namespace GymTrack.Views.Components;
 
 public static class Ui
 {
+    internal const string PeopleIcon = "M 14,7 A 4,4 0 1 1 6,7 A 4,4 0 1 1 14,7 M 3,21 C 3,12 17,12 17,21 M 18,4 C 23,4 23,11 18,11 M 19,15 C 23,16 23,19 23,21";
+
     public static readonly Color Accent = Color.FromArgb("#FF913A");
     public static readonly Color Background = Color.FromArgb("#0E0E10");
     public static readonly Color Secondary = Color.FromArgb("#17171A");
@@ -33,6 +35,59 @@ public static class Ui
         StrokeThickness = 1,
         StrokeShape = new RoundRectangle { CornerRadius = 14 }
     };
+
+    internal static View LineIcon(string data, Color color, int size) => new Microsoft.Maui.Controls.Shapes.Path
+    {
+        Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(data)!,
+        Stroke = new SolidColorBrush(color),
+        StrokeThickness = 1.7,
+        StrokeLineCap = PenLineCap.Round,
+        StrokeLineJoin = PenLineJoin.Round,
+        WidthRequest = size,
+        HeightRequest = size,
+        HorizontalOptions = LayoutOptions.Center,
+        VerticalOptions = LayoutOptions.Center,
+        Aspect = Stretch.Uniform,
+        InputTransparent = true
+    };
+
+    internal static Border LinkCard(string title, string description, string icon, Func<Task> action)
+    {
+        var iconBackground = Card(LineIcon(icon, Accent, 22), new Thickness(7));
+        iconBackground.BackgroundColor = Accent.WithAlpha(0.1f);
+        iconBackground.StrokeThickness = 0;
+        iconBackground.StrokeShape = new RoundRectangle { CornerRadius = 10 };
+        iconBackground.VerticalOptions = LayoutOptions.Center;
+
+        var row = new Grid
+        {
+            Padding = new Thickness(12, 10),
+            ColumnSpacing = 11,
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(GridLength.Auto),
+                new ColumnDefinition(GridLength.Star),
+                new ColumnDefinition(GridLength.Auto)
+            },
+            InputTransparent = true
+        };
+        row.Add(iconBackground);
+        row.Add(new VerticalStackLayout
+        {
+            VerticalOptions = LayoutOptions.Center,
+            Spacing = 4,
+            Children = { Text(title, 15, attributes: FontAttributes.Bold), Text(description, 12, Muted) }
+        }, 1);
+        row.Add(LineIcon("M 9,5 L 15,12 L 9,19", Muted, 15), 2);
+        AutomationProperties.SetExcludedWithChildren(row, true);
+
+        var button = Button(string.Empty, action);
+        button.SetDynamicResource(VisualElement.StyleProperty, "QuietButton");
+        SemanticProperties.SetDescription(button, $"{title}, {description}");
+        var card = Card(new Grid { MinimumHeightRequest = 66, Children = { button, row } }, new Thickness(0));
+        card.StrokeShape = new RoundRectangle { CornerRadius = 17 };
+        return card;
+    }
 
     public static Button Button(string text, Func<Task> action, bool secondary = false)
     {

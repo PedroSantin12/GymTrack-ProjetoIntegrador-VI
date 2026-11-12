@@ -9,7 +9,7 @@
 
     <Grid x:Name="ExerciseContent"
           Padding="18,14,18,12"
-          RowDefinitions="Auto,Auto,Auto,Auto,*,Auto"
+          RowDefinitions="Auto,Auto,Auto,*,Auto"
           RowSpacing="8">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
             <Label x:Name="ExerciseTitle" Text="Exercícios" FontSize="24"
@@ -24,11 +24,37 @@
 
         <Grid Grid.Row="2"
               ColumnDefinitions="*,Auto"
+              RowDefinitions="Auto,Auto"
+              RowSpacing="4"
               ColumnSpacing="{StaticResource Spacing8}">
-            <Picker Title="Grupo muscular"
-                    ItemsSource="{Binding MuscleGroups}"
-                    SelectedItem="{Binding SelectedMuscleGroup, Mode=TwoWay}" />
-            <Button Grid.Column="1"
+            <Label Text="Grupo muscular" Style="{StaticResource CaptionText}" />
+            <Border Grid.Row="1" Padding="0" StrokeShape="RoundRectangle 14">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Button Grid.ColumnSpan="2"
+                            Clicked="OnChooseMuscleGroup"
+                            AutomationId="FilterMuscleGroup"
+                            SemanticProperties.Description="{Binding SelectedMuscleGroup, StringFormat='Grupo muscular, {0}'}"
+                            Style="{StaticResource QuietButton}" />
+                    <Label Text="{Binding SelectedMuscleGroup}"
+                           Margin="12,4,0,4"
+                           InputTransparent="True"
+                           VerticalTextAlignment="Center"
+                           LineBreakMode="TailTruncation"
+                           MaxLines="1" />
+                    <Path Grid.Column="1"
+                          Data="M 1,1 L 7,7 L 13,1"
+                          Stroke="{StaticResource DarkTextSecondary}"
+                          StrokeThickness="1.5"
+                          WidthRequest="13"
+                          HeightRequest="7"
+                          Aspect="Uniform"
+                          Margin="10,0,12,0"
+                          InputTransparent="True"
+                          VerticalOptions="Center" />
+                </Grid>
+            </Border>
+            <Button Grid.Row="1"
+                    Grid.Column="1"
                     Text="Limpar"
                     Style="{StaticResource SecondaryButton}"
                     FontSize="12"
@@ -38,16 +64,7 @@
                     Command="{Binding ClearFiltersCommand}" />
         </Grid>
 
-        <Grid Grid.Row="3"
-              ColumnDefinitions="Auto,*"
-              ColumnSpacing="{StaticResource Spacing8}">
-            <CheckBox IsChecked="{Binding ShowInactive, Mode=TwoWay}" />
-            <Label Grid.Column="1"
-                   Text="Mostrar arquivados"
-                   VerticalTextAlignment="Center" />
-        </Grid>
-
-        <RefreshView Grid.Row="4"
+        <RefreshView Grid.Row="3"
                      Command="{Binding LoadCommand}"
                      IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}">
             <CollectionView ItemsSource="{Binding Exercises}"
@@ -135,7 +152,7 @@
             </CollectionView>
         </RefreshView>
 
-        <Label Grid.Row="5"
+        <Label Grid.Row="4"
                Text="{Binding StatusMessage}"
                TextColor="{StaticResource Danger}"
                HorizontalTextAlignment="Center" />

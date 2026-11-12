@@ -46,6 +46,28 @@ public partial class ExercisesPage : ContentPage
         await _viewModel.LoadCommand.ExecuteAsync(null);
     }
 
+    private async void OnChooseMuscleGroup(object? sender, EventArgs e)
+    {
+        if (sender is not Button { IsEnabled: true } button) return;
+        button.IsEnabled = false;
+        try
+        {
+            var group = await this.ChooseAppOptionAsync("Grupo muscular", "Cancelar",
+                _viewModel.MuscleGroups, _viewModel.SelectedMuscleGroup);
+            if (group is not null)
+                _viewModel.SelectedMuscleGroup = group;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Falha ao abrir o filtro de grupo muscular.");
+            _viewModel.StatusMessage = "Não foi possível abrir o filtro de exercícios.";
+        }
+        finally
+        {
+            button.IsEnabled = true;
+        }
+    }
+
     private async void OnEditorRequested(
         object? sender,
         ExerciseEditorRequestedEventArgs e)

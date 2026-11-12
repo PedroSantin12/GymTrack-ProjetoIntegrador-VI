@@ -216,7 +216,14 @@ public sealed class AccountService : IAccountService, IAsyncDisposable
         return await _connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Account");
     }
 
-    public Task<AppUser> UpdatePersonalDetailsAsync(int accountId, string name, string email, string? phone)
+    public Task<AppUser> UpdatePersonalDetailsAsync(int accountId, string name, string email, string? phone) =>
+        UpdateContactDetailsAsync(accountId, name, email, phone);
+
+    public Task<AppUser> UpdateStudentDetailsAsync(int employeeId, int studentId, string name, string email, string? phone) =>
+        UpdateContactDetailsAsync(studentId, name, email, phone, employeeId);
+
+    private Task<AppUser> UpdateContactDetailsAsync(
+        int accountId, string name, string email, string? phone, int? employeeId = null)
     {
         var trimmedName = ValidateName(name);
         var normalizedEmail = ValidateEmail(email);
@@ -224,6 +231,20 @@ public sealed class AccountService : IAccountService, IAsyncDisposable
 
         return UpdateProfileAsync(accountId, connection =>
         {
+            var target = connection.Find<AccountRecord>(accountId);
+            if (employeeId is int actorId)
+            {
+                if (target is not { Role: (int)UserRole.Consumer } ||
+                    connection.Find<AccountRecord>(actorId) is not { Role: (int)UserRole.Employee, IsActive: true })
+                {
+                    throw new UnauthorizedAccessException("Sua conta não tem acesso a esta ação.");
+                }
+            }
+            else if (target is not { IsActive: true })
+            {
+                throw new InvalidOperationException("Não foi possível atualizar os dados desta conta.");
+            }
+
             if (connection.ExecuteScalar<int>(
                     "SELECT COUNT(*) FROM Account WHERE Email = ? AND Id <> ?", normalizedEmail, accountId) != 0)
             {
@@ -231,7 +252,7 @@ public sealed class AccountService : IAccountService, IAsyncDisposable
             }
 
             return connection.Execute(
-                "UPDATE Account SET Name = ?, Email = ?, Phone = ? WHERE Id = ? AND IsActive = 1",
+                "UPDATE Account SET Name = ?, Email = ?, Phone = ? WHERE Id = ?",
                 trimmedName, normalizedEmail, trimmedPhone, accountId);
         });
     }

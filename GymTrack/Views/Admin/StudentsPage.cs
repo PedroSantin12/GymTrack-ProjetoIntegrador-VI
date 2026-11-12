@@ -13,18 +13,21 @@ public sealed class StudentsPage : WorkspacePage
     private readonly SearchBar _search = new() { Placeholder = "Pesquisar por nome ou e-mail" };
     private IReadOnlyList<AppUser> _studentAccounts = [];
     private bool _loaded;
+    private bool _loading;
 
     public StudentsPage(IAppNavigator navigator, AppSession session, StudentService students)
         : base("Alunos", AppSection.Students, navigator, session)
     {
         _students = students;
         _search.TextChanged += (_, _) => Render();
+        var title = Ui.Text("Alunos", 25, Ui.Foreground, FontAttributes.Bold);
+        SemanticProperties.SetHeadingLevel(title, SemanticHeadingLevel.Level1);
         SetBody(new VerticalStackLayout
         {
             Spacing = 12,
             Children =
             {
-                Ui.Text("Alunos", 25, Ui.Foreground, FontAttributes.Bold),
+                title,
                 _search, _status, _list
             }
         });
@@ -33,6 +36,8 @@ public sealed class StudentsPage : WorkspacePage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (_loading || AppDialogs.IsShowingFor(this)) return;
+        _loading = true;
         try
         {
             _studentAccounts = await _students.GetStudentsAsync();
@@ -44,6 +49,10 @@ public sealed class StudentsPage : WorkspacePage
             _loaded = false;
             _list.Clear();
             _status.Text = "Não foi possível carregar os alunos.";
+        }
+        finally
+        {
+            _loading = false;
         }
     }
 
@@ -58,25 +67,17 @@ public sealed class StudentsPage : WorkspacePage
             compare.IndexOf(student.Email, term, options) >= 0).ToArray();
 
         _list.Clear();
-        _status.Text = visible.Length == 1 ? "1 aluno ativo" : $"{visible.Length} alunos ativos";
+        _status.Text = visible.Length == 1 ? "1 aluno" : $"{visible.Length} alunos";
         foreach (var student in visible)
         {
-            _list.Add(Ui.Card(new VerticalStackLayout
-            {
-                Spacing = 7,
-                Children =
-                {
-                    Ui.Text(student.Name, 17, Ui.Foreground, FontAttributes.Bold),
-                    Ui.Text(student.Email, 13, Ui.Muted),
-                    Ui.Button("Abrir ficha", () => Navigation.PushAsync(
-                        new StudentDetailsPage(student.Id, _students)), true)
-                }
-            }));
+            var details = student.IsActive ? student.Email : $"{student.Email}\nConta desativada";
+            _list.Add(Ui.LinkCard(student.Name, details, Ui.PeopleIcon,
+                () => Navigation.PushAsync(new StudentDetailsPage(student.Id, _students))));
         }
 
         if (visible.Length == 0)
             _list.Add(Ui.Card(Ui.Text(_studentAccounts.Count == 0
-                ? "Nenhum aluno ativo cadastrado."
+                ? "Nenhum aluno cadastrado."
                 : "Nenhum aluno corresponde à pesquisa.", 14, Ui.Muted)));
     }
 }

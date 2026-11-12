@@ -73,14 +73,30 @@ public sealed class SessionDao(GymTrackDatabase database, AppSession? appSession
             excludedSessionId);
     }
 
-    public async Task<IReadOnlyList<SessionSummary>> GetSummariesAsync(
+    public Task<IReadOnlyList<SessionSummary>> GetSummariesAsync(
         int? workoutId = null,
         DateTime? startedFrom = null,
-        DateTime? startedUntil = null)
+        DateTime? startedUntil = null) =>
+        QuerySummariesAsync(workoutId, startedFrom, startedUntil);
+
+    internal Task<IReadOnlyList<SessionSummary>> GetSummariesForOwnerAsync(int ownerUserId)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(ownerUserId);
+        return QuerySummariesAsync(ownerUserId: ownerUserId);
+    }
+
+    private async Task<IReadOnlyList<SessionSummary>> QuerySummariesAsync(
+        int? workoutId = null, DateTime? startedFrom = null, DateTime? startedUntil = null, int? ownerUserId = null)
     {
         var connection = await database.GetConnectionAsync();
         var conditions = new List<string> { "ws.FinishedAt IS NOT NULL" };
         var arguments = new List<object>();
+
+        if (ownerUserId is int ownerId)
+        {
+            conditions.Add("w.OwnerUserId = ? AND w.IsTemplate = 0");
+            arguments.Add(ownerId);
+        }
 
         if (workoutId is not null)
         {

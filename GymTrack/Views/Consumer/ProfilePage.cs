@@ -51,27 +51,22 @@ public sealed class ProfilePage : WorkspacePage
         {
             content.Add(_chart);
             content.Add(CreateMetricSelector());
-        }
-        else if (_session.IsEmployee)
-        {
-            content.Add(_professional);
-            RenderProfessionalDetails();
-        }
-
-        content.Add(new VerticalStackLayout
-        {
-            Spacing = 11,
-            Children = { Heading("Painel"), CreatePanel() }
-        });
-
-        if (_session.IsConsumer)
-        {
+            content.Add(new VerticalStackLayout
+            {
+                Spacing = 11,
+                Children = { Heading("Painel"), CreatePanel() }
+            });
             content.Add(new VerticalStackLayout
             {
                 Spacing = 11,
                 Children = { Heading("Treinos"), _workouts }
             });
             RenderTraining();
+        }
+        else if (_session.IsEmployee)
+        {
+            content.Add(_professional);
+            RenderProfessionalDetails();
         }
 
         RenderIdentity();
@@ -238,24 +233,9 @@ public sealed class ProfilePage : WorkspacePage
             ColumnSpacing = 8
         };
 
-        if (_session.IsConsumer)
-        {
-            panel.Add(PanelAction("Medidas", "measurements", () =>
-                Navigation.PushAsync(new BodyMeasurementsPage(_session, _measurements))), 0);
-            panel.Add(PanelAction("Calendário", "calendar", OpenCalendarAsync), 1);
-        }
-        else
-        {
-            panel.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            panel.Add(PanelAction("Estatísticas", "statistics", () =>
-                _navigator.NavigateAsync(AppSection.Statistics)), 0, 0);
-            panel.Add(PanelAction("Exercícios", "workout", () =>
-                _navigator.NavigateAsync(AppSection.Exercises)), 1, 0);
-            var accounts = PanelAction("Gerenciar contas", "profile", () =>
-                _navigator.NavigateAsync(AppSection.Users));
-            panel.Add(accounts, 0, 1);
-            Grid.SetColumnSpan(accounts, 2);
-        }
+        panel.Add(PanelAction("Medidas", "measurements", () =>
+            Navigation.PushAsync(new BodyMeasurementsPage(_session, _measurements))), 0);
+        panel.Add(PanelAction("Calendário", "calendar", OpenCalendarAsync), 1);
 
         return panel;
     }
@@ -495,11 +475,9 @@ public sealed class ProfilePage : WorkspacePage
         var path = name switch
         {
             "settings" => "M 10,2 L 14,2 L 15,5 L 17,6 L 20,5 L 22,9 L 20,11 L 20,13 L 22,15 L 20,19 L 17,18 L 15,19 L 14,22 L 10,22 L 9,19 L 7,18 L 4,19 L 2,15 L 4,13 L 4,11 L 2,9 L 4,5 L 7,6 L 9,5 Z M 16,12 A 4,4 0 1 1 8,12 A 4,4 0 1 1 16,12",
-            "statistics" => "M 3,3 L 3,21 L 22,21 M 7,16 L 12,11 L 15,14 L 21,7 M 16,7 L 21,7 L 21,12",
             "workout" => "M 8,12 L 16,12 M 4,7 L 8,7 L 8,17 L 4,17 Z M 16,7 L 20,7 L 20,17 L 16,17 Z M 2,10 L 4,10 M 20,10 L 22,10 M 2,14 L 4,14 M 20,14 L 22,14",
             "measurements" => "M 14,4 A 2,2 0 1 1 10,4 A 2,2 0 1 1 14,4 M 9,22 L 9,13 L 5,16 L 3,14 L 9,8 L 15,8 L 21,14 L 19,16 L 15,13 L 15,22 M 12,16 L 12,22",
             "calendar" => "M 4,5 L 20,5 L 20,21 L 4,21 Z M 8,2 L 8,8 M 16,2 L 16,8 M 4,10 L 20,10 M 8,14 L 9,14 M 12,14 L 13,14 M 16,14 L 17,14 M 8,17 L 9,17 M 12,17 L 13,17",
-            "profile" => "M 16,7 A 4,4 0 1 1 8,7 A 4,4 0 1 1 16,7 M 3,22 C 3,10 21,10 21,22",
             _ => "M 3,21 L 3,13 L 8,13 L 8,21 Z M 10,21 L 10,8 L 15,8 L 15,21 Z M 17,21 L 17,3 L 22,3 L 22,21 Z"
         };
 

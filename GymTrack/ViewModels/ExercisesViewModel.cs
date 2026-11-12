@@ -52,9 +52,6 @@ public partial class ExercisesViewModel : BaseViewModel
     private string selectedMuscleGroup = "Todos";
 
     [ObservableProperty]
-    private bool showInactive;
-
-    [ObservableProperty]
     private bool isRefreshing;
 
     partial void OnSearchTextChanged(string value)
@@ -63,11 +60,6 @@ public partial class ExercisesViewModel : BaseViewModel
     }
 
     partial void OnSelectedMuscleGroupChanged(string value)
-    {
-        ScheduleLoad();
-    }
-
-    partial void OnShowInactiveChanged(bool value)
     {
         ScheduleLoad();
     }
@@ -86,10 +78,8 @@ public partial class ExercisesViewModel : BaseViewModel
                 ? null
                 : SelectedMuscleGroup;
             var relatedGroups = MuscleGroupCatalog.GetRelatedFilterGroups(muscleGroup);
-            var exercises = await _exerciseDao.SearchAsync(
-                SearchText,
-                relatedGroups is null ? muscleGroup : null,
-                ShowInactive);
+            var exercises = await _exerciseDao.SearchAsync(SearchText,
+                relatedGroups is null ? muscleGroup : null);
             if (relatedGroups is not null)
                 exercises = exercises.Where(exercise =>
                     relatedGroups.Contains(exercise.MuscleGroup, StringComparer.CurrentCultureIgnoreCase)).ToArray();
@@ -140,7 +130,6 @@ public partial class ExercisesViewModel : BaseViewModel
     {
         SearchText = string.Empty;
         SelectedMuscleGroup = "Todos";
-        ShowInactive = false;
         ScheduleLoad();
     }
 

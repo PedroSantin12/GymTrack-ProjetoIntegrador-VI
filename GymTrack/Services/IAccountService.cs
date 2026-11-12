@@ -16,6 +16,8 @@ public interface IAccountService
 
     Task<AppUser> UpdatePersonalDetailsAsync(int accountId, string name, string email, string? phone);
 
+    Task<AppUser> UpdateStudentDetailsAsync(int employeeId, int studentId, string name, string email, string? phone);
+
     Task<AppUser> UpdateProfessionalDetailsAsync(int accountId, string? jobTitle, string? gymName);
 
     Task<AppUser> SetNotificationsEnabledAsync(int accountId, bool enabled);

@@ -35,12 +35,21 @@ internal static class AppDialogs
 
     internal static Task<string?> ChooseAppActionAsync(this Page page, string title, string cancel,
         params string[] actions) =>
+        ChooseAppOptionAsync(page, title, cancel, actions);
+
+    internal static Task<string?> ChooseAppOptionAsync(this Page page, string title, string cancel,
+        IReadOnlyList<string> options, string? selected = null) =>
         ShowAsync(page, navigation =>
         {
-            var dialog = new DialogPage(navigation, title);
+            var dialog = new DialogPage(navigation, title, pinActions: selected is not null);
             var menu = new VerticalStackLayout { Spacing = 8 };
-            foreach (var action in actions)
-                menu.Add(dialog.CreateButton(action, () => action));
+            foreach (var option in options)
+            {
+                var isSelected = option == selected;
+                var button = dialog.CreateButton(option, () => option, primary: isSelected);
+                if (isSelected) SemanticProperties.SetDescription(button, $"{option}, selecionado");
+                menu.Add(button);
+            }
             dialog.AddContent(menu);
             dialog.AddActions(dialog.CreateButton(cancel, () => null));
             return dialog;
@@ -107,10 +116,11 @@ internal static class AppDialogs
         private const double MaximumCardWidth = 420;
         private readonly INavigation _navigation;
         private readonly VerticalStackLayout _content = new() { Spacing = 14 };
+        private readonly VerticalStackLayout _actions;
         private readonly TaskCompletionSource<string?> _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool _closing;
 
-        internal DialogPage(INavigation navigation, string title, string? message = null)
+        internal DialogPage(INavigation navigation, string title, string? message = null, bool pinActions = false)
         {
             _navigation = navigation;
             Title = title;
@@ -125,7 +135,29 @@ internal static class AppDialogs
                 _content.Add(Ui.Text(message, 14, Ui.Muted));
 
             var scroll = new ScrollView { Content = _content, VerticalScrollBarVisibility = ScrollBarVisibility.Never };
-            var card = Ui.Card(scroll, new Thickness(20));
+            View body = scroll;
+            _actions = _content;
+            if (pinActions)
+            {
+                _content.Remove(heading);
+                _actions = new VerticalStackLayout();
+                scroll.VerticalScrollBarVisibility = ScrollBarVisibility.Default;
+                var choiceLayout = new Grid
+                {
+                    RowSpacing = 12,
+                    RowDefinitions =
+                    {
+                        new RowDefinition(GridLength.Auto),
+                        new RowDefinition(GridLength.Star),
+                        new RowDefinition(GridLength.Auto)
+                    }
+                };
+                choiceLayout.Add(heading);
+                choiceLayout.Add(scroll, 0, 1);
+                choiceLayout.Add(_actions, 0, 2);
+                body = choiceLayout;
+            }
+            var card = Ui.Card(body, new Thickness(20));
             card.AutomationId = "AppDialogCard";
             card.StrokeShape = new RoundRectangle { CornerRadius = 22 };
             card.Margin = new Thickness(MarginSize);
@@ -189,7 +221,7 @@ internal static class AppDialogs
         {
             if (cancel is null)
             {
-                _content.Add(primary);
+                _actions.Add(primary);
                 return;
             }
 
@@ -200,7 +232,7 @@ internal static class AppDialogs
             };
             actions.Add(cancel);
             actions.Add(primary, 1);
-            _content.Add(actions);
+            _actions.Add(actions);
         }
 
         internal async Task CloseAsync(string? result)
