@@ -42,9 +42,6 @@ public sealed class AdminDashboardPage : WorkspacePage
         summary.Add(Metric(_exerciseCount, "Exercícios ativos", ExerciseIcon), 0, 1);
         summary.Add(Metric(_trainingCount, "Treinos registrados", ActivityIcon), 1, 1);
 
-        var createWorkout = Ui.Button("Criar treino", () => navigator.OpenWorkoutEditorAsync(null));
-        createWorkout.CornerRadius = 18;
-
         SetBody(new VerticalStackLayout
         {
             Spacing = 18,
@@ -64,8 +61,7 @@ public sealed class AdminDashboardPage : WorkspacePage
                         Ui.LinkCard("Gerenciar treinos", "Modelos do catálogo", ClipboardIcon,
                             () => navigator.NavigateAsync(AppSection.AdminWorkouts)),
                         Ui.LinkCard("Biblioteca de exercícios", "Cadastrar e editar exercícios", ExerciseIcon,
-                            () => navigator.NavigateAsync(AppSection.Exercises)),
-                        createWorkout
+                            () => navigator.NavigateAsync(AppSection.Exercises))
                     }
                 }
             }

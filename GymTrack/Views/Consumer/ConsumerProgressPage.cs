@@ -433,16 +433,26 @@ public sealed class ConsumerProgressPage : WorkspacePage
         if (series.Count > 0)
         {
             _content.Add(ConsumerUi.Section("Evolução de carga", "Até 6 sessões por exercício · últimas 40 pelo app"));
-            var picker = new Picker { Title = "Exercício", ItemsSource = series.Values.OrderBy(item => item.Name).ToList() };
+            var options = series.Values.OrderBy(item => item.Name).ToArray();
+            var selected = options[0];
+            var name = Ui.Text(selected.Name);
             var host = new ContentView();
-            picker.SelectedIndexChanged += (_, _) =>
+            _content.Add(Ui.OptionField("Exercício", name, async () =>
             {
-                if (picker.SelectedItem is ExerciseSeries selected)
-                    host.Content = BarChart(selected.Points.AsEnumerable().Reverse().TakeLast(6).ToList(), "kg");
-            };
-            _content.Add(picker);
+                var exercise = await this.ChooseAppOptionAsync("Exercício", "Cancelar", options, selected,
+                    static option => option.Name);
+                if (exercise is not null && exercise != selected)
+                    SelectExercise(exercise);
+            }, "ChooseProgressExercise"));
             _content.Add(host);
-            picker.SelectedIndex = 0;
+            SelectExercise(selected);
+
+            void SelectExercise(ExerciseSeries exercise)
+            {
+                selected = exercise;
+                name.Text = exercise.Name;
+                host.Content = BarChart(exercise.Points.AsEnumerable().Reverse().TakeLast(6).ToList(), "kg");
+            }
         }
     }
 
@@ -551,6 +561,5 @@ public sealed class ConsumerProgressPage : WorkspacePage
     {
         public string Name { get; } = name;
         public List<(string Label, double Value)> Points { get; } = [];
-        public override string ToString() => Name;
     }
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.Shapes;
 using iOSPage = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
@@ -39,21 +40,35 @@ internal static class AppDialogs
 
     internal static Task<string?> ChooseAppOptionAsync(this Page page, string title, string cancel,
         IReadOnlyList<string> options, string? selected = null) =>
-        ShowAsync(page, navigation =>
+        ChooseAppOptionAsync(page, title, cancel, options, selected, static option => option);
+
+    internal static async Task<T?> ChooseAppOptionAsync<T>(this Page page, string title, string cancel,
+        IReadOnlyList<T> options, T? selected, Func<T, string> label) where T : class
+    {
+        var items = options.ToArray();
+        if (items.Length == 0) return null;
+
+        var result = await ShowAsync(page, navigation =>
         {
             var dialog = new DialogPage(navigation, title, pinActions: selected is not null);
             var menu = new VerticalStackLayout { Spacing = 8 };
-            foreach (var option in options)
+            for (var index = 0; index < items.Length; index++)
             {
-                var isSelected = option == selected;
-                var button = dialog.CreateButton(option, () => option, primary: isSelected);
-                if (isSelected) SemanticProperties.SetDescription(button, $"{option}, selecionado");
+                var key = index.ToString(CultureInfo.InvariantCulture);
+                var text = label(items[index]);
+                var isSelected = EqualityComparer<T>.Default.Equals(items[index], selected);
+                var button = dialog.CreateButton(text, () => key, primary: isSelected);
+                if (isSelected) SemanticProperties.SetDescription(button, $"{text}, selecionado");
                 menu.Add(button);
             }
             dialog.AddContent(menu);
             dialog.AddActions(dialog.CreateButton(cancel, () => null));
             return dialog;
         });
+
+        return int.TryParse(result, NumberStyles.None, CultureInfo.InvariantCulture, out var choice) &&
+            choice < items.Length ? items[choice] : null;
+    }
 
     internal static Task<string?> PromptAppValueAsync(this Page page, string title, string message,
         string accept = "Salvar", string cancel = "Cancelar", string? placeholder = null,

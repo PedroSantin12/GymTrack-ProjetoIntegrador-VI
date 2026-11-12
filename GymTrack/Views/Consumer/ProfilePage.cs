@@ -5,6 +5,7 @@ using GymTrack.Services;
 using GymTrack.Views.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 
 namespace GymTrack.Views.Consumer;
 
@@ -299,16 +300,12 @@ public sealed class ProfilePage : WorkspacePage
         for (var index = 0; index < points.Length; index++)
         {
             var (day, value) = points[index];
-            var track = new Grid { HeightRequest = 68 };
-            track.Add(new Border
+            var track = new GraphicsView
             {
-                HeightRequest = value > 0 ? Math.Max(3, 68 * value / maximum) : 1,
-                BackgroundColor = value > 0 ? Ui.Accent : Ui.Border,
-                StrokeThickness = 0,
-                StrokeShape = new RoundRectangle { CornerRadius = 4 },
-                Margin = new Thickness(4, 0),
-                VerticalOptions = LayoutOptions.End
-            });
+                HeightRequest = 68,
+                Drawable = new TrainingBarDrawable(value / maximum),
+                InputTransparent = true
+            };
             var label = Ui.Text(day.ToString("dd/MM", Portuguese), 10, Ui.Muted);
             label.HorizontalTextAlignment = TextAlignment.Center;
             var column = new VerticalStackLayout { Spacing = 5, Children = { track, label } };
@@ -337,6 +334,33 @@ public sealed class ProfilePage : WorkspacePage
         TrainingMetric.Volume => session.TotalVolume,
         _ => session.TotalRepetitions
     };
+
+    private sealed class TrainingBarDrawable(double fraction) : IDrawable
+    {
+        public void Draw(ICanvas canvas, RectF dirtyRect)
+        {
+            const float horizontalInset = 4;
+            const float verticalInset = 1;
+            var width = dirtyRect.Width - 2 * horizontalInset;
+            var availableHeight = dirtyRect.Height - 2 * verticalInset;
+            if (width <= 0 || availableHeight <= 0) return;
+
+            var x = dirtyRect.Left + horizontalInset;
+            var baseline = dirtyRect.Bottom - verticalInset;
+            if (fraction <= 0)
+            {
+                var lineHeight = Math.Min(1, availableHeight);
+                canvas.FillColor = Ui.Border;
+                canvas.FillRectangle(x, baseline - lineHeight, width, lineHeight);
+                return;
+            }
+
+            var height = Math.Min(availableHeight, Math.Max(3, (float)fraction * availableHeight));
+            var radius = Math.Min(5, Math.Min(width, height) / 2);
+            canvas.FillColor = Ui.Accent;
+            canvas.FillRoundedRectangle(x, baseline - height, width, height, radius);
+        }
+    }
 
     private async Task OpenCalendarAsync()
     {

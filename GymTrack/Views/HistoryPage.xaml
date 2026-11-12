@@ -9,8 +9,8 @@
     Title="{Binding Title}">
 
     <Grid Padding="{StaticResource PagePadding}"
-          RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
-          RowSpacing="{StaticResource Spacing16}">
+          RowDefinitions="Auto,Auto,*"
+          RowSpacing="{StaticResource Spacing12}">
         <VerticalStackLayout Spacing="4">
             <Label Text="Histórico"
                    Style="{StaticResource PageTitle}" />
@@ -18,44 +18,34 @@
                    Style="{StaticResource SecondaryText}" />
         </VerticalStackLayout>
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="12">
-            <Border Padding="8,0">
-                <Picker Title="Treino"
-                        ItemsSource="{Binding Workouts}"
-                        SelectedItem="{Binding SelectedWorkout}" />
-            </Border>
-            <Border Grid.Column="1" Padding="8,0">
-                <Picker Title="Período"
-                        ItemsSource="{Binding Periods}"
-                        SelectedItem="{Binding SelectedPeriod}" />
-            </Border>
-        </Grid>
+        <VerticalStackLayout Grid.Row="1" Spacing="{StaticResource Spacing8}">
+            <ContentView x:Name="WorkoutFilter" />
+            <ContentView x:Name="PeriodFilter" />
 
-        <Grid Grid.Row="2"
-              ColumnDefinitions="*,*"
-              ColumnSpacing="12"
-              IsVisible="{Binding IsCustomPeriod}">
-            <VerticalStackLayout Spacing="3">
-                <Label Text="Data inicial" Style="{StaticResource CaptionText}" />
-                <DatePicker Date="{Binding StartDate}" MaximumDate="{x:Static sys:DateTime.Today}" />
-            </VerticalStackLayout>
-            <VerticalStackLayout Grid.Column="1" Spacing="3">
-                <Label Text="Data final" Style="{StaticResource CaptionText}" />
-                <DatePicker Date="{Binding EndDate}" MaximumDate="{x:Static sys:DateTime.Today}" />
-            </VerticalStackLayout>
-        </Grid>
+            <Grid ColumnDefinitions="*,*"
+                  ColumnSpacing="12"
+                  IsVisible="{Binding IsCustomPeriod}">
+                <VerticalStackLayout Spacing="3">
+                    <Label Text="Data inicial" Style="{StaticResource CaptionText}" />
+                    <DatePicker Date="{Binding StartDate}" MaximumDate="{x:Static sys:DateTime.Today}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1" Spacing="3">
+                    <Label Text="Data final" Style="{StaticResource CaptionText}" />
+                    <DatePicker Date="{Binding EndDate}" MaximumDate="{x:Static sys:DateTime.Today}" />
+                </VerticalStackLayout>
+            </Grid>
 
-        <Button Grid.Row="3"
-                Text="Aplicar filtros"
-                Command="{Binding LoadCommand}" />
+            <Button Text="Aplicar filtros"
+                    CornerRadius="14"
+                    Command="{Binding LoadCommand}" />
 
-        <Label Grid.Row="4"
-               Text="{Binding StatusMessage}"
-               IsVisible="{Binding HasStatusMessage}"
-               TextColor="{StaticResource Danger}"
-               HorizontalTextAlignment="Center" />
+            <Label Text="{Binding StatusMessage}"
+                   IsVisible="{Binding HasStatusMessage}"
+                   TextColor="{StaticResource Danger}"
+                   HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
 
-        <Grid Grid.Row="5">
+        <Grid Grid.Row="2">
             <ListView ItemsSource="{Binding Sessions}"
                       SelectedItem="{Binding SelectedSession, Mode=TwoWay}"
                       HasUnevenRows="True"

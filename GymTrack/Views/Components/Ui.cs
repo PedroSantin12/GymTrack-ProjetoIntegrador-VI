@@ -89,6 +89,37 @@ public static class Ui
         return card;
     }
 
+    internal static Border OptionField(string title, Label value, Func<Task> action, string automationId)
+    {
+        var button = Button(string.Empty, action);
+        button.AutomationId = automationId;
+        button.SetDynamicResource(VisualElement.StyleProperty, "QuietButton");
+        button.SetBinding(SemanticProperties.DescriptionProperty, new Binding(
+            nameof(Label.Text), source: value, stringFormat: $"{title}, {{0}}"));
+
+        var labels = new VerticalStackLayout
+        {
+            Spacing = 2,
+            Margin = new Thickness(12, 7, 0, 7),
+            VerticalOptions = LayoutOptions.Center,
+            InputTransparent = true,
+            Children = { Text(title, 12, Muted), value }
+        };
+        AutomationProperties.SetExcludedWithChildren(labels, true);
+        var arrow = LineIcon("M 1,1 L 7,7 L 13,1", Muted, 14);
+        arrow.Margin = new Thickness(0, 0, 12, 0);
+        var row = new Grid
+        {
+            ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) },
+            ColumnSpacing = 8
+        };
+        row.Add(button);
+        Grid.SetColumnSpan(button, 2);
+        row.Add(labels);
+        row.Add(arrow, 1);
+        return Card(row, new Thickness(0));
+    }
+
     public static Button Button(string text, Func<Task> action, bool secondary = false)
     {
         var button = new Button { Text = text };
