@@ -27,15 +27,16 @@
             <components:BrandLockup x:Name="BrandHeader" />
 
             <ScrollView Grid.Row="1" VerticalOptions="End" VerticalScrollBarVisibility="Never">
-                <VerticalStackLayout Spacing="10">
+                <VerticalStackLayout Spacing="6">
                     <Label Text="Acesse sua conta"
-                           FontSize="25"
+                           FontSize="20"
                            FontFamily="OpenSansSemibold"
                            SemanticProperties.HeadingLevel="Level1"
-                           Margin="0,0,0,4" />
+                           Margin="0,0,0,2" />
 
                 <Entry x:Name="EmailInput"
                        Style="{StaticResource AuthEntryStyle}"
+                       MinimumHeightRequest="40"
                        Text="{Binding Email}"
                        Placeholder="E-mail"
                        Keyboard="Email"
@@ -47,6 +48,7 @@
 
                 <Entry x:Name="PasswordInput"
                        Style="{StaticResource AuthEntryStyle}"
+                       MinimumHeightRequest="40"
                        Text="{Binding Password}"
                        Placeholder="Senha"
                        IsPassword="True"
@@ -57,11 +59,12 @@
                        AutomationId="LoginPassword" />
 
                     <Label Text="{Binding ErrorMessage}"
+                           IsVisible="{Binding HasErrorMessage}"
                            TextColor="{StaticResource Danger}"
                            FontSize="12"
                            AutomationId="LoginError" />
 
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,2,0,0">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Button Text="Entrar"
                                 Command="{Binding SignInCommand}"
                                 MinimumHeightRequest="40"
