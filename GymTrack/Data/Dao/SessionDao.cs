@@ -150,9 +150,9 @@ public sealed class SessionDao(GymTrackDatabase database, AppSession? appSession
 
         int? userId = appSession is null
             ? null
-            : appSession.IsPersonalMode && appSession.CurrentUser is { Id: > 0 } user
+            : appSession.IsConsumer && appSession.CurrentUser is { Id: > 0 } user
                 ? user.Id
-                : throw new UnauthorizedAccessException("Abra sua área pessoal para iniciar um treino.");
+                : throw new UnauthorizedAccessException("Use uma conta de consumidor para iniciar um treino.");
 
         var connection = await database.GetConnectionAsync();
         session.StartedAt = session.StartedAt == default

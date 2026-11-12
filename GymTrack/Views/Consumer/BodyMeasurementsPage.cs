@@ -83,7 +83,7 @@ public sealed class BodyMeasurementsPage : ContentPage
         Content = _scroll;
     }
 
-    private int? ActiveUserId => _session.IsPersonalMode && _session.CurrentUser?.Id == _userId
+    private int? ActiveUserId => _session.IsConsumer && _session.CurrentUser?.Id == _userId
         ? _userId
         : null;
 

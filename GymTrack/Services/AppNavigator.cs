@@ -24,30 +24,8 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
     public async Task OpenWorkspaceAsync()
     {
         await starterCatalog.EnsureSeededAsync();
-        await NavigateAsync(session.IsManagementMode
+        await NavigateAsync(session.IsEmployee
             ? AppSection.AdminDashboard : AppSection.PersonalWorkouts);
-    }
-
-    public async Task SwitchWorkspaceAsync()
-    {
-        if (_isNavigating) return;
-        _isNavigating = true;
-        try
-        {
-            await RequireUserAsync();
-            var wasPersonal = session.IsPersonalMode;
-            session.SetEmployeePersonalMode(!wasPersonal);
-            try
-            {
-                ShowSection(wasPersonal ? AppSection.AdminDashboard : AppSection.PersonalWorkouts);
-            }
-            catch
-            {
-                session.SetEmployeePersonalMode(wasPersonal);
-                throw;
-            }
-        }
-        finally { _isNavigating = false; }
     }
 
     public async Task NavigateAsync(AppSection section)
@@ -57,7 +35,7 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
         try
         {
             var user = await RequireUserAsync();
-            if (!AppAccessPolicy.CanNavigate(user, section, session.IsPersonalMode))
+            if (!AppAccessPolicy.CanNavigate(user, section))
                 throw new UnauthorizedAccessException("Seu perfil não possui acesso a esta área.");
             ShowSection(section);
         }
@@ -91,13 +69,13 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
         {
             var user = await RequireUserAsync();
             var workout = workoutId.HasValue ? await workouts.GetByIdAsync(workoutId.Value) : null;
-            if (workoutId.HasValue && !AppAccessPolicy.CanEditWorkout(user, workout, session.IsPersonalMode))
+            if (workoutId.HasValue && !AppAccessPolicy.CanEditWorkout(user, workout))
                 throw new UnauthorizedAccessException("Este treino não está disponível para edição.");
             var page = services.GetRequiredService<WorkoutEditPage>();
             if (workoutId.HasValue)
                 await page.InitializeAsync(workoutId);
             else
-                await page.InitializeNewAsync(session.IsPersonalMode ? user.Id : null, session.IsManagementMode);
+                await page.InitializeNewAsync(session.IsConsumer ? user.Id : null, session.IsEmployee);
             await CurrentNavigation.PushAsync(page);
         }
         finally { _isNavigating = false; }
@@ -110,7 +88,7 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
         try
         {
             var user = await RequireUserAsync();
-            if (!AppAccessPolicy.CanStartWorkout(user, await workouts.GetByIdAsync(workoutId), session.IsPersonalMode))
+            if (!AppAccessPolicy.CanStartWorkout(user, await workouts.GetByIdAsync(workoutId)))
                 throw new UnauthorizedAccessException("Este treino não pertence à sua conta.");
             var page = services.GetRequiredService<WorkoutSessionPage>();
             if (await page.InitializeAsync(workoutId)) await CurrentNavigation.Navigation.PushModalAsync(page);
@@ -150,7 +128,7 @@ public sealed class AppNavigator(IServiceProvider services, AppSession session,
     public async Task OpenHistoryAsync()
     {
         await RequireUserAsync();
-        if (!session.IsPersonalMode) throw new UnauthorizedAccessException();
+        if (!session.IsConsumer) throw new UnauthorizedAccessException();
         await CurrentNavigation.PushAsync(services.GetRequiredService<HistoryPage>());
     }
 

@@ -14,6 +14,7 @@ public sealed class AppSessionTests
         session.SignIn(user);
 
         Assert.Same(user, session.CurrentUser);
+        Assert.True(session.IsConsumer);
         Assert.False(session.IsEmployee);
     }
 
@@ -28,29 +29,25 @@ public sealed class AppSessionTests
 
         Assert.Null(session.CurrentUser);
         Assert.False(session.IsEmployee);
+        Assert.False(session.IsConsumer);
     }
 
     [Fact]
-    public void PersonalMode_KeepsEmployeeIdentityAndResetsAtSignIn()
+    public void SignIn_ReplacesThePreviousAccountAndRole()
     {
         var session = new AppSession();
         var employee = new AppUser { Id = 7, Role = UserRole.Employee };
+        var consumer = new AppUser { Id = 8, Role = UserRole.Consumer };
         session.SignIn(employee);
-        session.SetEmployeePersonalMode(true);
 
         Assert.Same(employee, session.CurrentUser);
         Assert.True(session.IsEmployee);
-        Assert.True(session.IsPersonalMode);
-        Assert.False(session.IsManagementMode);
+        Assert.False(session.IsConsumer);
 
-        session.SignOut();
-        session.SignIn(employee);
-        Assert.True(session.IsManagementMode);
-        Assert.False(session.IsPersonalMode);
-
-        session.SignIn(new AppUser { Id = 8, Role = UserRole.Consumer });
-        Assert.Throws<UnauthorizedAccessException>(() => session.SetEmployeePersonalMode(false));
-        Assert.True(session.IsPersonalMode);
+        session.SignIn(consumer);
+        Assert.Same(consumer, session.CurrentUser);
+        Assert.True(session.IsConsumer);
+        Assert.False(session.IsEmployee);
     }
 
     [Fact]

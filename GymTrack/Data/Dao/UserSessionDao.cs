@@ -23,7 +23,7 @@ public sealed class UserSessionDao(
 
     public async Task<WorkoutSession?> GetByIdAsync(int id)
     {
-        if (CurrentPersonalUserId is null)
+        if (CurrentConsumerId is null)
         {
             return null;
         }
@@ -126,12 +126,12 @@ public sealed class UserSessionDao(
         return await inner.DeleteAsync(id);
     }
 
-    private int? CurrentPersonalUserId => appSession.IsPersonalMode &&
+    private int? CurrentConsumerId => appSession.IsConsumer &&
         appSession.CurrentUser is { Id: > 0 } user ? user.Id : null;
 
     private async Task<HashSet<int>> GetOwnedWorkoutIdsAsync()
     {
-        if (CurrentPersonalUserId is not int userId)
+        if (CurrentConsumerId is not int userId)
         {
             return [];
         }
@@ -144,7 +144,7 @@ public sealed class UserSessionDao(
 
     private async Task<bool> OwnsWorkoutAsync(int workoutId)
     {
-        if (CurrentPersonalUserId is not int userId)
+        if (CurrentConsumerId is not int userId)
         {
             return false;
         }

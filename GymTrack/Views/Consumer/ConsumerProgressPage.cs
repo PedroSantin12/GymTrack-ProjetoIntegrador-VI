@@ -160,7 +160,7 @@ public sealed class ConsumerProgressPage : WorkspacePage
     {
         try
         {
-            if (_session.CurrentUser is not { } user) return;
+            if (!_session.IsConsumer || _session.CurrentUser is not { } user) return;
             _status.Text = string.Empty;
             await _manualLogs.EnsureDemoExamplesAsync(user);
             var sessions = (await _sessions.GetSummariesAsync())
@@ -335,7 +335,7 @@ public sealed class ConsumerProgressPage : WorkspacePage
 
     private async Task SaveManualAsync(Entry name, DatePicker date, Editor notes, Label formStatus)
     {
-        if (_busy || _session.CurrentUser is not { } user) return;
+        if (_busy || !_session.IsConsumer || _session.CurrentUser is not { } user) return;
         if (string.IsNullOrWhiteSpace(name.Text))
         {
             ShowFormError("Informe o nome do treino para salvar.");
@@ -491,7 +491,7 @@ public sealed class ConsumerProgressPage : WorkspacePage
 
     private async Task DeleteManualAsync(ManualWorkoutLog log)
     {
-        if (_busy || _session.CurrentUser is not { } user) return;
+        if (_busy || !_session.IsConsumer || _session.CurrentUser is not { } user) return;
         var dateText = log.PerformedOn.Date.ToString("dd/MM/yyyy", Portuguese);
         if (!await this.ConfirmAppActionAsync("Excluir registro?",
                 $"Remover “{log.WorkoutName}” de {dateText} da sua evolução?",

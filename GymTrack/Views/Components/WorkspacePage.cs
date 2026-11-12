@@ -28,7 +28,7 @@ public class WorkspacePage : ContentPage
     {
         var layout = new Grid
         {
-            MaximumWidthRequest = session.IsManagementMode ? 760 : 460,
+            MaximumWidthRequest = session.IsEmployee ? 760 : 460,
             HorizontalOptions = LayoutOptions.Fill,
             SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container)
         };
@@ -57,7 +57,7 @@ public class WorkspacePage : ContentPage
 
     private static View CreateNavigation(AppSection section, IAppNavigator navigator, AppSession session)
     {
-        var items = session.IsManagementMode
+        var items = session.IsEmployee
             ? new[] { (AppSection.AdminDashboard, "Início", "home"),
                 (AppSection.Students, "Alunos", "users"),
                 (AppSection.AdminWorkouts, "Treinos", "workout"),
@@ -80,7 +80,7 @@ public class WorkspacePage : ContentPage
             var (route, label, icon) = items[index];
             var selected = selectedRoute == route;
             var color = selected ? Ui.Accent : Ui.Foreground;
-            var caption = Ui.Text(label, session.IsManagementMode ? 10 : 11, color,
+            var caption = Ui.Text(label, session.IsEmployee ? 10 : 11, color,
                 selected ? FontAttributes.Bold : FontAttributes.None);
             caption.HorizontalTextAlignment = TextAlignment.Center;
             caption.LineBreakMode = LineBreakMode.TailTruncation;
@@ -113,12 +113,12 @@ public class WorkspacePage : ContentPage
             grid.Add(new Grid { Children = { button, content } }, index);
         }
 
-        var sideMargin = session.IsManagementMode ? 12 : 32;
+        var sideMargin = session.IsEmployee ? 12 : 32;
         return new Border
         {
             ZIndex = 1,
             HeightRequest = NavigationHeight,
-            MaximumWidthRequest = session.IsManagementMode ? 500 : 356,
+            MaximumWidthRequest = session.IsEmployee ? 500 : 356,
             Margin = new Thickness(sideMargin, 0, sideMargin, NavigationBottomMargin),
             VerticalOptions = LayoutOptions.End,
             Padding = new Thickness(5),

@@ -85,21 +85,6 @@ public sealed class AppAccessPolicyTests
     }
 
     [Fact]
-    public void EmployeePersonalMode_AllowsOwnWorkoutsAndHidesManagement()
-    {
-        var employee = new AppUser { Id = 7, Role = UserRole.Employee };
-        var ownWorkout = new Workout { OwnerUserId = employee.Id };
-        var otherWorkout = new Workout { OwnerUserId = 8 };
-
-        Assert.True(AppAccessPolicy.CanNavigate(employee, AppSection.Progress, personalMode: true));
-        Assert.False(AppAccessPolicy.CanNavigate(employee, AppSection.Students, personalMode: true));
-        Assert.True(AppAccessPolicy.CanEditWorkout(employee, ownWorkout, personalMode: true));
-        Assert.True(AppAccessPolicy.CanStartWorkout(employee, ownWorkout, personalMode: true));
-        Assert.False(AppAccessPolicy.CanEditWorkout(employee, new Workout { IsTemplate = true }, personalMode: true));
-        Assert.False(AppAccessPolicy.CanStartWorkout(employee, otherWorkout, personalMode: true));
-    }
-
-    [Fact]
     public void WorkoutActions_RejectAnonymousInactiveAndMissingWorkout()
     {
         var user = new AppUser { Id = 7, Role = UserRole.Consumer };

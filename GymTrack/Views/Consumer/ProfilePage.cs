@@ -47,7 +47,7 @@ public sealed class ProfilePage : WorkspacePage
         content.Add(CreateHeader());
         content.Add(_status);
         content.Add(_identity);
-        if (_session.IsPersonalMode)
+        if (_session.IsConsumer)
         {
             content.Add(_chart);
             content.Add(CreateMetricSelector());
@@ -59,7 +59,7 @@ public sealed class ProfilePage : WorkspacePage
             Children = { Heading("Painel"), CreatePanel() }
         });
 
-        if (_session.IsPersonalMode)
+        if (_session.IsConsumer)
         {
             content.Add(new VerticalStackLayout
             {
@@ -77,7 +77,7 @@ public sealed class ProfilePage : WorkspacePage
     {
         base.OnAppearing();
         if (AppDialogs.IsShowingFor(this)) return;
-        if (!_session.IsPersonalMode || _session.CurrentUser is not { } user) return;
+        if (!_session.IsConsumer || _session.CurrentUser is not { } user) return;
         _trainingLoad = LoadTrainingAsync(user.Id);
     }
 
@@ -87,7 +87,7 @@ public sealed class ProfilePage : WorkspacePage
         {
             var sessions = await _sessions.GetSummariesAsync();
             var manual = await _manualLogs.GetForUserAsync(userId);
-            if (!_session.IsPersonalMode || _session.CurrentUser?.Id != userId) return;
+            if (!_session.IsConsumer || _session.CurrentUser?.Id != userId) return;
 
             _completedSessions = sessions.Where(item => item.FinishedAt.HasValue).ToArray();
             _manualWorkouts = manual.Where(item => !item.IsExample).ToArray();
@@ -147,7 +147,7 @@ public sealed class ProfilePage : WorkspacePage
 
         var details = new VerticalStackLayout { Spacing = 7, VerticalOptions = LayoutOptions.Center };
         details.Add(Heading(user.Name, 20));
-        if (_session.IsPersonalMode)
+        if (_session.IsConsumer)
         {
             var dates = TrainingDates().ToArray();
             var today = DateTime.Today;
@@ -241,7 +241,7 @@ public sealed class ProfilePage : WorkspacePage
             ColumnSpacing = 8
         };
 
-        if (_session.IsPersonalMode)
+        if (_session.IsConsumer)
         {
             panel.Add(PanelAction("Medidas", "measurements", () =>
                 Navigation.PushAsync(new BodyMeasurementsPage(_session, _measurements))), 0);
@@ -254,9 +254,10 @@ public sealed class ProfilePage : WorkspacePage
                 _navigator.NavigateAsync(AppSection.Statistics)), 0, 0);
             panel.Add(PanelAction("Exercícios", "workout", () =>
                 _navigator.NavigateAsync(AppSection.Exercises)), 1, 0);
-            panel.Add(PanelAction("Gerenciar contas", "profile", () =>
-                _navigator.NavigateAsync(AppSection.Users)), 0, 1);
-            panel.Add(PanelAction("Área pessoal", "switch", _navigator.SwitchWorkspaceAsync), 1, 1);
+            var accounts = PanelAction("Gerenciar contas", "profile", () =>
+                _navigator.NavigateAsync(AppSection.Users));
+            panel.Add(accounts, 0, 1);
+            Grid.SetColumnSpan(accounts, 2);
         }
 
         return panel;
@@ -395,11 +396,6 @@ public sealed class ProfilePage : WorkspacePage
         };
 
         if (_session.IsEmployee)
-        {
-            var workspace = _session.IsManagementMode ? "Abrir área pessoal" : "Voltar à gestão";
-            settings.Add(SettingsButton(workspace, _navigator.SwitchWorkspaceAsync));
-        }
-        if (_session.IsManagementMode)
         {
             settings.Add(SettingsButton("Gerenciar contas", () => _navigator.NavigateAsync(AppSection.Users)));
             settings.Add(SettingsButton("Estatísticas", () => _navigator.NavigateAsync(AppSection.Statistics)));
@@ -565,7 +561,6 @@ public sealed class ProfilePage : WorkspacePage
             "measurements" => "M 14,4 A 2,2 0 1 1 10,4 A 2,2 0 1 1 14,4 M 9,22 L 9,13 L 5,16 L 3,14 L 9,8 L 15,8 L 21,14 L 19,16 L 15,13 L 15,22 M 12,16 L 12,22",
             "calendar" => "M 4,5 L 20,5 L 20,21 L 4,21 Z M 8,2 L 8,8 M 16,2 L 16,8 M 4,10 L 20,10 M 8,14 L 9,14 M 12,14 L 13,14 M 16,14 L 17,14 M 8,17 L 9,17 M 12,17 L 13,17",
             "profile" => "M 16,7 A 4,4 0 1 1 8,7 A 4,4 0 1 1 16,7 M 3,22 C 3,10 21,10 21,22",
-            "switch" => "M 3,7 L 20,7 M 16,3 L 20,7 L 16,11 M 21,17 L 4,17 M 8,13 L 4,17 L 8,21",
             _ => "M 3,21 L 3,13 L 8,13 L 8,21 Z M 10,21 L 10,8 L 15,8 L 15,21 Z M 17,21 L 17,3 L 22,3 L 22,21 Z"
         };
 

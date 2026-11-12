@@ -6,7 +6,7 @@ namespace GymTrack.Tests;
 public sealed class StudentServiceTests
 {
     [Fact]
-    public async Task StudentDirectoryRequiresManagementModeAndListsActiveConsumers()
+    public async Task StudentDirectoryRequiresAnEmployeeAndListsActiveConsumers()
     {
         await using var context = await TestDatabase.CreateAsync();
         await using var accounts = new AccountService(Path.Combine(context.DirectoryPath, "accounts.db3"));
@@ -25,11 +25,6 @@ public sealed class StudentServiceTests
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetStudentAsync(student.Id));
 
         session.SignIn(employee);
-        session.SetEmployeePersonalMode(true);
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetStudentsAsync());
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetStudentAsync(student.Id));
-
-        session.SetEmployeePersonalMode(false);
         Assert.Equal(student.Id, Assert.Single(await service.GetStudentsAsync()).Id);
         var account = await service.GetStudentAsync(student.Id);
         Assert.Equal(student.Name, account.Name);
@@ -53,7 +48,7 @@ public sealed class StudentServiceTests
         employeeToDeactivate.IsActive = false;
         await accounts.UpdateUserAsync(employeeToDeactivate);
 
-        Assert.True(session.IsManagementMode);
+        Assert.True(session.IsEmployee);
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetStudentsAsync());
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetStudentAsync(student.Id));
     }

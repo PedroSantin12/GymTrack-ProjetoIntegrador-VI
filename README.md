@@ -27,7 +27,7 @@ As contas, os exercícios, os treinos e as sessões persistem localmente no SQLi
 - **Alunos** permite pesquisar contas ativas de consumidores e abrir a ficha individual com nome e e-mail.
 - **Treinos** permite criar, editar e excluir rotinas com exercícios, séries, repetições e carga planejada.
 - **Exercícios** reúne cadastro, edição, busca e filtros por grupo muscular, com categorias amplas como Costas, Pernas e Braços.
-- **Perfil** reúne os dados da conta, o gerenciamento de contas, as estatísticas e a alternância para a área pessoal. O funcionário pode treinar e acompanhar sua evolução com a mesma conta.
+- **Perfil** reúne os dados da conta, o gerenciamento de contas e as estatísticas administrativas. Os treinos pessoais e a evolução exigem uma conta de consumidor.
 
 **Consumidor**
 
@@ -46,7 +46,7 @@ Na conta de demonstração do consumidor, a aba **Evolução** inclui alguns reg
 ## Roteiro de demonstração
 
 1. Entre como **Funcionário**. Use **Exercícios** para cadastrar movimentos e **Treinos** para criar uma rotina com pelo menos um exercício.
-2. Abra **Alunos** e selecione **Abrir ficha** para consultar os dados de uma conta ativa. Para experimentar a área pessoal da conta de funcionário, use **Perfil → Abrir área pessoal**.
+2. Abra **Alunos** e selecione **Abrir ficha** para consultar os dados de uma conta ativa.
 3. Entre como **Consumidor**, abra **Treinos** e use **Explorar treinos prontos** para copiar um modelo para a conta.
 4. Toque em **Iniciar treino**, registre as séries e finalize a sessão. Se sair antes, use **Continuar treino** para retomá-la.
 5. Em **Evolução**, registre também um treino feito em outra data e abra **Calendário** para conferir os dias marcados.

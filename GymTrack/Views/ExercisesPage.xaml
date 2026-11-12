@@ -31,6 +31,10 @@
             <Button Grid.Column="1"
                     Text="Limpar"
                     Style="{StaticResource SecondaryButton}"
+                    FontSize="12"
+                    MinimumHeightRequest="44"
+                    Padding="10,4"
+                    VerticalOptions="End"
                     Command="{Binding ClearFiltersCommand}" />
         </Grid>
 
@@ -64,13 +68,13 @@
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:ExerciseListItemViewModel">
-                        <Border Margin="0,0,0,8"
-                                Padding="16,12">
-                            <Grid ColumnDefinitions="72,*,Auto"
+                        <Border Margin="0,0,0,6"
+                                Padding="10,8">
+                            <Grid ColumnDefinitions="52,*,Auto"
                                   ColumnSpacing="8">
-                                <Border WidthRequest="72"
-                                        HeightRequest="58"
-                                        Padding="3"
+                                <Border HeightRequest="44"
+                                        Padding="2"
+                                        VerticalOptions="Center"
                                         BackgroundColor="#191919"
                                         StrokeShape="RoundRectangle 9">
                                     <Grid>
@@ -87,33 +91,42 @@
                                                VerticalTextAlignment="Center" />
                                     </Grid>
                                 </Border>
-                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
                                     <VerticalStackLayout.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding EditCommand}" />
                                     </VerticalStackLayout.GestureRecognizers>
 
                                     <Label Text="{Binding Name}"
-                                           Style="{StaticResource SectionTitle}" />
-                                    <VerticalStackLayout Spacing="2">
-                                        <Label Text="{Binding MuscleGroup}"
-                                               Style="{StaticResource SecondaryText}" />
-                                        <Label Text="{Binding StateText}"
-                                               Style="{StaticResource CaptionText}">
-                                            <Label.Triggers>
-                                                <DataTrigger TargetType="Label"
-                                                             Binding="{Binding IsActive}"
-                                                             Value="False">
-                                                    <Setter Property="TextColor"
-                                                            Value="{StaticResource Danger}" />
-                                                </DataTrigger>
-                                            </Label.Triggers>
-                                        </Label>
-                                    </VerticalStackLayout>
+                                           Style="{StaticResource SectionTitle}"
+                                           FontSize="15"
+                                           MaxLines="2"
+                                           LineBreakMode="TailTruncation"
+                                           ToolTipProperties.Text="{Binding Name}" />
+                                    <Label Text="{Binding MuscleGroup}"
+                                           Style="{StaticResource CaptionText}"
+                                           MaxLines="1"
+                                           LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding StateText}"
+                                           Style="{StaticResource CaptionText}"
+                                           FontSize="11">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label"
+                                                         Binding="{Binding IsActive}"
+                                                         Value="False">
+                                                <Setter Property="TextColor"
+                                                        Value="{StaticResource Danger}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
                                 </VerticalStackLayout>
 
                                 <Button Grid.Column="2"
                                         Text="Ações"
                                         Style="{StaticResource SecondaryButton}"
+                                        FontSize="12"
+                                        MinimumHeightRequest="44"
+                                        Padding="8,4"
+                                        VerticalOptions="Center"
                                         Command="{Binding ActionsCommand}" />
                             </Grid>
                         </Border>

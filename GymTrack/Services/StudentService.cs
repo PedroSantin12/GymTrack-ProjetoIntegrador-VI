@@ -14,11 +14,11 @@ public sealed class StudentService(IAccountService accounts, AppSession session)
 
     private async Task<IReadOnlyList<AppUser>> GetAccountsForManagementAsync()
     {
-        if (!session.IsManagementMode || session.CurrentUser is not { Id: > 0 } employee)
+        if (!session.IsEmployee || session.CurrentUser is not { Id: > 0 } employee)
             throw new UnauthorizedAccessException("Sua conta não tem acesso a esta ação.");
 
         var users = await accounts.GetUsersAsync();
-        if (!session.IsManagementMode || session.CurrentUser?.Id != employee.Id ||
+        if (!session.IsEmployee || session.CurrentUser?.Id != employee.Id ||
             !users.Any(user => user.Id == employee.Id && user.Role == UserRole.Employee && user.IsActive))
             throw new UnauthorizedAccessException("Sua conta não tem acesso a esta ação.");
 

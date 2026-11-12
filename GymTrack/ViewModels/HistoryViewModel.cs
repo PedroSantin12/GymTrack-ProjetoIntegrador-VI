@@ -134,7 +134,7 @@ public partial class HistoryViewModel : BaseViewModel
             Workouts.Clear();
             Workouts.Add(new(null, "Todos os treinos"));
             var visibleWorkouts = _appSession is null ? workouts : workouts
-                .Where(workout => _appSession.IsPersonalMode && _appSession.CurrentUser is { } user &&
+                .Where(workout => _appSession.IsConsumer && _appSession.CurrentUser is { } user &&
                     workout.OwnerUserId == user.Id && !workout.IsTemplate)
                 .ToArray();
             foreach (var workout in visibleWorkouts.OrderBy(workout => workout.Name))

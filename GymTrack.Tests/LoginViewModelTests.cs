@@ -175,7 +175,6 @@ public sealed class LoginViewModelTests
 
         public Task ShowLoginAsync() => throw new NotSupportedException();
 
-        public Task SwitchWorkspaceAsync() => throw new NotSupportedException();
 
         public Task NavigateAsync(AppSection section) => throw new NotSupportedException();
 

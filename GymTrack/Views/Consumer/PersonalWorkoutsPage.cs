@@ -57,7 +57,7 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
         _loading = true;
         try
         {
-            if (_session.CurrentUser is not { } user) return;
+            if (!_session.IsConsumer || _session.CurrentUser is not { } user) return;
             _status.Text = string.Empty;
             var workouts = await _catalog.GetPersonalAsync(user.Id);
             var ownIds = workouts.Select(item => item.Id).ToHashSet();
@@ -239,7 +239,7 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
 
     private async Task DuplicateAsync(int id)
     {
-        if (_session.CurrentUser is not { } user) return;
+        if (!_session.IsConsumer || _session.CurrentUser is not { } user) return;
         await RunAsync(async () =>
         {
             await _catalog.DuplicatePersonalAsync(id, user.Id);
@@ -250,7 +250,7 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
 
     private async Task DeleteAsync(int id)
     {
-        if (_busy || _session.CurrentUser is not { } user) return;
+        if (_busy || !_session.IsConsumer || _session.CurrentUser is not { } user) return;
         if (!await this.ConfirmAppActionAsync("Excluir treino?",
                 "Esta rotina sairá da lista. Seu histórico de sessões será preservado.",
                 "Excluir")) return;
