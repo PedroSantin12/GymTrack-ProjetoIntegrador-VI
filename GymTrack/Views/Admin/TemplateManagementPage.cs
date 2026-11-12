@@ -49,6 +49,7 @@ public sealed class TemplateManagementPage : WorkspacePage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (AppDialogs.IsShowingFor(this)) return;
         await LoadTemplatesAsync();
     }
 
@@ -173,7 +174,8 @@ public sealed class TemplateManagementPage : WorkspacePage
         _isBusy = true;
         try
         {
-            if (!await DisplayAlertAsync("Excluir treino pronto?", $"O treino “{template.Name}” será removido do catálogo.", "Excluir", "Cancelar"))
+            if (!await this.ConfirmAppActionAsync("Excluir treino pronto?",
+                    $"O treino “{template.Name}” será removido do catálogo.", "Excluir"))
                 return;
 
             await _catalog.DeleteTemplateAsync(template.Id);

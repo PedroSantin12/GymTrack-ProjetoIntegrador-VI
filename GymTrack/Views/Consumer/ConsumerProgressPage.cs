@@ -131,6 +131,7 @@ public sealed class ConsumerProgressPage : WorkspacePage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (AppDialogs.IsShowingFor(this)) return;
         await LoadAsync();
     }
 
@@ -492,9 +493,9 @@ public sealed class ConsumerProgressPage : WorkspacePage
     {
         if (_busy || _session.CurrentUser is not { } user) return;
         var dateText = log.PerformedOn.Date.ToString("dd/MM/yyyy", Portuguese);
-        if (!await DisplayAlertAsync("Excluir registro?",
+        if (!await this.ConfirmAppActionAsync("Excluir registro?",
                 $"Remover “{log.WorkoutName}” de {dateText} da sua evolução?",
-                "Excluir", "Cancelar")) return;
+                "Excluir")) return;
 
         _busy = true;
         try

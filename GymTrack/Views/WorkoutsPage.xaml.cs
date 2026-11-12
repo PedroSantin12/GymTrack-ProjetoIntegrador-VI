@@ -1,4 +1,5 @@
 using GymTrack.ViewModels;
+using GymTrack.Views.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -30,6 +31,7 @@ public partial class WorkoutsPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (AppDialogs.IsShowingFor(this)) return;
         await _viewModel.LoadCommand.ExecuteAsync(null);
     }
 

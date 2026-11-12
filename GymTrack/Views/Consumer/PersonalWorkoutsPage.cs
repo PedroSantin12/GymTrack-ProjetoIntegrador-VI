@@ -41,7 +41,7 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await LoadAsync();
+        if (!AppDialogs.IsShowingFor(this)) await LoadAsync();
         _elapsedTimer.Start();
     }
 
@@ -227,7 +227,7 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
 
     private async Task ShowOptionsAsync(WorkoutCatalogItem workout)
     {
-        var choice = await DisplayActionSheetAsync(workout.Name, "Cancelar", null,
+        var choice = await this.ChooseAppActionAsync(workout.Name, "Cancelar",
             "Editar", "Duplicar", "Excluir");
         switch (choice)
         {
@@ -251,9 +251,9 @@ public sealed class PersonalWorkoutsPage : WorkspacePage
     private async Task DeleteAsync(int id)
     {
         if (_busy || _session.CurrentUser is not { } user) return;
-        if (!await DisplayAlertAsync("Excluir treino?",
+        if (!await this.ConfirmAppActionAsync("Excluir treino?",
                 "Esta rotina sairá da lista. Seu histórico de sessões será preservado.",
-                "Excluir", "Cancelar")) return;
+                "Excluir")) return;
         await RunAsync(async () =>
         {
             await _catalog.DeletePersonalAsync(id, user.Id);

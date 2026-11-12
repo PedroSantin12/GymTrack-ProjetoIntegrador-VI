@@ -42,6 +42,7 @@ public partial class ExercisesPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (AppDialogs.IsShowingFor(this)) return;
         await _viewModel.LoadCommand.ExecuteAsync(null);
     }
 

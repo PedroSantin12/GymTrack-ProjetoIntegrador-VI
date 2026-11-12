@@ -356,9 +356,9 @@ public sealed class BodyMeasurementsPage : ContentPage
         _busy = true;
         try
         {
-            if (!await DisplayAlertAsync("Excluir medidas?",
+            if (!await this.ConfirmAppActionAsync("Excluir medidas?",
                     $"O registro de {DateText(item.MeasuredOn)} será excluído do seu histórico.",
-                    "Excluir", "Cancelar") || ActiveUserId != userId) return;
+                    "Excluir") || ActiveUserId != userId) return;
             await _measurements.DeleteAsync(userId, item.Id);
             await LoadMeasurementsAsync(userId);
             if (SelectedDate == item.MeasuredOn.Date)

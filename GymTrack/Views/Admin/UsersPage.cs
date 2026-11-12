@@ -41,6 +41,7 @@ public sealed class UsersPage : WorkspacePage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (AppDialogs.IsShowingFor(this)) return;
         await LoadUsersAsync();
     }
 
@@ -131,12 +132,12 @@ public sealed class UsersPage : WorkspacePage
         _isEditing = true;
         try
         {
-            var name = await DisplayPromptAsync("Editar usuário", "Nome", "Continuar", "Cancelar",
+            var name = await this.PromptAppValueAsync("Editar usuário", "Nome", "Continuar",
                 initialValue: user.Name, maxLength: 100);
             if (name is null)
                 return;
 
-            var email = await DisplayPromptAsync("Editar usuário", "E-mail", "Salvar", "Cancelar",
+            var email = await this.PromptAppValueAsync("Editar usuário", "E-mail",
                 initialValue: user.Email, maxLength: 254, keyboard: Keyboard.Email);
             if (email is null)
                 return;
@@ -189,7 +190,7 @@ public sealed class UsersPage : WorkspacePage
             var message = user.IsActive
                 ? $"{user.Name} perderá o acesso ao aplicativo. O histórico será mantido."
                 : $"{user.Name} poderá acessar o aplicativo novamente.";
-            if (!await DisplayAlertAsync($"{action} usuário?", message, action, "Cancelar"))
+            if (!await this.ConfirmAppActionAsync($"{action} usuário?", message, action))
                 return;
 
             user.IsActive = !user.IsActive;

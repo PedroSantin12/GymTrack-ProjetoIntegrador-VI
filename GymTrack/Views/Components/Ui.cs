@@ -63,14 +63,29 @@ public static class Ui
     {
         try
         {
-            if (Application.Current?.Windows.FirstOrDefault()?.Page is { } page)
-                await page.DisplayAlertAsync(title, message, "Entendi");
+            if (GetActivePage() is { } page)
+                await page.ShowAppMessageAsync(title, message);
         }
         catch (Exception exception)
         {
             System.Diagnostics.Debug.WriteLine(exception);
         }
     }
+
+    internal static Page? GetActivePage()
+    {
+        var root = Application.Current?.Windows.FirstOrDefault()?.Page;
+        return root is null ? null : GetVisiblePage(root.Navigation.ModalStack.LastOrDefault() ?? root);
+    }
+
+    private static Page GetVisiblePage(Page page) => page switch
+    {
+        NavigationPage { CurrentPage: { } current } => GetVisiblePage(current),
+        Shell { CurrentPage: { } current } => GetVisiblePage(current),
+        FlyoutPage { Detail: { } detail } => GetVisiblePage(detail),
+        TabbedPage { CurrentPage: { } current } => GetVisiblePage(current),
+        _ => page
+    };
 
     public static Label Tag(string text) => new()
     {

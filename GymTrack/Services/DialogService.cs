@@ -1,3 +1,5 @@
+using GymTrack.Views.Components;
+
 namespace GymTrack.Services;
 
 public sealed class DialogService : IDialogService
@@ -7,10 +9,10 @@ public sealed class DialogService : IDialogService
         string message,
         string button)
     {
-        var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+        var page = Ui.GetActivePage();
         if (page is not null)
         {
-            await page.DisplayAlertAsync(title, message, button);
+            await page.ShowAppMessageAsync(title, message, button);
         }
     }
 
@@ -19,13 +21,13 @@ public sealed class DialogService : IDialogService
         string cancel,
         params string[] actions)
     {
-        var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+        var page = Ui.GetActivePage();
         if (page is null)
         {
             return null;
         }
 
-        return await page.DisplayActionSheetAsync(title, cancel, null, actions);
+        return await page.ChooseAppActionAsync(title, cancel, actions);
     }
 
     public async Task<bool> ConfirmAsync(
@@ -34,12 +36,12 @@ public sealed class DialogService : IDialogService
         string accept,
         string cancel)
     {
-        var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+        var page = Ui.GetActivePage();
         if (page is null)
         {
             return false;
         }
 
-        return await page.DisplayAlertAsync(title, message, accept, cancel);
+        return await page.ConfirmAppActionAsync(title, message, accept, cancel);
     }
 }

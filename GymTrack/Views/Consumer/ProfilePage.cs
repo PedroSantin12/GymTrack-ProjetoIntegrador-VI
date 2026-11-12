@@ -76,6 +76,7 @@ public sealed class ProfilePage : WorkspacePage
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        if (AppDialogs.IsShowingFor(this)) return;
         if (!_session.IsPersonalMode || _session.CurrentUser is not { } user) return;
         _trainingLoad = LoadTrainingAsync(user.Id);
     }
@@ -433,11 +434,11 @@ public sealed class ProfilePage : WorkspacePage
     private async Task EditProfileAsync()
     {
         if (_busy || _session.CurrentUser is not { } user) return;
-        var choice = await DisplayActionSheetAsync("Editar perfil", "Cancelar", null, "Alterar nome", "Alterar e-mail");
+        var choice = await this.ChooseAppActionAsync("Editar perfil", "Cancelar", "Alterar nome", "Alterar e-mail");
         if (choice is not ("Alterar nome" or "Alterar e-mail")) return;
         var changeName = choice == "Alterar nome";
-        var value = await DisplayPromptAsync(choice, changeName ? "Nome" : "E-mail",
-            "Salvar", "Cancelar", initialValue: changeName ? user.Name : user.Email,
+        var value = await this.PromptAppValueAsync(choice, changeName ? "Nome" : "E-mail",
+            initialValue: changeName ? user.Name : user.Email,
             maxLength: changeName ? 100 : 254,
             keyboard: changeName ? Keyboard.Text : Keyboard.Email);
         if (value is null) return;
@@ -475,8 +476,8 @@ public sealed class ProfilePage : WorkspacePage
         _busy = true;
         try
         {
-            if (!await owner.DisplayAlertAsync("Sair da conta?", "Você poderá entrar novamente com seu e-mail e sua senha.",
-                    "Sair", "Continuar aqui")) return;
+            if (!await owner.ConfirmAppActionAsync("Sair da conta?", "Você poderá entrar novamente com seu e-mail e sua senha.",
+                    "Sair")) return;
             await _navigator.ShowLoginAsync();
         }
         finally { _busy = false; }
