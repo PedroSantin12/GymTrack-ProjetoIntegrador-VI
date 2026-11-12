@@ -181,6 +181,104 @@ public sealed class AccountServiceTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => context.Service.UpdateUserAsync(user));
     }
 
+    [Fact]
+    public async Task InitializeAsync_AddsProfileFieldsToExistingDatabase()
+    {
+        await using var context = new TestAccounts();
+        var original = await context.Service.RegisterConsumerAsync("Ana Costa", "ana@example.com", "MinhaSenha123!");
+        await context.ReopenAsync();
+
+        using (var connection = new SQLite.SQLiteConnection(context.DatabasePath))
+        {
+            connection.Execute("ALTER TABLE Account DROP COLUMN Phone");
+            connection.Execute("ALTER TABLE Account DROP COLUMN JobTitle");
+            connection.Execute("ALTER TABLE Account DROP COLUMN GymName");
+            connection.Execute("ALTER TABLE Account DROP COLUMN NotificationsEnabled");
+        }
+
+        var migrated = await context.Service.SignInAsync(original.Email, "MinhaSenha123!");
+        Assert.NotNull(migrated);
+        Assert.Equal(original.Id, migrated.Id);
+        Assert.Equal(original.Name, migrated.Name);
+        Assert.Empty(migrated.Phone);
+        Assert.Empty(migrated.JobTitle);
+        Assert.Empty(migrated.GymName);
+        Assert.True(migrated.NotificationsEnabled);
+        Assert.Equal(3, await context.Service.CountUsersAsync());
+    }
+
+    [Theory]
+    [InlineData("consumidor@gymtrack.app", UserRole.Consumer)]
+    [InlineData("funcionario@gymtrack.app", UserRole.Employee)]
+    public async Task UpdatePersonalDetailsAsync_ChangesContactDetailsWithoutChangingRoleOrPassword(
+        string originalEmail, UserRole role)
+    {
+        await using var context = new TestAccounts();
+        var user = await context.Service.SignInAsync(originalEmail, "GymTrack123!");
+        Assert.NotNull(user);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => context.Service.UpdatePersonalDetailsAsync(
+            user.Id, "Novo Nome", role == UserRole.Consumer ? "funcionario@gymtrack.app" : "consumidor@gymtrack.app", ""));
+        var updated = await context.Service.UpdatePersonalDetailsAsync(
+            user.Id, " Novo Nome ", " NOVO@EXAMPLE.COM ", " 11 98888-5555 ");
+        Assert.Equal("Novo Nome", updated.Name);
+        Assert.Equal("novo@example.com", updated.Email);
+        Assert.Equal("11 98888-5555", updated.Phone);
+        Assert.Equal(role, updated.Role);
+        Assert.Equal(user.CreatedAt, updated.CreatedAt);
+        Assert.Null(await context.Service.SignInAsync(originalEmail, "GymTrack123!"));
+        Assert.Equal(user.Id, (await context.Service.SignInAsync(updated.Email, "GymTrack123!"))?.Id);
+    }
+
+    [Fact]
+    public async Task ProfessionalDetailsAndNotifications_AreSavedForTheCurrentAccount()
+    {
+        await using var context = new TestAccounts();
+        var employee = await context.Service.SignInAsync("funcionario@gymtrack.app", "GymTrack123!");
+        var consumer = await context.Service.SignInAsync("consumidor@gymtrack.app", "GymTrack123!");
+        Assert.NotNull(employee);
+        Assert.NotNull(consumer);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            context.Service.UpdateProfessionalDetailsAsync(consumer.Id, "Instrutor", "Academia"));
+
+        var profile = await context.Service.UpdateProfessionalDetailsAsync(employee.Id, " Instrutor ", " Academia Central ");
+        Assert.Equal("Instrutor", profile.JobTitle);
+        Assert.Equal("Academia Central", profile.GymName);
+        Assert.False((await context.Service.SetNotificationsEnabledAsync(employee.Id, false)).NotificationsEnabled);
+
+        await context.ReopenAsync();
+        var saved = await context.Service.SignInAsync(employee.Email, "GymTrack123!");
+        Assert.NotNull(saved);
+        Assert.Equal("Instrutor", saved.JobTitle);
+        Assert.Equal("Academia Central", saved.GymName);
+        Assert.False(saved.NotificationsEnabled);
+        Assert.True((await context.Service.SetNotificationsEnabledAsync(employee.Id, true)).NotificationsEnabled);
+        var other = await context.Service.SignInAsync(consumer.Email, "GymTrack123!");
+        Assert.NotNull(other);
+        Assert.True(other.NotificationsEnabled);
+        Assert.Empty(other.GymName);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_RequiresCurrentPasswordAndPersistsReplacement()
+    {
+        await using var context = new TestAccounts();
+        var user = await context.Service.SignInAsync("consumidor@gymtrack.app", "GymTrack123!");
+        Assert.NotNull(user);
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            context.Service.ChangePasswordAsync(user.Id, "GymTrack123!", "curta"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            context.Service.ChangePasswordAsync(user.Id, "incorreta", "NovaSenha123!"));
+        Assert.NotNull(await context.Service.SignInAsync(user.Email, "GymTrack123!"));
+
+        await context.Service.ChangePasswordAsync(user.Id, "GymTrack123!", "NovaSenha123!");
+        await context.ReopenAsync();
+        Assert.Null(await context.Service.SignInAsync(user.Email, "GymTrack123!"));
+        Assert.Equal(user.Id, (await context.Service.SignInAsync(user.Email, "NovaSenha123!"))?.Id);
+        Assert.NotNull(await context.Service.SignInAsync("funcionario@gymtrack.app", "GymTrack123!"));
+    }
+
     private sealed class TestAccounts : IAsyncDisposable
     {
         private readonly string _directory = Path.Combine(
@@ -191,7 +289,7 @@ public sealed class AccountServiceTests
             Service = new AccountService(DatabasePath);
         }
 
-        private string DatabasePath => Path.Combine(_directory, "accounts.db3");
+        public string DatabasePath => Path.Combine(_directory, "accounts.db3");
 
         public AccountService Service { get; private set; }
 

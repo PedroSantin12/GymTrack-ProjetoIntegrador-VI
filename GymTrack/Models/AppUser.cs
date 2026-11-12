@@ -8,6 +8,14 @@ public sealed class AppUser
 
     public string Email { get; set; } = string.Empty;
 
+    public string Phone { get; set; } = string.Empty;
+
+    public string JobTitle { get; set; } = string.Empty;
+
+    public string GymName { get; set; } = string.Empty;
+
+    public bool NotificationsEnabled { get; set; } = true;
+
     public UserRole Role { get; set; }
 
     public bool IsActive { get; set; } = true;

@@ -21,6 +21,7 @@ public sealed class ProfilePage : WorkspacePage
     private readonly IServiceProvider _services;
     private readonly Label _status = ConsumerUi.Status();
     private readonly ContentView _identity = new();
+    private readonly ContentView _professional = new();
     private readonly ContentView _chart = new();
     private readonly ContentView _workouts = new();
     private readonly Dictionary<TrainingMetric, Button> _metricButtons = [];
@@ -28,7 +29,6 @@ public sealed class ProfilePage : WorkspacePage
     private IReadOnlyList<ManualWorkoutLog> _manualWorkouts = [];
     private Task _trainingLoad = Task.CompletedTask;
     private TrainingMetric _selectedMetric;
-    private bool _busy;
 
     public ProfilePage(IAppNavigator navigator, AppSession session, IAccountService accounts,
         IBodyMeasurementService measurements, ISessionDao sessions,
@@ -51,6 +51,11 @@ public sealed class ProfilePage : WorkspacePage
         {
             content.Add(_chart);
             content.Add(CreateMetricSelector());
+        }
+        else if (_session.IsEmployee)
+        {
+            content.Add(_professional);
+            RenderProfessionalDetails();
         }
 
         content.Add(new VerticalStackLayout
@@ -77,6 +82,7 @@ public sealed class ProfilePage : WorkspacePage
     {
         base.OnAppearing();
         if (AppDialogs.IsShowingFor(this)) return;
+        RenderIdentity();
         if (!_session.IsConsumer || _session.CurrentUser is not { } user) return;
         _trainingLoad = LoadTrainingAsync(user.Id);
     }
@@ -105,23 +111,14 @@ public sealed class ProfilePage : WorkspacePage
         var title = Heading("Meu perfil", 26, SemanticHeadingLevel.Level1);
         title.VerticalTextAlignment = TextAlignment.Center;
 
-        var actions = new HorizontalStackLayout
-        {
-            Spacing = 2,
-            Children =
-            {
-                IconAction("Editar perfil", "edit", EditProfileAsync),
-                IconAction("Configurações", "settings", OpenSettingsAsync)
-            }
-        };
-
         var header = new Grid
         {
             ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) },
             ColumnSpacing = 8
         };
         header.Add(title);
-        header.Add(Surface(actions, new Thickness(4, 1), 26), 1);
+        header.Add(Surface(IconAction("Configurações", "settings", OpenSettingsAsync),
+            new Thickness(2), 24), 1);
         return header;
     }
 
@@ -378,105 +375,48 @@ public sealed class ProfilePage : WorkspacePage
     private Task OpenSettingsAsync()
     {
         if (_session.CurrentUser is not { } user) return Task.CompletedTask;
-        var page = new ProfileSettingsPage();
-        var account = new VerticalStackLayout
+        return Navigation.PushAsync(new ProfileSettingsPage(user, _session, _accounts,
+            _navigator, () => _services.GetRequiredService<AboutPage>()));
+    }
+
+    private void RenderProfessionalDetails()
+    {
+        if (!_session.IsEmployee || _session.CurrentUser is not { } user) return;
+
+        var edit = Ui.Button("Editar dados profissionais", EditProfessionalDetailsAsync, true);
+        edit.CornerRadius = 18;
+        var details = new VerticalStackLayout
         {
             Spacing = 10,
             Children =
             {
-                AccountDetail("Nome", user.Name),
-                AccountDetail("E-mail", user.Email),
-                AccountDetail("Tipo de conta", _session.IsEmployee ? "Funcionário" : "Aluno")
+                IdentityMetric("Cargo", string.IsNullOrWhiteSpace(user.JobTitle) ? "Funcionário" : user.JobTitle),
+                IdentityMetric("Academia", string.IsNullOrWhiteSpace(user.GymName) ? "Não informada" : user.GymName),
+                edit
             }
         };
-        var settings = new VerticalStackLayout
+        _professional.Content = new VerticalStackLayout
         {
-            Spacing = 10,
-            Children = { Heading("Informações da conta"), Surface(account, new Thickness(15)) }
+            Spacing = 8,
+            Children = { Heading("Dados profissionais"), Surface(details, new Thickness(14)) }
         };
-
-        if (_session.IsEmployee)
-        {
-            settings.Add(SettingsButton("Gerenciar contas", () => _navigator.NavigateAsync(AppSection.Users)));
-            settings.Add(SettingsButton("Estatísticas", () => _navigator.NavigateAsync(AppSection.Statistics)));
-        }
-        settings.Add(SettingsButton("Sobre o GymTrack", () =>
-            page.Navigation.PushAsync(_services.GetRequiredService<AboutPage>())));
-        var signOut = SettingsButton("Sair da conta", () => SignOutAsync(page));
-        signOut.TextColor = Color.FromArgb("#FF7474");
-        settings.Add(signOut);
-        page.Content = new ScrollView
-        {
-            Padding = new Thickness(18, 16, 18, 24),
-            Content = settings,
-            MaximumWidthRequest = 460
-        };
-        return Navigation.PushAsync(page);
     }
 
-    private static View AccountDetail(string label, string value) => new VerticalStackLayout
+    private Task EditProfessionalDetailsAsync()
     {
-        Spacing = 2,
-        Children = { Ui.Text(label, 12, Ui.Muted), Ui.Text(value, 15) }
-    };
+        if (!_session.IsEmployee || _session.CurrentUser is not { } user) return Task.CompletedTask;
 
-    private static Button SettingsButton(string label, Func<Task> action)
-    {
-        var button = Ui.Button(label, action, true);
-        button.CornerRadius = 24;
-        return button;
-    }
-
-    private async Task EditProfileAsync()
-    {
-        if (_busy || _session.CurrentUser is not { } user) return;
-        var choice = await this.ChooseAppActionAsync("Editar perfil", "Cancelar", "Alterar nome", "Alterar e-mail");
-        if (choice is not ("Alterar nome" or "Alterar e-mail")) return;
-        var changeName = choice == "Alterar nome";
-        var value = await this.PromptAppValueAsync(choice, changeName ? "Nome" : "E-mail",
-            initialValue: changeName ? user.Name : user.Email,
-            maxLength: changeName ? 100 : 254,
-            keyboard: changeName ? Keyboard.Text : Keyboard.Email);
-        if (value is null) return;
-        value = value.Trim();
-        if (changeName && value.Length < 2)
-        {
-            _status.Text = "Informe um nome com pelo menos 2 caracteres.";
-            return;
-        }
-
-        _busy = true;
-        try
-        {
-            var updated = new AppUser
+        var jobTitle = ProfileSettingsPage.Field("Cargo", 100, user.JobTitle);
+        var gymName = ProfileSettingsPage.Field("Academia", 100, user.GymName);
+        var page = ProfileSettingsPage.Form("Dados profissionais",
+            [("Cargo", jobTitle), ("Academia", gymName)], "Salvar dados", async () =>
             {
-                Id = user.Id, Name = changeName ? value : user.Name,
-                Email = changeName ? user.Email : value, Role = user.Role,
-                IsActive = user.IsActive, CreatedAt = user.CreatedAt
-            };
-            await _accounts.UpdateUserAsync(updated);
-            _session.Refresh(updated);
-            _status.Text = "Perfil atualizado.";
-            RenderIdentity();
-        }
-        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
-        {
-            _status.Text = exception.Message;
-        }
-        finally { _busy = false; }
-    }
-
-    private async Task SignOutAsync(Page owner)
-    {
-        if (_busy) return;
-        _busy = true;
-        try
-        {
-            if (!await owner.ConfirmAppActionAsync("Sair da conta?", "Você poderá entrar novamente com seu e-mail e sua senha.",
-                    "Sair")) return;
-            await _navigator.ShowLoginAsync();
-        }
-        finally { _busy = false; }
+                var updated = await _accounts.UpdateProfessionalDetailsAsync(user.Id, jobTitle.Text, gymName.Text);
+                _session.Refresh(updated);
+                _status.Text = "Dados profissionais atualizados.";
+                RenderProfessionalDetails();
+            });
+        return Navigation.PushAsync(page);
     }
 
     private static View IconAction(string label, string icon, Func<Task> action)
@@ -554,7 +494,6 @@ public sealed class ProfilePage : WorkspacePage
     {
         var path = name switch
         {
-            "edit" => "M 4,16 L 15,5 C 16,4 17,4 18,5 L 20,7 C 21,8 21,9 20,10 L 9,21 L 4,22 Z M 13,7 L 18,12",
             "settings" => "M 10,2 L 14,2 L 15,5 L 17,6 L 20,5 L 22,9 L 20,11 L 20,13 L 22,15 L 20,19 L 17,18 L 15,19 L 14,22 L 10,22 L 9,19 L 7,18 L 4,19 L 2,15 L 4,13 L 4,11 L 2,9 L 4,5 L 7,6 L 9,5 Z M 16,12 A 4,4 0 1 1 8,12 A 4,4 0 1 1 16,12",
             "statistics" => "M 3,3 L 3,21 L 22,21 M 7,16 L 12,11 L 15,14 L 21,7 M 16,7 L 21,7 L 21,12",
             "workout" => "M 8,12 L 16,12 M 4,7 L 8,7 L 8,17 L 4,17 Z M 16,7 L 20,7 L 20,17 L 16,17 Z M 2,10 L 4,10 M 20,10 L 22,10 M 2,14 L 4,14 M 20,14 L 22,14",
