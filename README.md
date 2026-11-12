@@ -98,6 +98,8 @@ Os testes automatizados e a compilação Android validam a lógica e a geração
 - `GymTrack.Tests`: testes de persistência, serviços, permissões e view models.
 
 
-ideias futuras:
+Ideias futuras:
 
-um tipo de premiação dentro do aplicativo, que funcione por metas 
+Um tipo de premiação dentro do aplicativo, que funcione por metas.
+
+O usuário cadastrar fotos para si mesmo, para auxilio na evolução.
