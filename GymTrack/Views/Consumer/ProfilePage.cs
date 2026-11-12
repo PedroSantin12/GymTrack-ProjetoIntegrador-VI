@@ -376,7 +376,7 @@ public sealed class ProfilePage : WorkspacePage
     private Task OpenSettingsAsync()
     {
         if (_session.CurrentUser is not { } user) return Task.CompletedTask;
-        var page = new ContentPage { Title = "Configurações", BackgroundColor = Ui.Background };
+        var page = new ProfileSettingsPage();
         var account = new VerticalStackLayout
         {
             Spacing = 10,
@@ -403,10 +403,6 @@ public sealed class ProfilePage : WorkspacePage
             settings.Add(SettingsButton("Gerenciar contas", () => _navigator.NavigateAsync(AppSection.Users)));
             settings.Add(SettingsButton("Estatísticas", () => _navigator.NavigateAsync(AppSection.Statistics)));
         }
-        if (user.Role == UserRole.Consumer)
-            settings.Add(SettingsButton("Vínculos com funcionários", () =>
-                page.Navigation.PushAsync(_services.GetRequiredService<StudentConnectionsPage>())));
-
         settings.Add(SettingsButton("Sobre o GymTrack", () =>
             page.Navigation.PushAsync(_services.GetRequiredService<AboutPage>())));
         var signOut = SettingsButton("Sair da conta", () => SignOutAsync(page));

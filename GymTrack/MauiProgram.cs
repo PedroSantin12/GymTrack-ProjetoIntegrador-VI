@@ -51,7 +51,6 @@ public static class MauiProgram
         builder.Services.AddTransient<PersonalWorkoutsPage>();
         builder.Services.AddTransient<ConsumerProgressPage>();
         builder.Services.AddTransient<ProfilePage>();
-        builder.Services.AddTransient<StudentConnectionsPage>();
 
         builder.Services.AddSingleton<MainFlyoutPage>();
         builder.Services.AddSingleton<FlyoutMenuPage>();

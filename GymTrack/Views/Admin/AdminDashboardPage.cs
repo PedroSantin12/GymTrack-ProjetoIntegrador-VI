@@ -24,7 +24,7 @@ public sealed class AdminDashboardPage : WorkspacePage
             ColumnSpacing = 12,
             ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Star) }
         };
-        summary.Add(Metric(_studentCount, "Alunos vinculados"));
+        summary.Add(Metric(_studentCount, "Alunos ativos"));
         summary.Add(Metric(_templateCount, "Treinos no catálogo"), 1);
 
         SetBody(new VerticalStackLayout
@@ -57,15 +57,13 @@ public sealed class AdminDashboardPage : WorkspacePage
         _loading = true;
         try
         {
-            var students = _students.GetLinkedStudentsAsync();
+            var students = _students.GetStudentsAsync();
             var templates = _catalog.CountTemplatesAsync();
             await Task.WhenAll(students, templates);
             var studentCount = (await students).Count;
             _studentCount.Text = studentCount.ToString();
             _templateCount.Text = (await templates).ToString();
-            _status.Text = studentCount == 0
-                ? "Para aparecer aqui, o aluno pode vincular seu e-mail pelo Perfil."
-                : string.Empty;
+            _status.Text = studentCount == 0 ? "Nenhum aluno ativo cadastrado." : string.Empty;
             _status.IsVisible = studentCount == 0;
         }
         catch

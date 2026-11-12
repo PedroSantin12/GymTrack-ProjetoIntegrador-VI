@@ -56,11 +56,11 @@ public sealed class GymTrackDatabase : IAsyncDisposable
             await _connection.ExecuteAsync(CreateManualWorkoutLogTableSql);
             await _connection.ExecuteAsync(CreateManualWorkoutDemoSeedTableSql);
             await _connection.ExecuteAsync(CreateBodyMeasurementTableSql);
-            await _connection.ExecuteAsync(CreateStudentLinkTableSql);
             await _connection.ExecuteAsync(CreateWorkoutAssignmentTableSql);
+            await _connection.ExecuteAsync("DROP TABLE IF EXISTS StudentLink");
 
             await CreateIndexesAsync();
-            await _connection.ExecuteAsync("PRAGMA user_version = 3");
+            await _connection.ExecuteAsync("PRAGMA user_version = 4");
 
             _isInitialized = true;
         }
@@ -108,8 +108,6 @@ public sealed class GymTrackDatabase : IAsyncDisposable
             "CREATE INDEX IF NOT EXISTS IX_ManualWorkoutLog_OwnerDate ON ManualWorkoutLog (OwnerUserId, PerformedOn DESC)");
         await _connection.ExecuteAsync(
             "CREATE UNIQUE INDEX IF NOT EXISTS UX_BodyMeasurement_OwnerDate ON BodyMeasurement (OwnerUserId, MeasuredOn)");
-        await _connection.ExecuteAsync(
-            "CREATE INDEX IF NOT EXISTS IX_StudentLink_EmployeeId ON StudentLink (EmployeeId)");
     }
 
     private Task MigrateWorkoutOwnershipAsync()
@@ -231,16 +229,6 @@ public sealed class GymTrackDatabase : IAsyncDisposable
             WaistCm REAL NULL CHECK (WaistCm IS NULL OR WaistCm > 0),
             HipCm REAL NULL CHECK (HipCm IS NULL OR HipCm > 0),
             ChestCm REAL NULL CHECK (ChestCm IS NULL OR ChestCm > 0)
-        )
-        """;
-
-    private const string CreateStudentLinkTableSql =
-        """
-        CREATE TABLE IF NOT EXISTS StudentLink (
-            StudentId INTEGER NOT NULL CHECK (StudentId > 0),
-            EmployeeId INTEGER NOT NULL CHECK (EmployeeId > 0 AND EmployeeId <> StudentId),
-            SharesHistory INTEGER NOT NULL DEFAULT 0 CHECK (SharesHistory IN (0, 1)),
-            PRIMARY KEY (StudentId, EmployeeId)
         )
         """;
 

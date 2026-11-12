@@ -1,5 +1,7 @@
 using GymTrack.Data;
+using GymTrack.Data.Dao;
 using GymTrack.Models;
+using GymTrack.Services;
 using SQLite;
 
 namespace GymTrack.Tests;
@@ -18,7 +20,7 @@ public sealed class DatabaseInitializationTests
         var connection = await context.Database.GetConnectionAsync();
         var version = await connection.ExecuteScalarAsync<int>("PRAGMA user_version");
 
-        Assert.Equal(3, version);
+        Assert.Equal(4, version);
     }
 
     [Fact]
@@ -39,7 +41,7 @@ public sealed class DatabaseInitializationTests
 
         Assert.Equal(
             ["BodyMeasurement", "Exercise", "ManualWorkoutDemoSeed", "ManualWorkoutLog",
-                "SetRecord", "StudentLink", "Workout", "WorkoutAssignment", "WorkoutExercise", "WorkoutSession"],
+                "SetRecord", "Workout", "WorkoutAssignment", "WorkoutExercise", "WorkoutSession"],
             tables.Select(item => item.Name).ToArray());
         Assert.Contains(indexes, item => item.Name == "IX_Exercise_Name");
         Assert.Contains(indexes, item => item.Name == "IX_WorkoutExercise_WorkoutId");
@@ -121,7 +123,7 @@ public sealed class DatabaseInitializationTests
             Assert.True(workout.IsTemplate);
             Assert.Equal(1, await connection.ExecuteScalarAsync<int>(
                 "SELECT COUNT(*) FROM WorkoutSession WHERE Id = 1 AND WorkoutId = 1"));
-            Assert.Equal(3, await connection.ExecuteScalarAsync<int>("PRAGMA user_version"));
+            Assert.Equal(4, await connection.ExecuteScalarAsync<int>("PRAGMA user_version"));
             Assert.Equal(1, await connection.ExecuteScalarAsync<int>(
                 "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'ManualWorkoutLog'"));
             Assert.Equal(1, await connection.ExecuteScalarAsync<int>(
@@ -132,6 +134,45 @@ public sealed class DatabaseInitializationTests
             if (Directory.Exists(directory))
                 Directory.Delete(directory, recursive: true);
         }
+    }
+
+    [Fact]
+    public async Task InitializeAsync_RemovesLegacyStudentLinksAndKeepsReceivedWorkouts()
+    {
+        await using var context = await TestDatabase.CreateAsync();
+        var legacy = await context.Database.GetConnectionAsync();
+        await legacy.ExecuteAsync(
+            """
+            CREATE TABLE StudentLink (
+                StudentId INTEGER NOT NULL CHECK (StudentId > 0),
+                EmployeeId INTEGER NOT NULL CHECK (EmployeeId > 0 AND EmployeeId <> StudentId),
+                SharesHistory INTEGER NOT NULL DEFAULT 0 CHECK (SharesHistory IN (0, 1)),
+                PRIMARY KEY (StudentId, EmployeeId)
+            )
+            """);
+        await legacy.ExecuteAsync("INSERT INTO StudentLink (StudentId, EmployeeId, SharesHistory) VALUES (10, 20, 1)");
+
+        var workouts = new WorkoutDao(context.Database);
+        var exercise = new Exercise { Name = "Supino", MuscleGroup = "Peito" };
+        await legacy.InsertAsync(exercise);
+        var copyId = await workouts.SaveAsync(new Workout { Name = "Treino recebido", OwnerUserId = 10 },
+            [new WorkoutExercise { ExerciseId = exercise.Id, PlannedSets = 3, PlannedReps = 12 }]);
+        await legacy.ExecuteAsync("INSERT INTO WorkoutAssignment (WorkoutId, EmployeeId, TemplateId) VALUES (?, 20, 30)", copyId);
+        await legacy.ExecuteAsync("PRAGMA user_version = 3");
+        await legacy.CloseAsync();
+
+        await using var migrated = new GymTrackDatabase(context.DatabasePath);
+        var connection = await migrated.GetConnectionAsync();
+        Assert.Equal(0, await connection.ExecuteScalarAsync<int>(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'StudentLink'"));
+        Assert.Equal(4, await connection.ExecuteScalarAsync<int>("PRAGMA user_version"));
+
+        var migratedWorkouts = new WorkoutDao(migrated);
+        var catalog = new WorkoutCatalogService(migrated, migratedWorkouts);
+        var copy = Assert.Single(await catalog.GetPersonalAsync(10));
+        Assert.Equal(copyId, copy.Id);
+        Assert.True(copy.IsAssigned);
+        Assert.Equal(12, Assert.Single(await migratedWorkouts.GetExercisesAsync(copyId)).PlannedReps);
     }
 
     private sealed class SqliteName
