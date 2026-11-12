@@ -13,9 +13,9 @@
         <BoxView InputTransparent="True">
             <BoxView.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#AF0E0E10" Offset="0" />
-                    <GradientStop Color="#450E0E10" Offset="0.24" />
-                    <GradientStop Color="#B90E0E10" Offset="0.48" />
+                    <GradientStop Color="#A80E0E10" Offset="0" />
+                    <GradientStop Color="#3A0E0E10" Offset="0.24" />
+                    <GradientStop Color="#AD0E0E10" Offset="0.48" />
                     <GradientStop Color="#F90E0E10" Offset="0.68" />
                     <GradientStop Color="#0E0E10" Offset="1" />
                 </LinearGradientBrush>
@@ -64,12 +64,14 @@
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,2,0,0">
                         <Button Text="Entrar"
                                 Command="{Binding SignInCommand}"
-                                Padding="8,10"
+                                MinimumHeightRequest="40"
+                                Padding="8,4"
                                 AutomationId="LoginSubmit" />
                         <Button Grid.Column="1"
                                 Text="Cadastrar-se"
                                 Style="{StaticResource SecondaryButton}"
-                                Padding="8,10"
+                                MinimumHeightRequest="40"
+                                Padding="8,4"
                                 Clicked="OnRegisterClicked"
                                 AutomationId="OpenRegistration" />
                     </Grid>
