@@ -69,7 +69,6 @@ Para compilar no terminal:
 ```powershell
 ./Abrir-GymTrack.cmd
 dotnet build M:\GymTrack\GymTrack.csproj -f net10.0-android
-dotnet test M:\GymTrack.Tests\GymTrack.Tests.csproj
 ```
 
 ## Desenvolvimento no ambiente de nuvem
@@ -79,11 +78,10 @@ O ambiente configurado disponibiliza .NET, MAUI, JDK e SDK Android. Em um novo t
 ```bash
 source /workspace/.gymtrack-setup/env.sh
 cd /workspace/GymTrack-ProjetoIntegrador-VI
-dotnet test GymTrack.Tests/GymTrack.Tests.csproj
 dotnet build GymTrack/GymTrack.csproj -f net10.0-android -p:AppSettingsDirectory=/workspace/.gymtrack-setup/xamarin
 ```
 
-Os testes automatizados e a compilação Android validam a lógica e a geração do aplicativo. A verificação visual e a interação com as telas exigem um dispositivo ou emulador Android e devem ser feitas separadamente.
+Para conferir a interface e testar o fluxo de demonstração no Android, execute o aplicativo em um dispositivo ou emulador.
 
 ## Organização do código
 
@@ -95,7 +93,6 @@ Os testes automatizados e a compilação Android validam a lógica e a geração
 - `Services`: contas, sessão atual, permissões, navegação, catálogo e consulta de alunos.
 - `Data` e `Models`: banco SQLite, migração dos treinos existentes, DAOs e entidades.
 - `Resources`: cores, estilos e demais recursos visuais.
-- `GymTrack.Tests`: testes de persistência, serviços, permissões e view models.
 
 ## Créditos das imagens
 
