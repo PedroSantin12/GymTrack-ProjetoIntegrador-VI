@@ -6,9 +6,7 @@ using GymTrack.ViewModels;
 using GymTrack.Views;
 using GymTrack.Views.Admin;
 using GymTrack.Views.Consumer;
-using LiveChartsCore.SkiaSharpView.Maui;
 using Microsoft.Extensions.Logging;
-using SkiaSharp.Views.Maui.Controls.Hosting;
 
 namespace GymTrack;
 
@@ -20,8 +18,6 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
-            .UseSkiaSharp()
-            .UseLiveCharts()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -52,14 +48,7 @@ public static class MauiProgram
         builder.Services.AddTransient<ConsumerProgressPage>();
         builder.Services.AddTransient<ProfilePage>();
 
-        builder.Services.AddSingleton<MainFlyoutPage>();
-        builder.Services.AddSingleton<FlyoutMenuPage>();
-        builder.Services.AddSingleton<MainTabbedPage>();
-
-        builder.Services.AddSingleton<DashboardPage>();
-        builder.Services.AddSingleton<WorkoutsPage>();
         builder.Services.AddSingleton<HistoryPage>();
-        builder.Services.AddSingleton<ProgressPage>();
         builder.Services.AddTransient<ExercisesPage>();
         builder.Services.AddTransient<ExerciseEditPage>();
         builder.Services.AddTransient<WorkoutEditPage>();
@@ -69,10 +58,7 @@ public static class MauiProgram
         builder.Services.AddTransient<HistoryDetailPage>();
         builder.Services.AddTransient<AboutPage>();
 
-        builder.Services.AddTransient<DashboardViewModel>();
-        builder.Services.AddTransient<WorkoutsViewModel>();
         builder.Services.AddTransient<HistoryViewModel>();
-        builder.Services.AddTransient<ProgressViewModel>();
         builder.Services.AddTransient<ExercisesViewModel>();
         builder.Services.AddTransient<ExerciseEditViewModel>();
         builder.Services.AddTransient<WorkoutEditViewModel>();
@@ -93,7 +79,6 @@ public static class MauiProgram
         });
         builder.Services.AddSingleton<INotificationService, NotificationService>();
         builder.Services.AddSingleton<IDialogService, DialogService>();
-        builder.Services.AddSingleton<IAnalyticsService, AnalyticsService>();
         builder.Services.AddSingleton(TimeProvider.System);
 
 #if DEBUG
