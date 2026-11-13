@@ -39,7 +39,7 @@ As contas, os exercícios, os treinos e as sessões persistem localmente no SQLi
 - Evolução com registro manual, histórico, frequência, tempo e carga. O **Calendário** marca os dias com registros manuais e sessões concluídas, agrupando treinos do mesmo dia.
 - Perfil com dados da conta, peso e medidas corporais, gráfico de peso e opção de sair.
 
-O catálogo inicial inclui 33 exercícios em 20 grupos musculares e três treinos prontos de peito, pernas e glúteos, além dos seis modelos de base. Ao abrir qualquer treino pronto, o consumidor pode examinar a sequência, séries, repetições e o guia de cada exercício antes de adicioná-lo à própria conta. Todos os 33 exercícios iniciais têm imagens anatômicas estáticas incluídas no aplicativo e funcionam sem internet. As imagens, sua origem e os créditos estão documentados em [MEDIA_CREDITS.md](MEDIA_CREDITS.md). Exercícios personalizados sem imagem correspondente exibem uma indicação discreta de mídia indisponível. O consumidor recebe uma cópia independente: alterar ou excluir um treino pronto do catálogo não modifica a cópia. O acesso a treinos pessoais e sessões é restrito ao dono da conta; o catálogo de exercícios é compartilhado.
+O catálogo inicial inclui 33 exercícios em 20 grupos musculares e três treinos prontos de peito, pernas e glúteos, além dos seis modelos de base. Ao abrir qualquer treino pronto, o consumidor pode examinar a sequência, séries, repetições e o guia de cada exercício antes de adicioná-lo à própria conta. Todos os 33 exercícios iniciais têm imagens anatômicas estáticas incluídas no aplicativo e funcionam sem internet. A origem e a licença das imagens estão na seção [Créditos das imagens](#créditos-das-imagens). Exercícios personalizados sem imagem correspondente exibem uma indicação discreta de mídia indisponível. O consumidor recebe uma cópia independente: alterar ou excluir um treino pronto do catálogo não modifica a cópia. O acesso a treinos pessoais e sessões é restrito ao dono da conta; o catálogo de exercícios é compartilhado.
 
 Na conta de demonstração do consumidor, a aba **Evolução** inclui alguns registros manuais marcados como **Exemplo**. Eles aparecem no histórico, mas não entram nas estatísticas; podem ser excluídos e não reaparecem. Registros manuais e medidas corporais ficam apenas no banco local do dispositivo e são separados por conta. Volume e carga são calculados somente a partir de séries realmente registradas no app.
 
@@ -97,6 +97,59 @@ Os testes automatizados e a compilação Android validam a lógica e a geração
 - `Resources`: cores, estilos e demais recursos visuais.
 - `GymTrack.Tests`: testes de persistência, serviços, permissões e view models.
 
+## Créditos das imagens
+
+A biblioteca inicial inclui 32 ilustrações anatômicas geradas para o GymTrack e uma imagem de referência licenciada.
+
+<details>
+<summary>Ilustrações geradas para o GymTrack</summary>
+
+Prompt base usado: “Educational exercise anatomy plate, white landscape canvas, two adjacent views of the same adult athlete in the start and finish positions, grayscale realistic musculature, restrained muted red highlight on the working muscles, accurate equipment and posture, no labels, arrows, logos or watermark.” Cada chamada acrescentou o nome do exercício, equipamento, posições e músculos específicos. Em casos de bloqueio automático, o atleta foi representado com camiseta e calça esportivas opacas. A flexão de punhos foi refeita com os antebraços apoiados e movimento exclusivo dos punhos.
+
+| Exercício | Arquivo |
+| --- | --- |
+| Prancha frontal | `anatomy_prancha_frontal.png` |
+| Abdominal no solo | `anatomy_abdominal_no_solo.png` |
+| Flexão de punhos com halteres | `anatomy_flexao_de_punhos_com_halteres.png` |
+| Rosca direta com halteres | `anatomy_rosca_direta_com_halteres.png` |
+| Rosca martelo | `anatomy_rosca_martelo.png` |
+| Remada alta com halteres | `anatomy_remada_alta_com_halteres.png` |
+| Puxada frontal | `anatomy_puxada_frontal.png` |
+| Remada curvada | `anatomy_remada_curvada.png` |
+| Extensão lombar no banco | `anatomy_extensao_lombar_no_banco.png` |
+| Desenvolvimento com halteres | `anatomy_desenvolvimento_com_halteres.png` |
+| Elevação lateral | `anatomy_elevacao_lateral.png` |
+| Supino reto com halteres | `anatomy_supino_reto_com_halteres.png` |
+| Supino inclinado com halteres | `anatomy_supino_inclinado_com_halteres.png` |
+| Crucifixo com halteres | `anatomy_crucifixo_com_halteres.png` |
+| Flexão de braços | `anatomy_flexao_de_bracos.png` |
+| Mobilidade cervical | `anatomy_mobilidade_cervical.png` |
+| Encolhimento com halteres | `anatomy_encolhimento_com_halteres.png` |
+| Tríceps na polia | `anatomy_triceps_na_polia.png` |
+| Tríceps francês | `anatomy_triceps_frances.png` |
+| Cadeira abdutora | `anatomy_cadeira_abdutora.png` |
+| Cadeira adutora | `anatomy_cadeira_adutora.png` |
+| Elevação pélvica | `anatomy_elevacao_pelvica.png` |
+| Agachamento sumô | `anatomy_agachamento_sumo.png` |
+| Coice no cabo | `anatomy_coice_no_cabo.png` |
+| Elevação de panturrilhas em pé | `anatomy_elevacao_de_panturrilhas_em_pe.png` |
+| Mesa flexora | `anatomy_mesa_flexora.png` |
+| Levantamento terra romeno | `anatomy_levantamento_terra_romeno.png` |
+| Agachamento livre | `anatomy_agachamento_livre.png` |
+| Leg press | `anatomy_leg_press.png` |
+| Caminhada na esteira | `anatomy_caminhada_na_esteira.png` |
+| Polichinelo | `anatomy_polichinelo.png` |
+| Alongamento geral | `anatomy_alongamento_geral.png` |
+
+</details>
+
+### Imagem licenciada
+
+| Exercício | Arquivo | Autor / fonte | Licença |
+| --- | --- | --- | --- |
+| Cadeira extensora | `exercise_leg_extension.jpg` | [Franpol / wger](https://wger.de/api/v2/exerciseimage/386/) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
+
+Os arquivos ficam em `GymTrack/Resources/Images`; o vínculo entre exercício e arquivo está em `GymTrack/Services/ExerciseMediaCatalog.cs`. Exercícios personalizados sem imagem própria continuam sem demonstração atribuída.
 
 Ideias futuras:
 
